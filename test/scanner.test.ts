@@ -1,6 +1,6 @@
 import "jest";
 import { scan } from "../src/scanner";
-import { isRight } from "fp-ts/lib/Either";
+import { isRight, isLeft } from "fp-ts/lib/Either";
 
 describe("Scanner", () => {
   describe("Successful scans", () => {
@@ -147,6 +147,87 @@ describe("Scanner", () => {
 
         expect(scanResult.right[0].value).toBe(inputVal);
       });
+    });
+
+    describe("Multiple tokens", () => {
+      it("Recognizes whitespace as a separator", () => {
+        // Arrange
+        const inputStr = "1 2";
+
+        // Act
+        const scanResult = scan(inputStr);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          // type narrowing
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(2);
+
+        if (scanResult.right[0].tokenKind !== "number") {
+          throw new Error('"1" not recognized as number token');
+        }
+
+        if (scanResult.right[1].tokenKind !== "number") {
+          throw new Error('"2" not recognized as number token');
+        }
+
+        expect(scanResult.right[0].value).toBe(1);
+        expect(scanResult.right[1].value).toBe(2);
+      });
+    });
+  });
+
+  describe("Scan errors", () => {
+    it("Reports error on numbers with more than one decimal point", () => {
+      // Arrange
+      const inputStr = "12.34.56";
+
+      // Act
+      const scanResult = scan(inputStr);
+
+      // Assert
+      if (!isLeft(scanResult)) {
+        // type narrowing
+        throw new Error("Scan succeeded, should have failed");
+      }
+
+      expect(scanResult.left.map((error) => error.invalidLexeme)).toContain(".56");
+    });
+
+    it("Reports error on special characters", () => {
+      // Arrange
+      const inputStr = "!";
+
+      // Act
+      const scanResult = scan(inputStr);
+
+      // Assert
+      if (!isLeft(scanResult)) {
+        throw new Error("Scan succeeded, should have failed");
+      }
+
+      expect(scanResult.left.map((error) => error.invalidLexeme)).toContain(inputStr);
+    });
+
+    it("Reports multiple errors for multiple bad lexemes", () => {
+      // Arrange
+      const bad1 = "!";
+      const bad2 = "@";
+
+      // Act
+      const scanResult = scan(`${bad1} ${bad2}`);
+
+      // Assert
+      if (!isLeft(scanResult)) {
+        // use this instead of expect(), so we get type narrowing on scanResult
+        throw new Error("Scan succeeded, should have failed");
+      }
+
+      const invalidLexemes = scanResult.left.map((error) => error.invalidLexeme);
+      expect(invalidLexemes).toContain(bad1);
+      expect(invalidLexemes).toContain(bad2);
     });
   });
 });

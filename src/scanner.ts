@@ -155,22 +155,36 @@ export const scan: Scan = (input: string) => {
           position += 1;
           break;
         default:
-          // case for identifiers
+          // check for whitespace; if present, skip past it
+          if (/\s/.test(char)) {
+            position += 1;
+            break;
+          }
+
+          // check for valid identifier; if doesn't match, lexeme is invalid
           const matches = input.substring(position).match(/^[a-zA-Z][a-zA-Z0-9]*/);
           if (matches === null) {
-            throw new Error("Someone had blunder'd"); // TODO more specific error
-          }
-          const name = matches[0];
+            const badMatches = input.substring(position).match(/^[^\s]+/);
+            if (badMatches === null) {
+              throw new Error(
+                `Programming error; ${input.substring(
+                  position,
+                )} begins with neither a valid identifier nor an invalid lexeme`,
+              );
+            }
+            errors.push({
+              invalidLexeme: badMatches[0],
+            });
+            position += badMatches[0].length;
+          } else {
+            const name = matches[0];
 
-          if (name === undefined) {
-            throw new Error("Someone had blunder'd"); // TODO more specific error
+            tokens.push({
+              tokenKind: "identifier",
+              name,
+            });
+            position += name.length;
           }
-
-          tokens.push({
-            tokenKind: "identifier",
-            name,
-          });
-          position += name.length;
       }
     }
   }
