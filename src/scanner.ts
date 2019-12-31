@@ -99,6 +99,17 @@ export const scan: Scan = (input: string) => {
         tokenKind: "return",
       });
       position += "return".length;
+    } else if (/\d{1}/.test(char)) {
+      const numberMatches = input.substring(position).match(/^[\d]+([.][\d]+)?/);
+      if (numberMatches === null) {
+        throw new Error("Someone had blunder'd"); // shouldn't get here; the regex for the whole number should find something if the /\d{1}/ regex matched
+      }
+      const value = parseFloat(numberMatches[0]);
+      tokens.push({
+        tokenKind: "number",
+        value,
+      });
+      position += numberMatches[0].length; // advance past the number we just scanned
     } else {
       switch (char) {
         case "(":

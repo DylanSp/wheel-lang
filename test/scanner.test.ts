@@ -102,5 +102,51 @@ describe("Scanner", () => {
         expect(scanResult.right[0].tokenKind).toBe("identifier");
       });
     });
+
+    describe("Numbers", () => {
+      it("Scans a simple number", () => {
+        // Arrange
+        const inputVal = 123;
+        const input = inputVal.toString(10);
+
+        // Act
+        const scanResult = scan(input);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(1);
+
+        if (scanResult.right[0].tokenKind !== "number") {
+          throw new Error(`${input} not recognized as number`);
+        }
+
+        expect(scanResult.right[0].value).toBe(inputVal);
+      });
+
+      it("Scans a number with a decimal point", () => {
+        // Arrange
+        const inputVal = 123.45;
+        const input = inputVal.toString(10);
+
+        // Act
+        const scanResult = scan(input);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(1);
+
+        if (scanResult.right[0].tokenKind !== "number") {
+          throw new Error(`${input} not recognized as number`);
+        }
+
+        expect(scanResult.right[0].value).toBe(inputVal);
+      });
+    });
   });
 });
