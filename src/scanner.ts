@@ -102,7 +102,7 @@ export const scan: Scan = (input: string) => {
     } else if (/\d{1}/.test(char)) {
       const numberMatches = input.substring(position).match(/^[\d]+([.][\d]+)?/);
       if (numberMatches === null) {
-        throw new Error("Someone had blunder'd"); // shouldn't get here; the regex for the whole number should find something if the /\d{1}/ regex matched
+        throw new Error("Programming error when trying to scan a number"); // shouldn't get here; the regex for the whole number should find something if the /\d{1}/ regex matched
       }
       const value = parseFloat(numberMatches[0]);
       tokens.push({
