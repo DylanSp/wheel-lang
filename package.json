@@ -27,5 +27,8 @@
   },
   "jest": {
     "preset": "ts-jest"
+  },
+  "dependencies": {
+    "fp-ts": "^2.3.1"
   }
 }
