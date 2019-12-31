@@ -4,12 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "pretest": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Dylan Sprague",
+  "repository": "github:DylanSp/extended-four-function-console",
+  "license": "MIT",
   "devDependencies": {
+    "@types/node": "^13.1.2",
     "typescript": "^3.7.4"
   }
 }
