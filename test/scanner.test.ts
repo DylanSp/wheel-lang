@@ -176,6 +176,24 @@ describe("Scanner", () => {
         expect(scanResult.right[0].value).toBe(1);
         expect(scanResult.right[1].value).toBe(2);
       });
+
+      it("Recognizes (( as two distinct tokens", () => {
+        // Arrange
+        const inputStr = "((";
+
+        // Act
+        const scanResult = scan(inputStr);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(2);
+        scanResult.right.forEach((token) => {
+          expect(token.tokenKind).toBe("leftParen");
+        });
+      });
     });
   });
 
