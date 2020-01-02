@@ -152,8 +152,10 @@ export const parse: Parse = (input) => {
     while (input[position]?.tokenKind === "operation") {
       // need the conditional access to .tokenKind in case this.position goes past input.length
       const opToken = input[position] as OperationToken; // cast should always succeed
+
+      // TODO - this may not be needed; parseTerm() will consume all *'s and /'s, right now that leaves only + and -
       if (opToken.operation !== "add" && opToken.operation !== "subtract") {
-        break;
+        break; // TODO - throw error to indicate logic error instead?
       }
 
       position += 1;
