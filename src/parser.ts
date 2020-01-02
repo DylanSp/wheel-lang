@@ -5,6 +5,8 @@ import { Either, right, left } from "fp-ts/lib/Either";
  * TYPES
  */
 
+// TODO - do I want to reuse Identifier type from scanner, or have separate identifier type = string for parser?
+
 export type Program = Block;
 
 export type Block = Array<Statement>;
