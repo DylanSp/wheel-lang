@@ -59,7 +59,7 @@ export interface NumberToken {
   value: number;
 }
 
-type Operation = "add" | "subtract" | "multiply" | "divide";
+export type Operation = "add" | "subtract" | "multiply" | "divide";
 
 export interface OperationToken {
   tokenKind: "operation";
