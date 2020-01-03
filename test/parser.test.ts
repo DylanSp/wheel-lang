@@ -459,7 +459,7 @@ describe("Parser", () => {
     });
 
     describe("Simple function declarations", () => {
-      it("Parses { function f() {} }", () => {
+      it("Parses { function f() {} } function with no parameters or body)", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -506,6 +506,311 @@ describe("Parser", () => {
             },
             args: [],
             body: [],
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { function g(x) {} } (function with one parameter, no body)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "function",
+          },
+          {
+            tokenKind: "identifier",
+            name: "g",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: "x",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: {
+              tokenKind: "identifier",
+              name: "g",
+            },
+            args: [
+              {
+                tokenKind: "identifier",
+                name: "x",
+              },
+            ],
+            body: [],
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { function h(x, y) {} } (function with multiple parameters, no body)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "function",
+          },
+          {
+            tokenKind: "identifier",
+            name: "h",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: "x",
+          },
+          {
+            tokenKind: "comma",
+          },
+          {
+            tokenKind: "identifier",
+            name: "y",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: {
+              tokenKind: "identifier",
+              name: "h",
+            },
+            args: [
+              {
+                tokenKind: "identifier",
+                name: "x",
+              },
+              {
+                tokenKind: "identifier",
+                name: "y",
+              },
+            ],
+            body: [],
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { function foo() { return 1; } } function with no parameters, one statement in body)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "function",
+          },
+          {
+            tokenKind: "identifier",
+            name: "foo",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "return",
+          },
+          {
+            tokenKind: "number",
+            value: 1,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: {
+              tokenKind: "identifier",
+              name: "foo",
+            },
+            args: [],
+            body: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "number",
+                  value: 1,
+                },
+              },
+            ],
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { function bar() { x = 1; return x; } } function with no parameters, multiple statements in body)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "function",
+          },
+          {
+            tokenKind: "identifier",
+            name: "bar",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: "x",
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 1,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "return",
+          },
+          {
+            tokenKind: "identifier",
+            name: "x",
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: {
+              tokenKind: "identifier",
+              name: "bar",
+            },
+            args: [],
+            body: [
+              {
+                statementKind: "assignment",
+                variableName: {
+                  tokenKind: "identifier",
+                  name: "x",
+                },
+                variableValue: {
+                  expressionKind: "number",
+                  value: 1,
+                },
+              },
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "variableRef",
+                  variableName: {
+                    tokenKind: "identifier",
+                    name: "x",
+                  },
+                },
+              },
+            ],
           },
         ];
 
