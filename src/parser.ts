@@ -16,7 +16,7 @@ export type Statement = FunctionDeclaration | ReturnStatement | VariableAssignme
 export interface FunctionDeclaration {
   statementKind: "funcDecl";
   functionName: Identifier;
-  arguments: Array<Identifier>;
+  args: Array<Identifier>;
   body: Block;
 }
 
@@ -91,7 +91,42 @@ export const parse: Parse = (input) => {
       input[position]?.tokenKind === "identifier"
     ) {
       if (input[position]?.tokenKind === "function") {
-        throw new Error("Parsing function declarations not yet implemented");
+        position += 1; // move past "function"
+
+        const functionName = input[position] as Identifier;
+        position += 1; // move past identifier
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // @ts-ignore
+        if (input[position]?.tokenKind !== "leftParen") {
+          throw new ParseError("Expected (");
+        }
+        position += 1; // move past left paren
+
+        const args: Array<Identifier> = [];
+        while (input[position]?.tokenKind === "identifier") {
+          args.push(input[position] as Identifier);
+          position += 1;
+
+          // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+          // @ts-ignore
+          if (input[position]?.tokenKind === "comma") {
+            position += 1; // move past comma
+          }
+        }
+
+        if (input[position]?.tokenKind !== "rightParen") {
+          throw new ParseError("Expected )");
+        }
+        position += 1; // move past right paren
+
+        const body = parseBlock();
+        statements.push({
+          statementKind: "funcDecl",
+          functionName,
+          args,
+          body,
+        });
       } else if (input[position]?.tokenKind === "return") {
         position += 1; // move past "return"
         const expr = parseExpr();

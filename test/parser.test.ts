@@ -458,6 +458,61 @@ describe("Parser", () => {
       });
     });
 
+    describe("Simple function declarations", () => {
+      it("Parses { function f() {} }", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "function",
+          },
+          {
+            tokenKind: "identifier",
+            name: "f",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: {
+              tokenKind: "identifier",
+              name: "f",
+            },
+            args: [],
+            body: [],
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+    });
+
     describe("Multi-statement programs", () => {
       it("Parses { x = 1; return x; }", () => {
         // Arrange
