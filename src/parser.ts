@@ -48,7 +48,7 @@ export interface NumberExpr {
 export interface FunctionCall {
   expressionKind: "funcCall";
   functionName: Identifier;
-  arguments: Array<Expression>;
+  args: Array<Expression>;
 }
 
 export interface VariableRef {
@@ -266,7 +266,26 @@ export const parse: Parse = (input) => {
     // @ts-ignore
     if (input[position]?.tokenKind === "leftParen") {
       // function call
-      throw new Error("Not yet implemented");
+      position += 1; // move past left paren
+
+      // TODO similar code to parsing argument list in parseBlock(); is there a way to abstract out similarities?
+      const args: Array<Expression> = [];
+      while (input[position]?.tokenKind !== "rightParen") {
+        args.push(parseExpr());
+
+        if (input[position]?.tokenKind == "comma") {
+          position += 1; // move past comma
+        }
+      }
+
+      // we know from while loop condition that we're at a right paren, so just move past it
+      position += 1;
+
+      return {
+        expressionKind: "funcCall",
+        functionName: ident,
+        args: args,
+      };
     }
 
     return {
