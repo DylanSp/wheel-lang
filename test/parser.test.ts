@@ -446,8 +446,11 @@ describe("Parser", () => {
             variableValue: {
               expressionKind: "funcCall",
               functionName: {
-                tokenKind: "identifier",
-                name: "f",
+                expressionKind: "variableRef",
+                variableName: {
+                  tokenKind: "identifier",
+                  name: "f",
+                },
               },
               args: [],
             },
@@ -510,8 +513,11 @@ describe("Parser", () => {
             variableValue: {
               expressionKind: "funcCall",
               functionName: {
-                tokenKind: "identifier",
-                name: "g",
+                expressionKind: "variableRef",
+                variableName: {
+                  tokenKind: "identifier",
+                  name: "g",
+                },
               },
               args: [
                 {
@@ -586,8 +592,11 @@ describe("Parser", () => {
             variableValue: {
               expressionKind: "funcCall",
               functionName: {
-                tokenKind: "identifier",
-                name: "h",
+                expressionKind: "variableRef",
+                variableName: {
+                  tokenKind: "identifier",
+                  name: "h",
+                },
               },
               args: [
                 {
@@ -599,6 +608,80 @@ describe("Parser", () => {
                   value: 3,
                 },
               ],
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { higherOrderResult = higher()(); }", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: "higherOrderResult",
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "identifier",
+            name: "higher",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          console.error(parseResult.left.message);
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: {
+              tokenKind: "identifier",
+              name: "higherOrderResult",
+            },
+            variableValue: {
+              expressionKind: "funcCall",
+              functionName: {
+                expressionKind: "funcCall",
+                functionName: {
+                  expressionKind: "variableRef",
+                  variableName: {
+                    tokenKind: "identifier",
+                    name: "higher",
+                  },
+                },
+                args: [],
+              },
+              args: [],
             },
           },
         ];

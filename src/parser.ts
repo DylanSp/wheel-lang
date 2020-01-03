@@ -47,7 +47,7 @@ export interface NumberExpr {
 
 export interface FunctionCall {
   expressionKind: "funcCall";
-  functionName: Identifier;
+  functionName: Expression; // needs to be an expression to allow for multiple calls, i.e. f()()
   args: Array<Expression>;
 }
 
@@ -283,7 +283,10 @@ export const parse: Parse = (input) => {
 
       return {
         expressionKind: "funcCall",
-        functionName: ident,
+        functionName: {
+          expressionKind: "variableRef",
+          variableName: ident,
+        },
         args: args,
       };
     }
