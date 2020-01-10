@@ -47,7 +47,7 @@ export interface NumberExpr {
 
 export interface FunctionCall {
   expressionKind: "funcCall";
-  functionName: Expression; // needs to be an expression to allow for multiple calls, i.e. f()()
+  callee: Expression; // needs to be an expression to allow for multiple calls, i.e. f()()
   args: Array<Expression>;
 }
 
@@ -229,16 +229,7 @@ export const parse: Parse = (input) => {
   };
 
   const parseFactor = (): Expression => {
-    if (input[position]?.tokenKind === "number") {
-      // need the conditional access to .tokenKind in case this.position goes past input.length
-      const numToken = input[position] as NumberToken; // cast should always succeed
-      position += 1;
-      return {
-        expressionKind: "number",
-        value: numToken.value,
-      };
-    }
-
+    // handle grouping parentheses (NOT function calls)
     if (input[position]?.tokenKind === "leftParen") {
       position += 1; // move past left paren
       const expr = parseExpr();
@@ -254,19 +245,14 @@ export const parse: Parse = (input) => {
       return expr;
     }
 
-    if (input[position]?.tokenKind !== "identifier") {
-      throw new ParseError("Expected identifier");
-    }
+    return parseCall();
+  };
 
-    const ident = input[position] as Identifier;
-    position += 1;
+  const parseCall = (): Expression => {
+    let callee = parsePrimary();
 
-    // same issue with typescript thinking this is same expression as ident, but position is advanced
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-    // @ts-ignore
-    if (input[position]?.tokenKind === "leftParen") {
-      // function call
-      position += 1; // move past left paren
+    while (input[position]?.tokenKind === "leftParen") {
+      position += 1;
 
       // TODO similar code to parsing argument list in parseBlock(); is there a way to abstract out similarities?
       const args: Array<Expression> = [];
@@ -281,15 +267,35 @@ export const parse: Parse = (input) => {
       // we know from while loop condition that we're at a right paren, so just move past it
       position += 1;
 
-      return {
+      callee = {
         expressionKind: "funcCall",
-        functionName: {
-          expressionKind: "variableRef",
-          variableName: ident,
-        },
-        args: args,
+        callee,
+        args,
       };
     }
+
+    return callee;
+  };
+
+  // handles numbers, identifiers
+  // TODO better name?
+  const parsePrimary = (): Expression => {
+    if (input[position]?.tokenKind === "number") {
+      // need the conditional access to .tokenKind in case this.position goes past input.length
+      const numToken = input[position] as NumberToken; // cast should always succeed
+      position += 1;
+      return {
+        expressionKind: "number",
+        value: numToken.value,
+      };
+    }
+
+    if (input[position]?.tokenKind !== "identifier") {
+      throw new ParseError("Expected identifier");
+    }
+
+    const ident = input[position] as Identifier;
+    position += 1;
 
     return {
       expressionKind: "variableRef",

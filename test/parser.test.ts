@@ -445,7 +445,7 @@ describe("Parser", () => {
             },
             variableValue: {
               expressionKind: "funcCall",
-              functionName: {
+              callee: {
                 expressionKind: "variableRef",
                 variableName: {
                   tokenKind: "identifier",
@@ -512,7 +512,7 @@ describe("Parser", () => {
             },
             variableValue: {
               expressionKind: "funcCall",
-              functionName: {
+              callee: {
                 expressionKind: "variableRef",
                 variableName: {
                   tokenKind: "identifier",
@@ -591,7 +591,7 @@ describe("Parser", () => {
             },
             variableValue: {
               expressionKind: "funcCall",
-              functionName: {
+              callee: {
                 expressionKind: "variableRef",
                 variableName: {
                   tokenKind: "identifier",
@@ -670,9 +670,9 @@ describe("Parser", () => {
             },
             variableValue: {
               expressionKind: "funcCall",
-              functionName: {
+              callee: {
                 expressionKind: "funcCall",
-                functionName: {
+                callee: {
                   expressionKind: "variableRef",
                   variableName: {
                     tokenKind: "identifier",
