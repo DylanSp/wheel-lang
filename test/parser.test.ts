@@ -615,6 +615,164 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
+      it("Parses { i = f() + 1; }", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: "i",
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "identifier",
+            name: "f",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "operation",
+            operation: "add",
+          },
+          {
+            tokenKind: "number",
+            value: 1,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: {
+              tokenKind: "identifier",
+              name: "i",
+            },
+            variableValue: {
+              expressionKind: "binOp",
+              operation: "add",
+              leftOperand: {
+                expressionKind: "funcCall",
+                callee: {
+                  expressionKind: "variableRef",
+                  variableName: {
+                    tokenKind: "identifier",
+                    name: "f",
+                  },
+                },
+                args: [],
+              },
+              rightOperand: {
+                expressionKind: "number",
+                value: 1,
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { j = 2 * f(); }", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: "j",
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 2,
+          },
+          {
+            tokenKind: "operation",
+            operation: "multiply",
+          },
+          {
+            tokenKind: "identifier",
+            name: "f",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: {
+              tokenKind: "identifier",
+              name: "j",
+            },
+            variableValue: {
+              expressionKind: "binOp",
+              operation: "multiply",
+              leftOperand: {
+                expressionKind: "number",
+                value: 2,
+              },
+              rightOperand: {
+                expressionKind: "funcCall",
+                callee: {
+                  expressionKind: "variableRef",
+                  variableName: {
+                    tokenKind: "identifier",
+                    name: "f",
+                  },
+                },
+                args: [],
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
       it("Parses { higherOrderResult = higher()(); }", () => {
         // Arrange
         const tokens: Array<Token> = [
