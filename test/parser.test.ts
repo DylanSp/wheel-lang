@@ -1562,5 +1562,120 @@ describe("Parser", () => {
 
       expect(parseResult.left.message).toMatch(/Expected end of input/);
     });
+
+    it("Expects a left parenthesis after the function name in a function declaration", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "function",
+        },
+        {
+          tokenKind: "identifier",
+          name: "func",
+        },
+        {
+          tokenKind: "identifier",
+          name: "x",
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected \(/);
+    });
+
+    it("Expects a right parenthesis after the list of arguments in a function declaration", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "function",
+        },
+        {
+          tokenKind: "identifier",
+          name: "func",
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: "x",
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected \)/);
+    });
+
+    it("Expects an identifier in non-number, non-parenthesized primary expressions", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "return",
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
+          tokenKind: "semicolon",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected identifier/);
+    });
   });
 });
