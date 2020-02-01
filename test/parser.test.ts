@@ -53,10 +53,7 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: {
-              tokenKind: "identifier",
-              name: "x",
-            },
+            variableName: "x",
             variableValue: {
               expressionKind: "binOp",
               operation: "add",
@@ -120,10 +117,7 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: {
-              tokenKind: "identifier",
-              name: "x",
-            },
+            variableName: "x",
             variableValue: {
               expressionKind: "binOp",
               operation: "multiply",
@@ -195,10 +189,7 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: {
-              tokenKind: "identifier",
-              name: "x",
-            },
+            variableName: "x",
             variableValue: {
               expressionKind: "binOp",
               operation: "subtract",
@@ -278,10 +269,7 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: {
-              tokenKind: "identifier",
-              name: "x",
-            },
+            variableName: "x",
             variableValue: {
               expressionKind: "binOp",
               operation: "add",
@@ -367,10 +355,7 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: {
-              tokenKind: "identifier",
-              name: "x",
-            },
+            variableName: "x",
             variableValue: {
               expressionKind: "binOp",
               operation: "divide",
@@ -439,18 +424,12 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: {
-              tokenKind: "identifier",
-              name: "x",
-            },
+            variableName: "x",
             variableValue: {
               expressionKind: "funcCall",
               callee: {
                 expressionKind: "variableRef",
-                variableName: {
-                  tokenKind: "identifier",
-                  name: "f",
-                },
+                variableName: "f",
               },
               args: [],
             },
@@ -506,18 +485,12 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: {
-              tokenKind: "identifier",
-              name: "y",
-            },
+            variableName: "y",
             variableValue: {
               expressionKind: "funcCall",
               callee: {
                 expressionKind: "variableRef",
-                variableName: {
-                  tokenKind: "identifier",
-                  name: "g",
-                },
+                variableName: "g",
               },
               args: [
                 {
@@ -585,18 +558,12 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: {
-              tokenKind: "identifier",
-              name: "z",
-            },
+            variableName: "z",
             variableValue: {
               expressionKind: "funcCall",
               callee: {
                 expressionKind: "variableRef",
-                variableName: {
-                  tokenKind: "identifier",
-                  name: "h",
-                },
+                variableName: "h",
               },
               args: [
                 {
@@ -665,10 +632,7 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: {
-              tokenKind: "identifier",
-              name: "i",
-            },
+            variableName: "i",
             variableValue: {
               expressionKind: "binOp",
               operation: "add",
@@ -676,10 +640,7 @@ describe("Parser", () => {
                 expressionKind: "funcCall",
                 callee: {
                   expressionKind: "variableRef",
-                  variableName: {
-                    tokenKind: "identifier",
-                    name: "f",
-                  },
+                  variableName: "f",
                 },
                 args: [],
               },
@@ -744,10 +705,7 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: {
-              tokenKind: "identifier",
-              name: "j",
-            },
+            variableName: "j",
             variableValue: {
               expressionKind: "binOp",
               operation: "multiply",
@@ -759,10 +717,7 @@ describe("Parser", () => {
                 expressionKind: "funcCall",
                 callee: {
                   expressionKind: "variableRef",
-                  variableName: {
-                    tokenKind: "identifier",
-                    name: "f",
-                  },
+                  variableName: "f",
                 },
                 args: [],
               },
@@ -822,20 +777,14 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: {
-              tokenKind: "identifier",
-              name: "higherOrderResult",
-            },
+            variableName: "higherOrderResult",
             variableValue: {
               expressionKind: "funcCall",
               callee: {
                 expressionKind: "funcCall",
                 callee: {
                   expressionKind: "variableRef",
-                  variableName: {
-                    tokenKind: "identifier",
-                    name: "higher",
-                  },
+                  variableName: "higher",
                 },
                 args: [],
               },
@@ -950,10 +899,7 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "funcDecl",
-            functionName: {
-              tokenKind: "identifier",
-              name: "f",
-            },
+            functionName: "f",
             args: [],
             body: [],
           },
@@ -1007,16 +953,8 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "funcDecl",
-            functionName: {
-              tokenKind: "identifier",
-              name: "g",
-            },
-            args: [
-              {
-                tokenKind: "identifier",
-                name: "x",
-              },
-            ],
+            functionName: "g",
+            args: ["x"],
             body: [],
           },
         ];
@@ -1076,20 +1014,8 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "funcDecl",
-            functionName: {
-              tokenKind: "identifier",
-              name: "h",
-            },
-            args: [
-              {
-                tokenKind: "identifier",
-                name: "x",
-              },
-              {
-                tokenKind: "identifier",
-                name: "y",
-              },
-            ],
+            functionName: "h",
+            args: ["x", "y"],
             body: [],
           },
         ];
@@ -1148,10 +1074,7 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "funcDecl",
-            functionName: {
-              tokenKind: "identifier",
-              name: "foo",
-            },
+            functionName: "foo",
             args: [],
             body: [
               {
@@ -1233,18 +1156,12 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "funcDecl",
-            functionName: {
-              tokenKind: "identifier",
-              name: "bar",
-            },
+            functionName: "bar",
             args: [],
             body: [
               {
                 statementKind: "assignment",
-                variableName: {
-                  tokenKind: "identifier",
-                  name: "x",
-                },
+                variableName: "x",
                 variableValue: {
                   expressionKind: "number",
                   value: 1,
@@ -1254,10 +1171,7 @@ describe("Parser", () => {
                 statementKind: "return",
                 returnedValue: {
                   expressionKind: "variableRef",
-                  variableName: {
-                    tokenKind: "identifier",
-                    name: "x",
-                  },
+                  variableName: "x",
                 },
               },
             ],
@@ -1315,10 +1229,7 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: {
-              tokenKind: "identifier",
-              name: "x",
-            },
+            variableName: "x",
             variableValue: {
               expressionKind: "number",
               value: 1,
@@ -1328,10 +1239,7 @@ describe("Parser", () => {
             statementKind: "return",
             returnedValue: {
               expressionKind: "variableRef",
-              variableName: {
-                tokenKind: "identifier",
-                name: "x",
-              },
+              variableName: "x",
             },
           },
         ];

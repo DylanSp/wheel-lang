@@ -1,11 +1,10 @@
-import { Operation, Identifier, Token, OperationToken, NumberToken } from "./scanner";
+import { Operation, IdentifierToken, Token, OperationToken, NumberToken } from "./scanner";
 import { Either, right, left } from "fp-ts/lib/Either";
+import { Identifier } from "./types";
 
 /**
  * TYPES
  */
-
-// TODO - do I want to reuse Identifier type from scanner, or have separate identifier type = string for parser?
 
 export type Program = Block;
 
@@ -93,7 +92,7 @@ export const parse: Parse = (input) => {
       if (input[position]?.tokenKind === "function") {
         position += 1; // move past "function"
 
-        const functionName = input[position] as Identifier;
+        const functionName = (input[position] as IdentifierToken).name;
         position += 1; // move past identifier
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
@@ -105,7 +104,7 @@ export const parse: Parse = (input) => {
 
         const args: Array<Identifier> = [];
         while (input[position]?.tokenKind === "identifier") {
-          args.push(input[position] as Identifier);
+          args.push((input[position] as IdentifierToken).name);
           position += 1;
 
           // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
@@ -143,7 +142,7 @@ export const parse: Parse = (input) => {
           returnedValue: expr,
         });
       } else {
-        const ident = input[position] as Identifier;
+        const ident = (input[position] as IdentifierToken).name;
         position += 1; // move past identifier
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
@@ -294,7 +293,7 @@ export const parse: Parse = (input) => {
       throw new ParseError("Expected identifier");
     }
 
-    const ident = input[position] as Identifier;
+    const ident = (input[position] as IdentifierToken).name;
     position += 1;
 
     return {

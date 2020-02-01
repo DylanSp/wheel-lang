@@ -1,4 +1,5 @@
 import { Either, left, right } from "fp-ts/lib/Either";
+import { Identifier } from "./types";
 
 /**
  * TYPES
@@ -16,7 +17,7 @@ export type Token =
   | Comma
   | NumberToken
   | OperationToken
-  | Identifier;
+  | IdentifierToken;
 
 export interface LeftBrace {
   tokenKind: "leftBrace";
@@ -66,9 +67,9 @@ export interface OperationToken {
   operation: Operation;
 }
 
-export interface Identifier {
+export interface IdentifierToken {
   tokenKind: "identifier";
-  name: string;
+  name: Identifier;
 }
 
 export interface ScanError {
