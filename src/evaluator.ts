@@ -1,5 +1,6 @@
 import { Program, Expression } from "./parser";
 import { Either, right } from "fp-ts/lib/Either";
+import { Identifier } from "./types";
 
 /**
  * TYPES
@@ -13,12 +14,12 @@ type EvaluateResult = number;
 
 type Evaluate = (program: Program) => Either<RuntimeError, EvaluateResult>;
 
-const evaluateExpr = (expr: Expression): number => {
+const evaluateExpr = (env: Record<Identifier, EvaluateResult>, expr: Expression): number => {
   if (expr.expressionKind === "number") {
     return expr.value;
   } else if (expr.expressionKind === "binOp") {
-    const lhsValue = evaluateExpr(expr.leftOperand);
-    const rhsValue = evaluateExpr(expr.rightOperand);
+    const lhsValue = evaluateExpr(env, expr.leftOperand);
+    const rhsValue = evaluateExpr(env, expr.rightOperand);
 
     switch (expr.operation) {
       case "add":
@@ -30,15 +31,25 @@ const evaluateExpr = (expr: Expression): number => {
       case "divide":
         return lhsValue / rhsValue;
     }
+  } else if (expr.expressionKind === "variableRef") {
+    return env[expr.variableName];
   }
 
   throw new Error("Not implemented");
 };
 
 export const evaluate: Evaluate = (program) => {
-  if (program[0].statementKind === "return") {
-    return right(evaluateExpr(program[0].returnedValue));
+  const env: Record<Identifier, EvaluateResult> = {};
+
+  for (const statement of program) {
+    if (statement.statementKind === "return") {
+      return right(evaluateExpr(env, statement.returnedValue));
+    } else if (statement.statementKind === "assignment") {
+      env[statement.variableName] = evaluateExpr(env, statement.variableValue);
+    } else {
+      throw new Error("Not implemented!");
+    }
   }
 
-  throw new Error("Not implemented");
+  throw new Error("No statements");
 };

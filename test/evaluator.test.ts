@@ -293,5 +293,147 @@ describe("Evaluator", () => {
         expect(evalResult.right).toBe(47);
       });
     });
+
+    describe("Programs with simple variable use", () => {
+      it("Evaluates { x = 1; return x; } to 1", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "assignment",
+            variableName: "x",
+            variableValue: {
+              expressionKind: "number",
+              value: 1,
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "variableRef",
+              variableName: "x",
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(evalResult.right).toBe(1);
+      });
+
+      it("Evaluates { x = 2; return x; } to 2", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "assignment",
+            variableName: "x",
+            variableValue: {
+              expressionKind: "number",
+              value: 2,
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "variableRef",
+              variableName: "x",
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(evalResult.right).toBe(2);
+      });
+
+      it("Evaluates { x = 1; y = 2; return x; } to 1", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "assignment",
+            variableName: "x",
+            variableValue: {
+              expressionKind: "number",
+              value: 1,
+            },
+          },
+          {
+            statementKind: "assignment",
+            variableName: "y",
+            variableValue: {
+              expressionKind: "number",
+              value: 2,
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "variableRef",
+              variableName: "x",
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(evalResult.right).toBe(1);
+      });
+
+      it("Evaluates { x = 1; y = 2; return y; } to 2", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "assignment",
+            variableName: "x",
+            variableValue: {
+              expressionKind: "number",
+              value: 1,
+            },
+          },
+          {
+            statementKind: "assignment",
+            variableName: "y",
+            variableValue: {
+              expressionKind: "number",
+              value: 2,
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "variableRef",
+              variableName: "y",
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(evalResult.right).toBe(2);
+      });
+    });
   });
 });
