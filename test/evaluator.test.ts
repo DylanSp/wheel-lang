@@ -5,8 +5,8 @@ import { isRight } from "fp-ts/lib/Either";
 
 describe("Evaluator", () => {
   describe("Successful evaluations", () => {
-    describe("Simple programs with no functions", () => {
-      it("Evaluates { return 1; }", () => {
+    describe("Simple programs with no functions or variables", () => {
+      it("Evaluates { return 1; } to 1", () => {
         // Arrange
         const ast: Program = [
           {
@@ -29,7 +29,7 @@ describe("Evaluator", () => {
         expect(evalResult.right).toBe(1);
       });
 
-      it("Evaluates { return 2; }", () => {
+      it("Evaluates { return 2; } to 2", () => {
         // Arrange
         const ast: Program = [
           {
@@ -52,7 +52,7 @@ describe("Evaluator", () => {
         expect(evalResult.right).toBe(2);
       });
 
-      it("Evaluates { return 1 + 2; }", () => {
+      it("Evaluates { return 1 + 2; } to 3", () => {
         // Arrange
         const ast: Program = [
           {
@@ -83,7 +83,7 @@ describe("Evaluator", () => {
         expect(evalResult.right).toBe(3);
       });
 
-      it("Evaluates { return 3 - 4; }", () => {
+      it("Evaluates { return 3 - 4; } to -1", () => {
         // Arrange
         const ast: Program = [
           {
@@ -114,7 +114,7 @@ describe("Evaluator", () => {
         expect(evalResult.right).toBe(-1);
       });
 
-      it("Evaluates { return 5 * 6; }", () => {
+      it("Evaluates { return 5 * 6; } to 30", () => {
         // Arrange
         const ast: Program = [
           {
@@ -145,7 +145,7 @@ describe("Evaluator", () => {
         expect(evalResult.right).toBe(30);
       });
 
-      it("Evaluates { return 8 / 2; }", () => {
+      it("Evaluates { return 8 / 2; } to 4", () => {
         // Arrange
         const ast: Program = [
           {
@@ -176,7 +176,7 @@ describe("Evaluator", () => {
         expect(evalResult.right).toBe(4);
       });
 
-      it("Evaluates { return 1 + 2 + 3; }", () => {
+      it("Evaluates { return 1 + 2 + 3; } to 6", () => {
         // Arrange
         const ast: Program = [
           {
@@ -215,7 +215,7 @@ describe("Evaluator", () => {
         expect(evalResult.right).toBe(6);
       });
 
-      it("Evaluates { return 4 + 5 * 6; }", () => {
+      it("Evaluates { return 4 + 5 * 6; } to 34", () => {
         // Arrange
         const ast: Program = [
           {
@@ -254,7 +254,7 @@ describe("Evaluator", () => {
         expect(evalResult.right).toBe(34);
       });
 
-      it("Evaluates { return 7 * 8 - 9; }", () => {
+      it("Evaluates { return 7 * 8 - 9; } to 47", () => {
         // Arrange
         const ast: Program = [
           {
