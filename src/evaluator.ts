@@ -10,11 +10,11 @@ export interface RuntimeError {
   message: string;
 }
 
-type EvaluateResult = number;
+type Value = number;
 
-type Evaluate = (program: Program) => Either<RuntimeError, EvaluateResult>;
+type Evaluate = (program: Program) => Either<RuntimeError, Value>;
 
-const evaluateExpr = (env: Record<Identifier, EvaluateResult>, expr: Expression): number => {
+const evaluateExpr = (env: Record<Identifier, Value>, expr: Expression): Value => {
   if (expr.expressionKind === "number") {
     return expr.value;
   } else if (expr.expressionKind === "binOp") {
@@ -39,7 +39,7 @@ const evaluateExpr = (env: Record<Identifier, EvaluateResult>, expr: Expression)
 };
 
 export const evaluate: Evaluate = (program) => {
-  const env: Record<Identifier, EvaluateResult> = {};
+  const env: Record<Identifier, Value> = {};
 
   for (const statement of program) {
     if (statement.statementKind === "return") {
