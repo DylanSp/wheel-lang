@@ -780,5 +780,159 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(3);
       });
     });
+
+    describe("Programs with higher-order functions", () => {
+      it("Evaluates { function f() { function g() { return 1; } return g; } return f()(); } to 1", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: "f",
+            args: [],
+            body: [
+              {
+                statementKind: "funcDecl",
+                functionName: "g",
+                args: [],
+                body: [
+                  {
+                    statementKind: "return",
+                    returnedValue: {
+                      expressionKind: "number",
+                      value: 1,
+                    },
+                  },
+                ],
+              },
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "variableRef",
+                  variableName: "g",
+                },
+              },
+            ],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
+                expressionKind: "funcCall",
+                args: [],
+                callee: {
+                  expressionKind: "variableRef",
+                  variableName: "f",
+                },
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(1);
+      });
+
+      it("Evaluates { function makeAdder(x) { function adder(y) { return x + y; } return adder; } addOne = makeAdder(1); return addOne(2); } to 3", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: "makeAdder",
+            args: ["x"],
+            body: [
+              {
+                statementKind: "funcDecl",
+                functionName: "adder",
+                args: ["y"],
+                body: [
+                  {
+                    statementKind: "return",
+                    returnedValue: {
+                      expressionKind: "binOp",
+                      operation: "add",
+                      leftOperand: {
+                        expressionKind: "variableRef",
+                        variableName: "x",
+                      },
+                      rightOperand: {
+                        expressionKind: "variableRef",
+                        variableName: "y",
+                      },
+                    },
+                  },
+                ],
+              },
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "variableRef",
+                  variableName: "adder",
+                },
+              },
+            ],
+          },
+          {
+            statementKind: "assignment",
+            variableName: "addOne",
+            variableValue: {
+              expressionKind: "funcCall",
+              args: [
+                {
+                  expressionKind: "number",
+                  value: 1,
+                },
+              ],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: "makeAdder",
+              },
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "funcCall",
+              args: [
+                {
+                  expressionKind: "number",
+                  value: 2,
+                },
+              ],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: "addOne",
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(3);
+      });
+    });
   });
 });
