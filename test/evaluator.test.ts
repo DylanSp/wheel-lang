@@ -434,6 +434,53 @@ describe("Evaluator", () => {
 
         expect(evalResult.right).toBe(2);
       });
+
+      it("Evaluates { x = 1; y = 2; return x + y; } to 3", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "assignment",
+            variableName: "x",
+            variableValue: {
+              expressionKind: "number",
+              value: 1,
+            },
+          },
+          {
+            statementKind: "assignment",
+            variableName: "y",
+            variableValue: {
+              expressionKind: "number",
+              value: 2,
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              operation: "add",
+              leftOperand: {
+                expressionKind: "variableRef",
+                variableName: "x",
+              },
+              rightOperand: {
+                expressionKind: "variableRef",
+                variableName: "y",
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(evalResult.right).toBe(3);
+      });
     });
   });
 });
