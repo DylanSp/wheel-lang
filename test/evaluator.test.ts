@@ -584,6 +584,201 @@ describe("Evaluator", () => {
 
         expect(evalResult.right.value).toBe(1);
       });
+
+      it("Evaluates { function f() { return 1; } function g() { return 2; } return f() + g(); } to 3", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: "f",
+            args: [],
+            body: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "number",
+                  value: 1,
+                },
+              },
+            ],
+          },
+          {
+            statementKind: "funcDecl",
+            functionName: "g",
+            args: [],
+            body: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "number",
+                  value: 2,
+                },
+              },
+            ],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              operation: "add",
+              leftOperand: {
+                expressionKind: "funcCall",
+                callee: {
+                  expressionKind: "variableRef",
+                  variableName: "f",
+                },
+                args: [],
+              },
+              rightOperand: {
+                expressionKind: "funcCall",
+                callee: {
+                  expressionKind: "variableRef",
+                  variableName: "g",
+                },
+                args: [],
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(3);
+      });
+
+      it("Evaluates { x = 1; function f(y) { return y; } return f(x); } to 1", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "assignment",
+            variableName: "x",
+            variableValue: {
+              expressionKind: "number",
+              value: 1,
+            },
+          },
+          {
+            statementKind: "funcDecl",
+            functionName: "f",
+            args: ["y"],
+            body: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "variableRef",
+                  variableName: "y",
+                },
+              },
+            ],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "funcCall",
+              callee: {
+                expressionKind: "variableRef",
+                variableName: "f",
+              },
+              args: [
+                {
+                  expressionKind: "variableRef",
+                  variableName: "x",
+                },
+              ],
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(1);
+      });
+
+      it("Evaluates { x = 1; function f(y) { return x + y; } return f(2); } to 3", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "assignment",
+            variableName: "x",
+            variableValue: {
+              expressionKind: "number",
+              value: 1,
+            },
+          },
+          {
+            statementKind: "funcDecl",
+            functionName: "f",
+            args: ["y"],
+            body: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "binOp",
+                  operation: "add",
+                  leftOperand: {
+                    expressionKind: "variableRef",
+                    variableName: "x",
+                  },
+                  rightOperand: {
+                    expressionKind: "variableRef",
+                    variableName: "y",
+                  },
+                },
+              },
+            ],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "funcCall",
+              callee: {
+                expressionKind: "variableRef",
+                variableName: "f",
+              },
+              args: [
+                {
+                  expressionKind: "number",
+                  value: 2,
+                },
+              ],
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(3);
+      });
     });
   });
 });
