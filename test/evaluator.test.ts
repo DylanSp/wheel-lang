@@ -26,7 +26,11 @@ describe("Evaluator", () => {
           throw new Error("Evaluation failed, should have succeeded");
         }
 
-        expect(evalResult.right).toBe(1);
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(1);
       });
 
       it("Evaluates { return 2; } to 2", () => {
@@ -49,7 +53,11 @@ describe("Evaluator", () => {
           throw new Error("Evaluation failed, should have succeeded");
         }
 
-        expect(evalResult.right).toBe(2);
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(2);
       });
 
       it("Evaluates { return 1 + 2; } to 3", () => {
@@ -80,7 +88,11 @@ describe("Evaluator", () => {
           throw new Error("Evaluation failed, should have succeeded");
         }
 
-        expect(evalResult.right).toBe(3);
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(3);
       });
 
       it("Evaluates { return 3 - 4; } to -1", () => {
@@ -111,7 +123,11 @@ describe("Evaluator", () => {
           throw new Error("Evaluation failed, should have succeeded");
         }
 
-        expect(evalResult.right).toBe(-1);
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(-1);
       });
 
       it("Evaluates { return 5 * 6; } to 30", () => {
@@ -142,7 +158,11 @@ describe("Evaluator", () => {
           throw new Error("Evaluation failed, should have succeeded");
         }
 
-        expect(evalResult.right).toBe(30);
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(30);
       });
 
       it("Evaluates { return 8 / 2; } to 4", () => {
@@ -173,7 +193,11 @@ describe("Evaluator", () => {
           throw new Error("Evaluation failed, should have succeeded");
         }
 
-        expect(evalResult.right).toBe(4);
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(4);
       });
 
       it("Evaluates { return 1 + 2 + 3; } to 6", () => {
@@ -212,7 +236,11 @@ describe("Evaluator", () => {
           throw new Error("Evaluation failed, should have succeeded");
         }
 
-        expect(evalResult.right).toBe(6);
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(6);
       });
 
       it("Evaluates { return 4 + 5 * 6; } to 34", () => {
@@ -251,7 +279,11 @@ describe("Evaluator", () => {
           throw new Error("Evaluation failed, should have succeeded");
         }
 
-        expect(evalResult.right).toBe(34);
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(34);
       });
 
       it("Evaluates { return 7 * 8 - 9; } to 47", () => {
@@ -290,7 +322,11 @@ describe("Evaluator", () => {
           throw new Error("Evaluation failed, should have succeeded");
         }
 
-        expect(evalResult.right).toBe(47);
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(47);
       });
     });
 
@@ -323,7 +359,11 @@ describe("Evaluator", () => {
           throw new Error("Evaluation failed, should have succeeded");
         }
 
-        expect(evalResult.right).toBe(1);
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(1);
       });
 
       it("Evaluates { x = 2; return x; } to 2", () => {
@@ -354,7 +394,11 @@ describe("Evaluator", () => {
           throw new Error("Evaluation failed, should have succeeded");
         }
 
-        expect(evalResult.right).toBe(2);
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(2);
       });
 
       it("Evaluates { x = 1; y = 2; return x; } to 1", () => {
@@ -393,7 +437,11 @@ describe("Evaluator", () => {
           throw new Error("Evaluation failed, should have succeeded");
         }
 
-        expect(evalResult.right).toBe(1);
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(1);
       });
 
       it("Evaluates { x = 1; y = 2; return y; } to 2", () => {
@@ -432,7 +480,11 @@ describe("Evaluator", () => {
           throw new Error("Evaluation failed, should have succeeded");
         }
 
-        expect(evalResult.right).toBe(2);
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(2);
       });
 
       it("Evaluates { x = 1; y = 2; return x + y; } to 3", () => {
@@ -479,7 +531,58 @@ describe("Evaluator", () => {
           throw new Error("Evaluation failed, should have succeeded");
         }
 
-        expect(evalResult.right).toBe(3);
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(3);
+      });
+    });
+
+    describe("Programs with simple first-order functions", () => {
+      it("Evaluates { function f() { return 1; } return f(); } to 1", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: "f",
+            args: [],
+            body: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "number",
+                  value: 1,
+                },
+              },
+            ],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "funcCall",
+              callee: {
+                expressionKind: "variableRef",
+                variableName: "f",
+              },
+              args: [],
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(1);
       });
     });
   });

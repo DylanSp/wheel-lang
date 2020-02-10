@@ -1,4 +1,4 @@
-import { Program, Expression } from "./parser";
+import { Program, Expression, Block } from "./parser";
 import { Either, right } from "fp-ts/lib/Either";
 import { Identifier } from "./types";
 
@@ -10,26 +10,47 @@ export interface RuntimeError {
   message: string;
 }
 
-type Value = number;
+interface NumberValue {
+  valueKind: "number";
+  value: number;
+}
+
+const makeNumberValue = (value: number): NumberValue => ({
+  valueKind: "number",
+  value,
+});
+
+interface ClosureValue {
+  valueKind: "closure";
+  name: Identifier;
+  body: Block;
+  env: Record<Identifier, Value>;
+}
+
+type Value = NumberValue | ClosureValue;
 
 type Evaluate = (program: Program) => Either<RuntimeError, Value>;
 
 const evaluateExpr = (env: Record<Identifier, Value>, expr: Expression): Value => {
   if (expr.expressionKind === "number") {
-    return expr.value;
+    return makeNumberValue(expr.value);
   } else if (expr.expressionKind === "binOp") {
     const lhsValue = evaluateExpr(env, expr.leftOperand);
     const rhsValue = evaluateExpr(env, expr.rightOperand);
 
+    if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
+      throw new Error("Trying to perform a binOp on non-numeric values");
+    }
+
     switch (expr.operation) {
       case "add":
-        return lhsValue + rhsValue;
+        return makeNumberValue(lhsValue.value + rhsValue.value);
       case "subtract":
-        return lhsValue - rhsValue;
+        return makeNumberValue(lhsValue.value - rhsValue.value);
       case "multiply":
-        return lhsValue * rhsValue;
+        return makeNumberValue(lhsValue.value * rhsValue.value);
       case "divide":
-        return lhsValue / rhsValue;
+        return makeNumberValue(lhsValue.value / rhsValue.value);
     }
   } else if (expr.expressionKind === "variableRef") {
     return env[expr.variableName];
@@ -46,6 +67,8 @@ export const evaluate: Evaluate = (program) => {
       return right(evaluateExpr(env, statement.returnedValue));
     } else if (statement.statementKind === "assignment") {
       env[statement.variableName] = evaluateExpr(env, statement.variableValue);
+    } else if (statement.statementKind === "funcDecl") {
+      throw new Error("Function decl not implemented");
     } else {
       throw new Error("Not implemented!");
     }
