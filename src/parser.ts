@@ -6,6 +6,7 @@ import { Identifier } from "./types";
  * TYPES
  */
 
+// TODO how many of these do I actually need to export?
 export type Program = Block;
 
 export type Block = Array<Statement>;
@@ -15,7 +16,7 @@ export type Statement = FunctionDeclaration | ReturnStatement | VariableAssignme
 export interface FunctionDeclaration {
   statementKind: "funcDecl";
   functionName: Identifier;
-  args: Array<Identifier>;
+  args: Array<Identifier>; // TODO rename to argNames
   body: Block;
 }
 
