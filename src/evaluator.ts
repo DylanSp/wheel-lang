@@ -48,36 +48,38 @@ type Value = NumberValue | ClosureValue;
 type Evaluate = (program: Program) => Either<RuntimeError, Value>;
 
 const evaluateExpr = (env: Environment, expr: Expression): Value => {
-  // TODO refactor to switch
-  if (expr.expressionKind === "number") {
-    return makeNumberValue(expr.value);
-  } else if (expr.expressionKind === "binOp") {
-    const lhsValue = evaluateExpr(env, expr.leftOperand);
-    const rhsValue = evaluateExpr(env, expr.rightOperand);
-
-    if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
-      throw new Error("Trying to perform a binOp on non-numeric values");
+  switch (expr.expressionKind) {
+    case "number": {
+      return makeNumberValue(expr.value);
     }
+    case "binOp": {
+      const lhsValue = evaluateExpr(env, expr.leftOperand);
+      const rhsValue = evaluateExpr(env, expr.rightOperand);
 
-    switch (expr.operation) {
-      case "add":
-        return makeNumberValue(lhsValue.value + rhsValue.value);
-      case "subtract":
-        return makeNumberValue(lhsValue.value - rhsValue.value);
-      case "multiply":
-        return makeNumberValue(lhsValue.value * rhsValue.value);
-      case "divide":
-        return makeNumberValue(lhsValue.value / rhsValue.value);
+      if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
+        throw new Error("Trying to perform a binOp on non-numeric values");
+      }
+
+      switch (expr.operation) {
+        case "add":
+          return makeNumberValue(lhsValue.value + rhsValue.value);
+        case "subtract":
+          return makeNumberValue(lhsValue.value - rhsValue.value);
+        case "multiply":
+          return makeNumberValue(lhsValue.value * rhsValue.value);
+        case "divide":
+          return makeNumberValue(lhsValue.value / rhsValue.value);
+      }
     }
-  } else if (expr.expressionKind === "variableRef") {
-    return env[expr.variableName];
-  } else if (expr.expressionKind === "funcCall") {
-    const func = evaluateExpr(env, expr.callee);
-    const args = expr.args.map((arg) => evaluateExpr(env, arg)); // TODO curry evaluateExpr so I can simplify this to expr.args.map(evaluateExpr(env)) ?
-    return apply(func, args);
+    case "variableRef": {
+      return env[expr.variableName];
+    }
+    case "funcCall": {
+      const func = evaluateExpr(env, expr.callee);
+      const args = expr.args.map((arg) => evaluateExpr(env, arg)); // TODO curry evaluateExpr so I can simplify this to expr.args.map(evaluateExpr(env)) ?
+      return apply(func, args);
+    }
   }
-
-  throw new Error("Not implemented");
 };
 
 const apply = (func: Value, args: Array<Value>): Value => {
@@ -104,22 +106,25 @@ const apply = (func: Value, args: Array<Value>): Value => {
 const evaluateBlock = (env: Environment, block: Block): Value => {
   const blockEnv = { ...env }; // TODO immer for guaranteed immutability?
   for (const statement of block) {
-    // TODO refactor to switch
-    if (statement.statementKind === "return") {
-      return evaluateExpr(blockEnv, statement.returnedValue);
-    } else if (statement.statementKind === "assignment") {
-      blockEnv[statement.variableName] = evaluateExpr(blockEnv, statement.variableValue);
-    } else if (statement.statementKind === "funcDecl") {
-      blockEnv[statement.functionName] = makeClosureValue(statement.functionName, statement.args, statement.body, {
-        ...blockEnv, // make copy of blockEnv so later changes to blockEnv don't affect the environment captured by the closure
-        // TODO immer?
-      });
-    } else {
-      throw new Error("Not implemented!");
+    switch (statement.statementKind) {
+      case "return": {
+        return evaluateExpr(blockEnv, statement.returnedValue);
+      }
+      case "assignment": {
+        blockEnv[statement.variableName] = evaluateExpr(blockEnv, statement.variableValue);
+        break;
+      }
+      case "funcDecl": {
+        blockEnv[statement.functionName] = makeClosureValue(statement.functionName, statement.args, statement.body, {
+          ...blockEnv, // make copy of blockEnv so later changes to blockEnv don't affect the environment captured by the closure
+          // TODO immer?
+        });
+        break;
+      }
     }
   }
 
-  throw new Error("No statements");
+  throw new Error("No statements"); // TODO this should only happen if block.length is 0; if not, the error is that there's no return statement in block
 };
 
 export const evaluate: Evaluate = (program) => {
