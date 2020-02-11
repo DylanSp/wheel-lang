@@ -74,7 +74,7 @@ const evaluateExpr = (env: Record<Identifier, Value>, expr: Expression): Value =
     return env[expr.variableName];
   } else if (expr.expressionKind === "funcCall") {
     const func = evaluateExpr(env, expr.callee);
-    const args = expr.args.map((arg) => evaluateExpr(env, arg));
+    const args = expr.args.map((arg) => evaluateExpr(env, arg)); // TODO curry evaluateExpr so I can simplify this to expr.args.map(evaluateExpr(env)) ?
     return apply(func, args);
   }
 
