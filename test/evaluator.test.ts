@@ -1199,5 +1199,36 @@ describe("Evaluator", () => {
 
       expect(evalResult.left.outOfScopeIdentifier).toBe("x");
     });
+
+    it("Recognizes a NotFunction error for { return 1(); }", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "funcCall",
+            args: [],
+            callee: {
+              expressionKind: "number",
+              value: 1,
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "notFunction") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotFunction error`);
+      }
+
+      expect(evalResult.left.nonFunctionType).toBe("number");
+    });
   });
 });

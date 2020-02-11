@@ -13,13 +13,18 @@ interface NotInScopeError {
   outOfScopeIdentifier: Identifier;
 }
 
+interface NotFunctionError {
+  runtimeErrorKind: "notFunction";
+  nonFunctionType: string;
+}
+
 class RuntimeError extends Error {
   constructor(public readonly message: string, public readonly underlyingFailure: RuntimeFailure) {
     super(message);
   }
 }
 
-type RuntimeFailure = NotInScopeError;
+type RuntimeFailure = NotInScopeError | NotFunctionError;
 
 interface NumberValue {
   valueKind: "number";
@@ -101,7 +106,10 @@ const evaluateExpr = (env: Environment, expr: Expression): Value => {
 
 const apply = (func: Value, args: Array<Value>): Value => {
   if (func.valueKind !== "closure") {
-    throw new Error("Attempting to apply non-closure");
+    throw new RuntimeError("Attempting to apply non-closure", {
+      runtimeErrorKind: "notFunction",
+      nonFunctionType: func.valueKind,
+    });
   }
 
   // TODO check that func.argNames.length === args.length
