@@ -1,7 +1,7 @@
 import "jest";
 import { Program } from "../src/parser";
 import { evaluate } from "../src/evaluator";
-import { isRight } from "fp-ts/lib/Either";
+import { isRight, isLeft } from "fp-ts/lib/Either";
 
 describe("Evaluator", () => {
   describe("Successful evaluations", () => {
@@ -1081,6 +1081,35 @@ describe("Evaluator", () => {
 
         expect(evalResult.right.value).toBe(2);
       });
+    });
+  });
+
+  describe("Failed evaluations", () => {
+    it("Recognizes a NotInScope error for { return x; }", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "variableRef",
+            variableName: "x",
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "notInScope") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
+      }
+
+      expect(evalResult.left.outOfScopeIdentifier).toBe("x");
     });
   });
 });

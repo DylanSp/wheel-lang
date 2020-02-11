@@ -1,5 +1,5 @@
 import { Program, Expression, Block } from "./parser";
-import { Either, right } from "fp-ts/lib/Either";
+import { Either, right, left } from "fp-ts/lib/Either";
 import { Identifier } from "./types";
 
 /**
@@ -8,9 +8,18 @@ import { Identifier } from "./types";
 
 type Environment = Record<Identifier, Value>; // TODO use newtype-ts for this?
 
-export interface RuntimeError {
-  message: string;
+interface NotInScopeError {
+  runtimeErrorKind: "notInScope";
+  outOfScopeIdentifier: Identifier;
 }
+
+class RuntimeError extends Error {
+  constructor(public readonly message: string, public readonly underlyingFailure: RuntimeFailure) {
+    super(message);
+  }
+}
+
+type RuntimeFailure = NotInScopeError;
 
 interface NumberValue {
   valueKind: "number";
@@ -45,7 +54,7 @@ const makeClosureValue = (
 
 type Value = NumberValue | ClosureValue;
 
-type Evaluate = (program: Program) => Either<RuntimeError, Value>;
+type Evaluate = (program: Program) => Either<RuntimeFailure, Value>;
 
 const evaluateExpr = (env: Environment, expr: Expression): Value => {
   switch (expr.expressionKind) {
@@ -72,7 +81,15 @@ const evaluateExpr = (env: Environment, expr: Expression): Value => {
       }
     }
     case "variableRef": {
-      return env[expr.variableName];
+      const variableValue = env[expr.variableName];
+      if (variableValue === undefined) {
+        throw new RuntimeError(`Variable ${expr.variableName} not in scope`, {
+          runtimeErrorKind: "notInScope",
+          outOfScopeIdentifier: expr.variableName,
+        });
+      }
+
+      return variableValue;
     }
     case "funcCall": {
       const func = evaluateExpr(env, expr.callee);
@@ -128,5 +145,14 @@ const evaluateBlock = (env: Environment, block: Block): Value => {
 };
 
 export const evaluate: Evaluate = (program) => {
-  return right(evaluateBlock({}, program));
+  try {
+    const evalResult = evaluateBlock({}, program);
+    return right(evalResult);
+  } catch (err) {
+    if (err instanceof RuntimeError) {
+      return left(err.underlyingFailure);
+    } else {
+      throw err;
+    }
+  }
 };
