@@ -6,7 +6,6 @@ import { Identifier } from "./types";
  * TYPES
  */
 
-// TODO use
 type Environment = Record<Identifier, Value>;
 
 export interface RuntimeError {
@@ -28,14 +27,14 @@ interface ClosureValue {
   closureName: Identifier;
   argNames: Array<Identifier>;
   body: Block;
-  env: Record<Identifier, Value>;
+  env: Environment;
 }
 
 const makeClosureValue = (
   closureName: Identifier,
   argNames: Array<Identifier>,
   body: Block,
-  env: Record<Identifier, Value>,
+  env: Environment,
 ): ClosureValue => ({
   valueKind: "closure",
   closureName,
@@ -48,7 +47,7 @@ type Value = NumberValue | ClosureValue;
 
 type Evaluate = (program: Program) => Either<RuntimeError, Value>;
 
-const evaluateExpr = (env: Record<Identifier, Value>, expr: Expression): Value => {
+const evaluateExpr = (env: Environment, expr: Expression): Value => {
   // TODO refactor to switch
   if (expr.expressionKind === "number") {
     return makeNumberValue(expr.value);
@@ -88,7 +87,7 @@ const apply = (func: Value, args: Array<Value>): Value => {
 
   // TODO check that func.argNames.length === args.length
 
-  const envWithArgs: Record<Identifier, Value> = {};
+  const envWithArgs: Environment = {};
   for (let i = 0; i < func.argNames.length; i++) {
     envWithArgs[func.argNames[i]] = args[i];
   }
@@ -102,7 +101,7 @@ const apply = (func: Value, args: Array<Value>): Value => {
   );
 };
 
-const evaluateBlock = (env: Record<Identifier, Value>, block: Block): Value => {
+const evaluateBlock = (env: Environment, block: Block): Value => {
   const blockEnv = { ...env }; // TODO immer for guaranteed immutability?
   for (const statement of block) {
     // TODO refactor to switch
