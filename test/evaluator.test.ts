@@ -1082,6 +1082,49 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(2);
       });
     });
+
+    describe("Corner cases", () => {
+      it("Evaluates { function f() { return x; } return 1; } to 1, despite x not being in scope in f's definition", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: "f",
+            args: [],
+            body: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "variableRef",
+                  variableName: "x",
+                },
+              },
+            ],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "number",
+              value: 1,
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(1);
+      });
+    });
   });
 
   describe("Failed evaluations", () => {
@@ -1093,6 +1136,51 @@ describe("Evaluator", () => {
           returnedValue: {
             expressionKind: "variableRef",
             variableName: "x",
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "notInScope") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
+      }
+
+      expect(evalResult.left.outOfScopeIdentifier).toBe("x");
+    });
+
+    it("Recognizes a NotInScope error for { function f() { return x; } return f(); }", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "funcDecl",
+          functionName: "f",
+          args: [],
+          body: [
+            {
+              statementKind: "return",
+              returnedValue: {
+                expressionKind: "variableRef",
+                variableName: "x",
+              },
+            },
+          ],
+        },
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "funcCall",
+            args: [],
+            callee: {
+              expressionKind: "variableRef",
+              variableName: "f",
+            },
           },
         },
       ];
