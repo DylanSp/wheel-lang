@@ -934,5 +934,76 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(3);
       });
     });
+
+    describe("Other complex programs", () => {
+      it("Evaluates { x = 1; function f() { x = 2; return x; } return x + f(); } to 3", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "assignment",
+            variableName: "x",
+            variableValue: {
+              expressionKind: "number",
+              value: 1,
+            },
+          },
+          {
+            statementKind: "funcDecl",
+            functionName: "f",
+            args: [],
+            body: [
+              {
+                statementKind: "assignment",
+                variableName: "x",
+                variableValue: {
+                  expressionKind: "number",
+                  value: 2,
+                },
+              },
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "variableRef",
+                  variableName: "x",
+                },
+              },
+            ],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              operation: "add",
+              leftOperand: {
+                expressionKind: "variableRef",
+                variableName: "x",
+              },
+              rightOperand: {
+                expressionKind: "funcCall",
+                args: [],
+                callee: {
+                  expressionKind: "variableRef",
+                  variableName: "f",
+                },
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(3);
+      });
+    });
   });
 });
