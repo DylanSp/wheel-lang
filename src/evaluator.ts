@@ -103,14 +103,18 @@ const apply = (func: Value, args: Array<Value>): Value => {
 };
 
 const evaluateBlock = (env: Record<Identifier, Value>, block: Block): Value => {
+  const blockEnv = { ...env }; // TODO immer for guaranteed immutability?
   for (const statement of block) {
     // TODO refactor to switch
     if (statement.statementKind === "return") {
-      return evaluateExpr(env, statement.returnedValue);
+      return evaluateExpr(blockEnv, statement.returnedValue);
     } else if (statement.statementKind === "assignment") {
-      env[statement.variableName] = evaluateExpr(env, statement.variableValue);
+      blockEnv[statement.variableName] = evaluateExpr(blockEnv, statement.variableValue);
     } else if (statement.statementKind === "funcDecl") {
-      env[statement.functionName] = makeClosureValue(statement.functionName, statement.args, statement.body, env);
+      blockEnv[statement.functionName] = makeClosureValue(statement.functionName, statement.args, statement.body, {
+        ...blockEnv, // make copy of blockEnv so later changes to blockEnv don't affect the environment captured by the closure
+        // TODO immer?
+      });
     } else {
       throw new Error("Not implemented!");
     }

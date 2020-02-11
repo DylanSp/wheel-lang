@@ -1004,6 +1004,83 @@ describe("Evaluator", () => {
 
         expect(evalResult.right.value).toBe(3);
       });
+
+      it("Evaluates { x = 1; function returnX() { return x; } y = x; x = 2; return y + returnX(); } to 2 (not 3)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "assignment",
+            variableName: "x",
+            variableValue: {
+              expressionKind: "number",
+              value: 1,
+            },
+          },
+          {
+            statementKind: "funcDecl",
+            functionName: "returnX",
+            args: [],
+            body: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "variableRef",
+                  variableName: "x",
+                },
+              },
+            ],
+          },
+          {
+            statementKind: "assignment",
+            variableName: "y",
+            variableValue: {
+              expressionKind: "variableRef",
+              variableName: "x",
+            },
+          },
+          {
+            statementKind: "assignment",
+            variableName: "x",
+            variableValue: {
+              expressionKind: "number",
+              value: 2,
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              operation: "add",
+              leftOperand: {
+                expressionKind: "variableRef",
+                variableName: "y",
+              },
+              rightOperand: {
+                expressionKind: "funcCall",
+                args: [],
+                callee: {
+                  expressionKind: "variableRef",
+                  variableName: "returnX",
+                },
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(2);
+      });
     });
   });
 });
