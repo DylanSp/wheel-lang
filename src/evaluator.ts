@@ -6,7 +6,7 @@ import { Identifier } from "./types";
  * TYPES
  */
 
-type Environment = Record<Identifier, Value>;
+type Environment = Record<Identifier, Value>; // TODO use newtype-ts for this?
 
 export interface RuntimeError {
   message: string;
