@@ -18,13 +18,19 @@ interface NotFunctionError {
   nonFunctionType: string;
 }
 
+interface TypeMismatchError {
+  runtimeErrorKind: "typeMismatch";
+  expectedType: string;
+  actualType: string;
+}
+
 class RuntimeError extends Error {
   constructor(public readonly message: string, public readonly underlyingFailure: RuntimeFailure) {
     super(message);
   }
 }
 
-type RuntimeFailure = NotInScopeError | NotFunctionError;
+type RuntimeFailure = NotInScopeError | NotFunctionError | TypeMismatchError;
 
 interface NumberValue {
   valueKind: "number";
@@ -71,7 +77,11 @@ const evaluateExpr = (env: Environment, expr: Expression): Value => {
       const rhsValue = evaluateExpr(env, expr.rightOperand);
 
       if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
-        throw new Error("Trying to perform a binOp on non-numeric values");
+        throw new RuntimeError("Trying to perform binOp on non-numeric values", {
+          runtimeErrorKind: "typeMismatch",
+          expectedType: "number",
+          actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
+        });
       }
 
       switch (expr.operation) {

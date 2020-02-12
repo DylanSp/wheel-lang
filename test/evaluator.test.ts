@@ -1230,5 +1230,89 @@ describe("Evaluator", () => {
 
       expect(evalResult.left.nonFunctionType).toBe("number");
     });
+
+    it("Recognizes a TypeMismatch error for { function f() {} return 1 + f; }", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "funcDecl",
+          functionName: "f",
+          args: [],
+          body: [],
+        },
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "binOp",
+            operation: "add",
+            leftOperand: {
+              expressionKind: "number",
+              value: 1,
+            },
+            rightOperand: {
+              expressionKind: "variableRef",
+              variableName: "f",
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+      }
+
+      expect(evalResult.left.expectedType).toBe("number");
+      expect(evalResult.left.actualType).toBe("closure");
+    });
+
+    it("Recognizes a TypeMismatch error for { function f() {} return f + 1; }", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "funcDecl",
+          functionName: "f",
+          args: [],
+          body: [],
+        },
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "binOp",
+            operation: "add",
+            leftOperand: {
+              expressionKind: "variableRef",
+              variableName: "f",
+            },
+            rightOperand: {
+              expressionKind: "number",
+              value: 1,
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+      }
+
+      expect(evalResult.left.expectedType).toBe("number");
+      expect(evalResult.left.actualType).toBe("closure");
+    });
   });
 });
