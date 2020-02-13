@@ -24,13 +24,17 @@ interface TypeMismatchError {
   actualType: string;
 }
 
+interface NoReturnError {
+  runtimeErrorKind: "noReturn";
+}
+
 class RuntimeError extends Error {
   constructor(public readonly message: string, public readonly underlyingFailure: RuntimeFailure) {
     super(message);
   }
 }
 
-type RuntimeFailure = NotInScopeError | NotFunctionError | TypeMismatchError;
+type RuntimeFailure = NotInScopeError | NotFunctionError | TypeMismatchError | NoReturnError;
 
 interface NumberValue {
   valueKind: "number";
@@ -159,7 +163,9 @@ const evaluateBlock = (env: Environment, block: Block): Value => {
     }
   }
 
-  throw new Error("No statements"); // TODO this should only happen if block.length is 0; if not, the error is that there's no return statement in block
+  throw new RuntimeError("No return statement in block", {
+    runtimeErrorKind: "noReturn",
+  });
 };
 
 export const evaluate: Evaluate = (program) => {

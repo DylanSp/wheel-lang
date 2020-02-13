@@ -1314,5 +1314,22 @@ describe("Evaluator", () => {
       expect(evalResult.left.expectedType).toBe("number");
       expect(evalResult.left.actualType).toBe("closure");
     });
+
+    it("Recognizes a NoReturn error for {}", () => {
+      // Arrange
+      const ast: Program = [];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "noReturn") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NoReturn error`);
+      }
+    });
   });
 });
