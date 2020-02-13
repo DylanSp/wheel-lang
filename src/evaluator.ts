@@ -40,7 +40,12 @@ class RuntimeError extends Error {
   }
 }
 
-type RuntimeFailure = NotInScopeError | NotFunctionError | TypeMismatchError | NoReturnError | ArityMismatchError;
+export type RuntimeFailure =
+  | NotInScopeError
+  | NotFunctionError
+  | TypeMismatchError
+  | NoReturnError
+  | ArityMismatchError;
 
 interface NumberValue {
   valueKind: "number";
@@ -73,7 +78,7 @@ const makeClosureValue = (
   env,
 });
 
-type Value = NumberValue | ClosureValue;
+export type Value = NumberValue | ClosureValue;
 
 type Evaluate = (program: Program) => Either<RuntimeFailure, Value>;
 
