@@ -120,7 +120,7 @@ export const evaluate: Evaluate = (program) => {
       }
       case "funcCall": {
         const func = evaluateExpr(env, expr.callee);
-        const args = expr.args.map((arg) => evaluateExpr(env, arg)); // TODO curry evaluateExpr so I can simplify this to expr.args.map(evaluateExpr(env)) ?
+        const args = expr.args.map((arg) => evaluateExpr(env, arg));
         return apply(func, args);
       }
     }
