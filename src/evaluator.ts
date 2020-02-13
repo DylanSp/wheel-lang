@@ -28,13 +28,19 @@ interface NoReturnError {
   runtimeErrorKind: "noReturn";
 }
 
+interface ArityMismatchError {
+  runtimeErrorKind: "arityMismatch";
+  expectedNumArgs: number;
+  actualNumArgs: number;
+}
+
 class RuntimeError extends Error {
   constructor(public readonly message: string, public readonly underlyingFailure: RuntimeFailure) {
     super(message);
   }
 }
 
-type RuntimeFailure = NotInScopeError | NotFunctionError | TypeMismatchError | NoReturnError;
+type RuntimeFailure = NotInScopeError | NotFunctionError | TypeMismatchError | NoReturnError | ArityMismatchError;
 
 interface NumberValue {
   valueKind: "number";
@@ -126,7 +132,13 @@ const apply = (func: Value, args: Array<Value>): Value => {
     });
   }
 
-  // TODO check that func.argNames.length === args.length
+  if (func.argNames.length !== args.length) {
+    throw new RuntimeError("Wrong number of arguments when applying function", {
+      runtimeErrorKind: "arityMismatch",
+      expectedNumArgs: func.argNames.length,
+      actualNumArgs: args.length,
+    });
+  }
 
   const envWithArgs: Environment = {};
   for (let i = 0; i < func.argNames.length; i++) {

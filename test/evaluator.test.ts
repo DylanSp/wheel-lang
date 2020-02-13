@@ -1331,5 +1331,102 @@ describe("Evaluator", () => {
         throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NoReturn error`);
       }
     });
+
+    it("Recognizes an arity mismatch (too few arguments) for { function f(x) { return x; } return f(); }", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "funcDecl",
+          functionName: "f",
+          args: ["x"],
+          body: [
+            {
+              statementKind: "return",
+              returnedValue: {
+                expressionKind: "variableRef",
+                variableName: "x",
+              },
+            },
+          ],
+        },
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "funcCall",
+            args: [],
+            callee: {
+              expressionKind: "variableRef",
+              variableName: "f",
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "arityMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of ArityMismatch error`);
+      }
+
+      expect(evalResult.left.expectedNumArgs).toBe(1);
+      expect(evalResult.left.actualNumArgs).toBe(0);
+    });
+
+    it("Recognizes an arity mismatch (too many arguments) for { function f() { return 1; } return f(2); }", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "funcDecl",
+          functionName: "f",
+          args: [],
+          body: [
+            {
+              statementKind: "return",
+              returnedValue: {
+                expressionKind: "number",
+                value: 1,
+              },
+            },
+          ],
+        },
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "funcCall",
+            args: [
+              {
+                expressionKind: "number",
+                value: 2,
+              },
+            ],
+            callee: {
+              expressionKind: "variableRef",
+              variableName: "f",
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "arityMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of ArityMismatch error`);
+      }
+
+      expect(evalResult.left.expectedNumArgs).toBe(0);
+      expect(evalResult.left.actualNumArgs).toBe(1);
+    });
   });
 });
