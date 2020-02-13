@@ -16,7 +16,7 @@ export type Statement = FunctionDeclaration | ReturnStatement | VariableAssignme
 export interface FunctionDeclaration {
   statementKind: "funcDecl";
   functionName: Identifier;
-  args: Array<Identifier>; // TODO rename to argNames
+  argNames: Array<Identifier>;
   body: Block;
 }
 
@@ -124,7 +124,7 @@ export const parse: Parse = (input) => {
         statements.push({
           statementKind: "funcDecl",
           functionName,
-          args,
+          argNames: args,
           body,
         });
       } else if (input[position]?.tokenKind === "return") {

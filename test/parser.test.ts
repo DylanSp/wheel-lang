@@ -900,7 +900,7 @@ describe("Parser", () => {
           {
             statementKind: "funcDecl",
             functionName: "f",
-            args: [],
+            argNames: [],
             body: [],
           },
         ];
@@ -954,7 +954,7 @@ describe("Parser", () => {
           {
             statementKind: "funcDecl",
             functionName: "g",
-            args: ["x"],
+            argNames: ["x"],
             body: [],
           },
         ];
@@ -1015,7 +1015,7 @@ describe("Parser", () => {
           {
             statementKind: "funcDecl",
             functionName: "h",
-            args: ["x", "y"],
+            argNames: ["x", "y"],
             body: [],
           },
         ];
@@ -1075,7 +1075,7 @@ describe("Parser", () => {
           {
             statementKind: "funcDecl",
             functionName: "foo",
-            args: [],
+            argNames: [],
             body: [
               {
                 statementKind: "return",
@@ -1157,7 +1157,7 @@ describe("Parser", () => {
           {
             statementKind: "funcDecl",
             functionName: "bar",
-            args: [],
+            argNames: [],
             body: [
               {
                 statementKind: "assignment",

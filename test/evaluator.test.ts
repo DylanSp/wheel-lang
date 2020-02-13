@@ -546,7 +546,7 @@ describe("Evaluator", () => {
           {
             statementKind: "funcDecl",
             functionName: "f",
-            args: [],
+            argNames: [],
             body: [
               {
                 statementKind: "return",
@@ -591,7 +591,7 @@ describe("Evaluator", () => {
           {
             statementKind: "funcDecl",
             functionName: "f",
-            args: [],
+            argNames: [],
             body: [
               {
                 statementKind: "return",
@@ -605,7 +605,7 @@ describe("Evaluator", () => {
           {
             statementKind: "funcDecl",
             functionName: "g",
-            args: [],
+            argNames: [],
             body: [
               {
                 statementKind: "return",
@@ -670,7 +670,7 @@ describe("Evaluator", () => {
           {
             statementKind: "funcDecl",
             functionName: "f",
-            args: ["y"],
+            argNames: ["y"],
             body: [
               {
                 statementKind: "return",
@@ -728,7 +728,7 @@ describe("Evaluator", () => {
           {
             statementKind: "funcDecl",
             functionName: "f",
-            args: ["y"],
+            argNames: ["y"],
             body: [
               {
                 statementKind: "return",
@@ -788,12 +788,12 @@ describe("Evaluator", () => {
           {
             statementKind: "funcDecl",
             functionName: "f",
-            args: [],
+            argNames: [],
             body: [
               {
                 statementKind: "funcDecl",
                 functionName: "g",
-                args: [],
+                argNames: [],
                 body: [
                   {
                     statementKind: "return",
@@ -851,12 +851,12 @@ describe("Evaluator", () => {
           {
             statementKind: "funcDecl",
             functionName: "makeAdder",
-            args: ["x"],
+            argNames: ["x"],
             body: [
               {
                 statementKind: "funcDecl",
                 functionName: "adder",
-                args: ["y"],
+                argNames: ["y"],
                 body: [
                   {
                     statementKind: "return",
@@ -950,7 +950,7 @@ describe("Evaluator", () => {
           {
             statementKind: "funcDecl",
             functionName: "f",
-            args: [],
+            argNames: [],
             body: [
               {
                 statementKind: "assignment",
@@ -1019,7 +1019,7 @@ describe("Evaluator", () => {
           {
             statementKind: "funcDecl",
             functionName: "returnX",
-            args: [],
+            argNames: [],
             body: [
               {
                 statementKind: "return",
@@ -1090,7 +1090,7 @@ describe("Evaluator", () => {
           {
             statementKind: "funcDecl",
             functionName: "f",
-            args: [],
+            argNames: [],
             body: [
               {
                 statementKind: "return",
@@ -1161,7 +1161,7 @@ describe("Evaluator", () => {
         {
           statementKind: "funcDecl",
           functionName: "f",
-          args: [],
+          argNames: [],
           body: [
             {
               statementKind: "return",
@@ -1237,7 +1237,7 @@ describe("Evaluator", () => {
         {
           statementKind: "funcDecl",
           functionName: "f",
-          args: [],
+          argNames: [],
           body: [],
         },
         {
@@ -1279,7 +1279,7 @@ describe("Evaluator", () => {
         {
           statementKind: "funcDecl",
           functionName: "f",
-          args: [],
+          argNames: [],
           body: [],
         },
         {
@@ -1338,7 +1338,7 @@ describe("Evaluator", () => {
         {
           statementKind: "funcDecl",
           functionName: "f",
-          args: ["x"],
+          argNames: ["x"],
           body: [
             {
               statementKind: "return",
@@ -1384,7 +1384,7 @@ describe("Evaluator", () => {
         {
           statementKind: "funcDecl",
           functionName: "f",
-          args: [],
+          argNames: [],
           body: [
             {
               statementKind: "return",
