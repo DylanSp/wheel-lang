@@ -83,5 +83,28 @@ describe("Full interpretation pipeline", () => {
 
       expect(runResult.right.value).toBe(5);
     });
+
+    it("Evaluates { return 6 + 7; } to 13", () => {
+      // Arrange
+      const programText = "{ return 6 + 7; }";
+
+      // Act
+      const runResult = runProgram(programText);
+
+      // Assert
+      if (!isRight(runResult)) {
+        console.log(runResult.left.pipelineErrorKind);
+        if (runResult.left.pipelineErrorKind === "scan") {
+          runResult.left.scanErrors.forEach((err) => console.log(err.invalidLexeme));
+        }
+        throw new Error("Program failed, should have succeeded");
+      }
+
+      if (runResult.right.valueKind !== "number") {
+        throw new Error("Program did not return number");
+      }
+
+      expect(runResult.right.value).toBe(13);
+    });
   });
 });
