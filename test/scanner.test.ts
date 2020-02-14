@@ -29,6 +29,31 @@ describe("Scanner", () => {
       });
     });
 
+    describe("Operations", () => {
+      test.each([
+        ["+", "add"],
+        ["-", "subtract"],
+        ["*", "multiply"],
+        ["/", "divide"],
+      ])('Recognizes "%s"', (input, operationKind) => {
+        // Act
+        const scanResult = scan(input);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(1);
+
+        if (scanResult.right[0].tokenKind !== "operation") {
+          throw new Error(`Scan produced ${scanResult.right[0].tokenKind} instead of operation`);
+        }
+
+        expect(scanResult.right[0].operation).toBe(operationKind);
+      });
+    });
+
     describe("Identifiers", () => {
       it("Recognizes a generic word as an identifier", () => {
         // Arrange

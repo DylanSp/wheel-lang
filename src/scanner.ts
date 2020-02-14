@@ -155,6 +155,34 @@ export const scan: Scan = (input: string) => {
           });
           position += 1;
           break;
+        case "+":
+          tokens.push({
+            tokenKind: "operation",
+            operation: "add",
+          });
+          position += 1;
+          break;
+        case "-":
+          tokens.push({
+            tokenKind: "operation",
+            operation: "subtract",
+          });
+          position += 1;
+          break;
+        case "*":
+          tokens.push({
+            tokenKind: "operation",
+            operation: "multiply",
+          });
+          position += 1;
+          break;
+        case "/":
+          tokens.push({
+            tokenKind: "operation",
+            operation: "divide",
+          });
+          position += 1;
+          break;
         default:
           // check for whitespace; if present, skip past it
           if (/\s/.test(char)) {
