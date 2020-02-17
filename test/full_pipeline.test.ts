@@ -93,10 +93,6 @@ describe("Full interpretation pipeline", () => {
 
       // Assert
       if (!isRight(runResult)) {
-        console.log(runResult.left.pipelineErrorKind);
-        if (runResult.left.pipelineErrorKind === "scan") {
-          runResult.left.scanErrors.forEach((err) => console.log(err.invalidLexeme));
-        }
         throw new Error("Program failed, should have succeeded");
       }
 
@@ -105,6 +101,26 @@ describe("Full interpretation pipeline", () => {
       }
 
       expect(runResult.right.value).toBe(13);
+    });
+
+    it("Evaluates { function makeAdder(x) { function adder(y) { return x + y; } return adder; } addOne = makeAdder(1); return addOne(2); } to 3", () => {
+      // Arrange
+      const programText =
+        "{ function makeAdder(x) { function adder(y) { return x + y; } return adder; } addOne = makeAdder(1); return addOne(2); }";
+
+      // Act
+      const runResult = runProgram(programText);
+
+      // Assert
+      if (!isRight(runResult)) {
+        throw new Error("Program failed, should have succeeded");
+      }
+
+      if (runResult.right.valueKind !== "number") {
+        throw new Error("Program did not return number");
+      }
+
+      expect(runResult.right.value).toBe(3);
     });
   });
 });
