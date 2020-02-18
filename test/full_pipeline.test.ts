@@ -1,6 +1,6 @@
 import "jest";
 import { runProgram } from "../src/full_pipeline";
-import { isRight } from "fp-ts/lib/Either";
+import { isRight, isLeft } from "fp-ts/lib/Either";
 
 describe("Full interpretation pipeline", () => {
   describe("Correct programs", () => {
@@ -121,6 +121,95 @@ describe("Full interpretation pipeline", () => {
       }
 
       expect(runResult.right.value).toBe(3);
+    });
+  });
+
+  describe("Scan errors", () => {
+    it("Reports a scan error on { # }", () => {
+      // Arrange
+      const programText = "{ # }";
+
+      // Act
+      const runResult = runProgram(programText);
+
+      // Assert
+      if (!isLeft(runResult)) {
+        throw new Error("Program succeeded, should have failed");
+      }
+
+      if (runResult.left.pipelineErrorKind !== "scan") {
+        throw new Error(`${runResult.left.pipelineErrorKind} error reported instead of scan error`);
+      }
+
+      expect(runResult.left.scanErrors.map((error) => error.invalidLexeme)).toContain("#");
+    });
+
+    it("Reports multiple scan errors on { # ! }", () => {
+      // Arrange
+      const programText = "{ # ! }";
+
+      // Act
+      const runResult = runProgram(programText);
+
+      // Assert
+      if (!isLeft(runResult)) {
+        throw new Error("Program succeeded, should have failed");
+      }
+
+      if (runResult.left.pipelineErrorKind !== "scan") {
+        throw new Error(`${runResult.left.pipelineErrorKind} error reported instead of scan error`);
+      }
+
+      expect(runResult.left.scanErrors.map((error) => error.invalidLexeme)).toContain("#");
+      expect(runResult.left.scanErrors.map((error) => error.invalidLexeme)).toContain("!");
+    });
+  });
+
+  describe("Parse errors", () => {
+    it("Reports a parse error on { function; }", () => {
+      // Arrange
+      const programText = "{ function; }";
+
+      // Act
+      const runResult = runProgram(programText);
+
+      // Assert
+      if (!isLeft(runResult)) {
+        throw new Error("Program succeeded, should have failed");
+      }
+
+      if (runResult.left.pipelineErrorKind !== "parse") {
+        throw new Error(`${runResult.left.pipelineErrorKind} error reported instead of parse error`);
+      }
+
+      expect(runResult.left.parseError.message).toMatch(/Expected \(/);
+    });
+  });
+
+  describe("Evaluation errors", () => {
+    it("Reports a NotInScope error for { return x; }", () => {
+      // Arrange
+      const programText = "{ return x; }";
+
+      // Act
+      const runResult = runProgram(programText);
+
+      // Assert
+      if (!isLeft(runResult)) {
+        throw new Error("Program succeeded, should have failed");
+      }
+
+      if (runResult.left.pipelineErrorKind !== "evaluation") {
+        throw new Error(`${runResult.left.pipelineErrorKind} error reported instead of evaluation error`);
+      }
+
+      if (runResult.left.evalError.runtimeErrorKind !== "notInScope") {
+        throw new Error(
+          `${runResult.left.evalError.runtimeErrorKind} evaluation error reported instead of NotInScope error`,
+        );
+      }
+
+      expect(runResult.left.evalError.outOfScopeIdentifier).toBe("x");
     });
   });
 });
