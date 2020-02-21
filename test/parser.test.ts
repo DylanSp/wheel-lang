@@ -2,6 +2,7 @@ import "jest";
 import { Token } from "../src/scanner";
 import { parse, Program } from "../src/parser";
 import { isRight, isLeft } from "fp-ts/lib/Either";
+import { identifierIso } from "../src/types";
 
 describe("Parser", () => {
   describe("Successful parses", () => {
@@ -14,7 +15,7 @@ describe("Parser", () => {
           },
           {
             tokenKind: "identifier",
-            name: "x",
+            name: identifierIso.wrap("x"),
           },
           {
             tokenKind: "singleEquals",
@@ -51,7 +52,7 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: "x",
+            variableName: identifierIso.wrap("x"),
             variableValue: {
               expressionKind: "binOp",
               operation: "add",
@@ -78,7 +79,7 @@ describe("Parser", () => {
           },
           {
             tokenKind: "identifier",
-            name: "x",
+            name: identifierIso.wrap("x"),
           },
           {
             tokenKind: "singleEquals",
@@ -115,7 +116,7 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: "x",
+            variableName: identifierIso.wrap("x"),
             variableValue: {
               expressionKind: "binOp",
               operation: "multiply",
@@ -142,7 +143,7 @@ describe("Parser", () => {
           },
           {
             tokenKind: "identifier",
-            name: "x",
+            name: identifierIso.wrap("x"),
           },
           {
             tokenKind: "singleEquals",
@@ -187,7 +188,7 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: "x",
+            variableName: identifierIso.wrap("x"),
             variableValue: {
               expressionKind: "binOp",
               operation: "subtract",
@@ -222,7 +223,7 @@ describe("Parser", () => {
           },
           {
             tokenKind: "identifier",
-            name: "x",
+            name: identifierIso.wrap("x"),
           },
           {
             tokenKind: "singleEquals",
@@ -267,7 +268,7 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: "x",
+            variableName: identifierIso.wrap("x"),
             variableValue: {
               expressionKind: "binOp",
               operation: "add",
@@ -302,7 +303,7 @@ describe("Parser", () => {
           },
           {
             tokenKind: "identifier",
-            name: "x",
+            name: identifierIso.wrap("x"),
           },
           {
             tokenKind: "singleEquals",
@@ -353,7 +354,7 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: "x",
+            variableName: identifierIso.wrap("x"),
             variableValue: {
               expressionKind: "binOp",
               operation: "divide",
@@ -388,14 +389,14 @@ describe("Parser", () => {
           },
           {
             tokenKind: "identifier",
-            name: "x",
+            name: identifierIso.wrap("x"),
           },
           {
             tokenKind: "singleEquals",
           },
           {
             tokenKind: "identifier",
-            name: "f",
+            name: identifierIso.wrap("f"),
           },
           {
             tokenKind: "leftParen",
@@ -422,12 +423,12 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: "x",
+            variableName: identifierIso.wrap("x"),
             variableValue: {
               expressionKind: "funcCall",
               callee: {
                 expressionKind: "variableRef",
-                variableName: "f",
+                variableName: identifierIso.wrap("f"),
               },
               args: [],
             },
@@ -445,14 +446,14 @@ describe("Parser", () => {
           },
           {
             tokenKind: "identifier",
-            name: "y",
+            name: identifierIso.wrap("y"),
           },
           {
             tokenKind: "singleEquals",
           },
           {
             tokenKind: "identifier",
-            name: "g",
+            name: identifierIso.wrap("g"),
           },
           {
             tokenKind: "leftParen",
@@ -483,12 +484,12 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: "y",
+            variableName: identifierIso.wrap("y"),
             variableValue: {
               expressionKind: "funcCall",
               callee: {
                 expressionKind: "variableRef",
-                variableName: "g",
+                variableName: identifierIso.wrap("g"),
               },
               args: [
                 {
@@ -511,14 +512,14 @@ describe("Parser", () => {
           },
           {
             tokenKind: "identifier",
-            name: "z",
+            name: identifierIso.wrap("z"),
           },
           {
             tokenKind: "singleEquals",
           },
           {
             tokenKind: "identifier",
-            name: "h",
+            name: identifierIso.wrap("h"),
           },
           {
             tokenKind: "leftParen",
@@ -556,12 +557,12 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: "z",
+            variableName: identifierIso.wrap("z"),
             variableValue: {
               expressionKind: "funcCall",
               callee: {
                 expressionKind: "variableRef",
-                variableName: "h",
+                variableName: identifierIso.wrap("h"),
               },
               args: [
                 {
@@ -588,14 +589,14 @@ describe("Parser", () => {
           },
           {
             tokenKind: "identifier",
-            name: "i",
+            name: identifierIso.wrap("i"),
           },
           {
             tokenKind: "singleEquals",
           },
           {
             tokenKind: "identifier",
-            name: "f",
+            name: identifierIso.wrap("f"),
           },
           {
             tokenKind: "leftParen",
@@ -630,7 +631,7 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: "i",
+            variableName: identifierIso.wrap("i"),
             variableValue: {
               expressionKind: "binOp",
               operation: "add",
@@ -638,7 +639,7 @@ describe("Parser", () => {
                 expressionKind: "funcCall",
                 callee: {
                   expressionKind: "variableRef",
-                  variableName: "f",
+                  variableName: identifierIso.wrap("f"),
                 },
                 args: [],
               },
@@ -661,7 +662,7 @@ describe("Parser", () => {
           },
           {
             tokenKind: "identifier",
-            name: "j",
+            name: identifierIso.wrap("j"),
           },
           {
             tokenKind: "singleEquals",
@@ -676,7 +677,7 @@ describe("Parser", () => {
           },
           {
             tokenKind: "identifier",
-            name: "f",
+            name: identifierIso.wrap("f"),
           },
           {
             tokenKind: "leftParen",
@@ -703,7 +704,7 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: "j",
+            variableName: identifierIso.wrap("j"),
             variableValue: {
               expressionKind: "binOp",
               operation: "multiply",
@@ -715,7 +716,7 @@ describe("Parser", () => {
                 expressionKind: "funcCall",
                 callee: {
                   expressionKind: "variableRef",
-                  variableName: "f",
+                  variableName: identifierIso.wrap("f"),
                 },
                 args: [],
               },
@@ -734,14 +735,14 @@ describe("Parser", () => {
           },
           {
             tokenKind: "identifier",
-            name: "higherOrderResult",
+            name: identifierIso.wrap("higherOrderResult"),
           },
           {
             tokenKind: "singleEquals",
           },
           {
             tokenKind: "identifier",
-            name: "higher",
+            name: identifierIso.wrap("higher"),
           },
           {
             tokenKind: "leftParen",
@@ -775,14 +776,14 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: "higherOrderResult",
+            variableName: identifierIso.wrap("higherOrderResult"),
             variableValue: {
               expressionKind: "funcCall",
               callee: {
                 expressionKind: "funcCall",
                 callee: {
                   expressionKind: "variableRef",
-                  variableName: "higher",
+                  variableName: identifierIso.wrap("higher"),
                 },
                 args: [],
               },
@@ -867,7 +868,7 @@ describe("Parser", () => {
           },
           {
             tokenKind: "identifier",
-            name: "f",
+            name: identifierIso.wrap("f"),
           },
           {
             tokenKind: "leftParen",
@@ -897,7 +898,7 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "funcDecl",
-            functionName: "f",
+            functionName: identifierIso.wrap("f"),
             argNames: [],
             body: [],
           },
@@ -917,14 +918,14 @@ describe("Parser", () => {
           },
           {
             tokenKind: "identifier",
-            name: "g",
+            name: identifierIso.wrap("g"),
           },
           {
             tokenKind: "leftParen",
           },
           {
             tokenKind: "identifier",
-            name: "x",
+            name: identifierIso.wrap("x"),
           },
           {
             tokenKind: "rightParen",
@@ -951,8 +952,8 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "funcDecl",
-            functionName: "g",
-            argNames: ["x"],
+            functionName: identifierIso.wrap("g"),
+            argNames: [identifierIso.wrap("x")],
             body: [],
           },
         ];
@@ -971,21 +972,21 @@ describe("Parser", () => {
           },
           {
             tokenKind: "identifier",
-            name: "h",
+            name: identifierIso.wrap("h"),
           },
           {
             tokenKind: "leftParen",
           },
           {
             tokenKind: "identifier",
-            name: "x",
+            name: identifierIso.wrap("x"),
           },
           {
             tokenKind: "comma",
           },
           {
             tokenKind: "identifier",
-            name: "y",
+            name: identifierIso.wrap("y"),
           },
           {
             tokenKind: "rightParen",
@@ -1012,8 +1013,8 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "funcDecl",
-            functionName: "h",
-            argNames: ["x", "y"],
+            functionName: identifierIso.wrap("h"),
+            argNames: [identifierIso.wrap("x"), identifierIso.wrap("y")],
             body: [],
           },
         ];
@@ -1032,7 +1033,7 @@ describe("Parser", () => {
           },
           {
             tokenKind: "identifier",
-            name: "foo",
+            name: identifierIso.wrap("foo"),
           },
           {
             tokenKind: "leftParen",
@@ -1072,7 +1073,7 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "funcDecl",
-            functionName: "foo",
+            functionName: identifierIso.wrap("foo"),
             argNames: [],
             body: [
               {
@@ -1100,7 +1101,7 @@ describe("Parser", () => {
           },
           {
             tokenKind: "identifier",
-            name: "bar",
+            name: identifierIso.wrap("bar"),
           },
           {
             tokenKind: "leftParen",
@@ -1113,7 +1114,7 @@ describe("Parser", () => {
           },
           {
             tokenKind: "identifier",
-            name: "x",
+            name: identifierIso.wrap("x"),
           },
           {
             tokenKind: "singleEquals",
@@ -1130,7 +1131,7 @@ describe("Parser", () => {
           },
           {
             tokenKind: "identifier",
-            name: "x",
+            name: identifierIso.wrap("x"),
           },
           {
             tokenKind: "semicolon",
@@ -1154,12 +1155,12 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "funcDecl",
-            functionName: "bar",
+            functionName: identifierIso.wrap("bar"),
             argNames: [],
             body: [
               {
                 statementKind: "assignment",
-                variableName: "x",
+                variableName: identifierIso.wrap("x"),
                 variableValue: {
                   expressionKind: "number",
                   value: 1,
@@ -1169,7 +1170,7 @@ describe("Parser", () => {
                 statementKind: "return",
                 returnedValue: {
                   expressionKind: "variableRef",
-                  variableName: "x",
+                  variableName: identifierIso.wrap("x"),
                 },
               },
             ],
@@ -1189,7 +1190,7 @@ describe("Parser", () => {
           },
           {
             tokenKind: "identifier",
-            name: "x",
+            name: identifierIso.wrap("x"),
           },
           {
             tokenKind: "singleEquals",
@@ -1206,7 +1207,7 @@ describe("Parser", () => {
           },
           {
             tokenKind: "identifier",
-            name: "x",
+            name: identifierIso.wrap("x"),
           },
           {
             tokenKind: "semicolon",
@@ -1227,7 +1228,7 @@ describe("Parser", () => {
         const desiredResult: Program = [
           {
             statementKind: "assignment",
-            variableName: "x",
+            variableName: identifierIso.wrap("x"),
             variableValue: {
               expressionKind: "number",
               value: 1,
@@ -1237,7 +1238,7 @@ describe("Parser", () => {
             statementKind: "return",
             returnedValue: {
               expressionKind: "variableRef",
-              variableName: "x",
+              variableName: identifierIso.wrap("x"),
             },
           },
         ];
@@ -1284,7 +1285,7 @@ describe("Parser", () => {
         },
         {
           tokenKind: "identifier",
-          name: "x",
+          name: identifierIso.wrap("x"),
         },
         {
           tokenKind: "singleEquals",
@@ -1317,7 +1318,7 @@ describe("Parser", () => {
         },
         {
           tokenKind: "identifier",
-          name: "x",
+          name: identifierIso.wrap("x"),
         },
         {
           tokenKind: "number",
@@ -1480,11 +1481,11 @@ describe("Parser", () => {
         },
         {
           tokenKind: "identifier",
-          name: "func",
+          name: identifierIso.wrap("func"),
         },
         {
           tokenKind: "identifier",
-          name: "x",
+          name: identifierIso.wrap("x"),
         },
         {
           tokenKind: "rightParen",
@@ -1522,14 +1523,14 @@ describe("Parser", () => {
         },
         {
           tokenKind: "identifier",
-          name: "func",
+          name: identifierIso.wrap("func"),
         },
         {
           tokenKind: "leftParen",
         },
         {
           tokenKind: "identifier",
-          name: "x",
+          name: identifierIso.wrap("x"),
         },
         {
           tokenKind: "leftBrace",

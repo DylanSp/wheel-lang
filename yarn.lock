@@ -2564,6 +2564,11 @@ mkdirp@0.x, mkdirp@^0.5.1:
   dependencies:
     minimist "0.0.8"
 
+monocle-ts@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/monocle-ts/-/monocle-ts-2.1.0.tgz#5c1bbade7952b57e33f2179866467e87d9ed5977"
+  integrity sha512-YWH8TDcZSEeCaxp0ZjgccLChnaDvTiUHILpuI0DSZeASYSCgwdz+h6+uEG4QCwYreGsn1oI18ysrcUPv6xWK7w==
+
 ms@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.0.0.tgz#5608aeadfc00be6c2901df5f9861788de0d597c8"
@@ -2610,6 +2615,11 @@ neo-async@^2.6.0:
   version "2.6.1"
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.1.tgz#ac27ada66167fa8849a6addd837f6b189ad2081c"
   integrity sha512-iyam8fBuCUpWeKPGpaNMetEocMt364qkCsfL9JuhjXX6dRnguRVOfk2GZaDpPjcOKiiXCPINZC1GczQ7iTq3Zw==
+
+newtype-ts@^0.3.4:
+  version "0.3.4"
+  resolved "https://registry.yarnpkg.com/newtype-ts/-/newtype-ts-0.3.4.tgz#65c74b7d5195edaa9abfcdba6549a33a5c0e298d"
+  integrity sha512-lFJnWAt0oXX1j1ErNy9RU5+FPNtVyzugHW2MchaaMiOeeS9LEmqAAOqyHPFQ0Uw895jStSYGSCslrByzYxFJYQ==
 
 nice-try@^1.0.4:
   version "1.0.5"

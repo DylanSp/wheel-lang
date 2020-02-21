@@ -2,6 +2,7 @@ import "jest";
 import { Program } from "../src/parser";
 import { evaluate } from "../src/evaluator";
 import { isRight, isLeft } from "fp-ts/lib/Either";
+import { identifierIso } from "../src/types";
 
 describe("Evaluator", () => {
   describe("Successful evaluations", () => {
@@ -336,7 +337,7 @@ describe("Evaluator", () => {
         const ast: Program = [
           {
             statementKind: "assignment",
-            variableName: "x",
+            variableName: identifierIso.wrap("x"),
             variableValue: {
               expressionKind: "number",
               value: 1,
@@ -346,7 +347,7 @@ describe("Evaluator", () => {
             statementKind: "return",
             returnedValue: {
               expressionKind: "variableRef",
-              variableName: "x",
+              variableName: identifierIso.wrap("x"),
             },
           },
         ];
@@ -371,7 +372,7 @@ describe("Evaluator", () => {
         const ast: Program = [
           {
             statementKind: "assignment",
-            variableName: "x",
+            variableName: identifierIso.wrap("x"),
             variableValue: {
               expressionKind: "number",
               value: 2,
@@ -381,7 +382,7 @@ describe("Evaluator", () => {
             statementKind: "return",
             returnedValue: {
               expressionKind: "variableRef",
-              variableName: "x",
+              variableName: identifierIso.wrap("x"),
             },
           },
         ];
@@ -406,7 +407,7 @@ describe("Evaluator", () => {
         const ast: Program = [
           {
             statementKind: "assignment",
-            variableName: "x",
+            variableName: identifierIso.wrap("x"),
             variableValue: {
               expressionKind: "number",
               value: 1,
@@ -414,7 +415,7 @@ describe("Evaluator", () => {
           },
           {
             statementKind: "assignment",
-            variableName: "y",
+            variableName: identifierIso.wrap("y"),
             variableValue: {
               expressionKind: "number",
               value: 2,
@@ -424,7 +425,7 @@ describe("Evaluator", () => {
             statementKind: "return",
             returnedValue: {
               expressionKind: "variableRef",
-              variableName: "x",
+              variableName: identifierIso.wrap("x"),
             },
           },
         ];
@@ -449,7 +450,7 @@ describe("Evaluator", () => {
         const ast: Program = [
           {
             statementKind: "assignment",
-            variableName: "x",
+            variableName: identifierIso.wrap("x"),
             variableValue: {
               expressionKind: "number",
               value: 1,
@@ -457,7 +458,7 @@ describe("Evaluator", () => {
           },
           {
             statementKind: "assignment",
-            variableName: "y",
+            variableName: identifierIso.wrap("y"),
             variableValue: {
               expressionKind: "number",
               value: 2,
@@ -467,7 +468,7 @@ describe("Evaluator", () => {
             statementKind: "return",
             returnedValue: {
               expressionKind: "variableRef",
-              variableName: "y",
+              variableName: identifierIso.wrap("y"),
             },
           },
         ];
@@ -492,7 +493,7 @@ describe("Evaluator", () => {
         const ast: Program = [
           {
             statementKind: "assignment",
-            variableName: "x",
+            variableName: identifierIso.wrap("x"),
             variableValue: {
               expressionKind: "number",
               value: 1,
@@ -500,7 +501,7 @@ describe("Evaluator", () => {
           },
           {
             statementKind: "assignment",
-            variableName: "y",
+            variableName: identifierIso.wrap("y"),
             variableValue: {
               expressionKind: "number",
               value: 2,
@@ -513,11 +514,11 @@ describe("Evaluator", () => {
               operation: "add",
               leftOperand: {
                 expressionKind: "variableRef",
-                variableName: "x",
+                variableName: identifierIso.wrap("x"),
               },
               rightOperand: {
                 expressionKind: "variableRef",
-                variableName: "y",
+                variableName: identifierIso.wrap("y"),
               },
             },
           },
@@ -545,7 +546,7 @@ describe("Evaluator", () => {
         const ast: Program = [
           {
             statementKind: "funcDecl",
-            functionName: "f",
+            functionName: identifierIso.wrap("f"),
             argNames: [],
             body: [
               {
@@ -563,7 +564,7 @@ describe("Evaluator", () => {
               expressionKind: "funcCall",
               callee: {
                 expressionKind: "variableRef",
-                variableName: "f",
+                variableName: identifierIso.wrap("f"),
               },
               args: [],
             },
@@ -590,7 +591,7 @@ describe("Evaluator", () => {
         const ast: Program = [
           {
             statementKind: "funcDecl",
-            functionName: "f",
+            functionName: identifierIso.wrap("f"),
             argNames: [],
             body: [
               {
@@ -604,7 +605,7 @@ describe("Evaluator", () => {
           },
           {
             statementKind: "funcDecl",
-            functionName: "g",
+            functionName: identifierIso.wrap("g"),
             argNames: [],
             body: [
               {
@@ -625,7 +626,7 @@ describe("Evaluator", () => {
                 expressionKind: "funcCall",
                 callee: {
                   expressionKind: "variableRef",
-                  variableName: "f",
+                  variableName: identifierIso.wrap("f"),
                 },
                 args: [],
               },
@@ -633,7 +634,7 @@ describe("Evaluator", () => {
                 expressionKind: "funcCall",
                 callee: {
                   expressionKind: "variableRef",
-                  variableName: "g",
+                  variableName: identifierIso.wrap("g"),
                 },
                 args: [],
               },
@@ -661,7 +662,7 @@ describe("Evaluator", () => {
         const ast: Program = [
           {
             statementKind: "assignment",
-            variableName: "x",
+            variableName: identifierIso.wrap("x"),
             variableValue: {
               expressionKind: "number",
               value: 1,
@@ -669,14 +670,14 @@ describe("Evaluator", () => {
           },
           {
             statementKind: "funcDecl",
-            functionName: "f",
-            argNames: ["y"],
+            functionName: identifierIso.wrap("f"),
+            argNames: [identifierIso.wrap("y")],
             body: [
               {
                 statementKind: "return",
                 returnedValue: {
                   expressionKind: "variableRef",
-                  variableName: "y",
+                  variableName: identifierIso.wrap("y"),
                 },
               },
             ],
@@ -687,12 +688,12 @@ describe("Evaluator", () => {
               expressionKind: "funcCall",
               callee: {
                 expressionKind: "variableRef",
-                variableName: "f",
+                variableName: identifierIso.wrap("f"),
               },
               args: [
                 {
                   expressionKind: "variableRef",
-                  variableName: "x",
+                  variableName: identifierIso.wrap("x"),
                 },
               ],
             },
@@ -719,7 +720,7 @@ describe("Evaluator", () => {
         const ast: Program = [
           {
             statementKind: "assignment",
-            variableName: "x",
+            variableName: identifierIso.wrap("x"),
             variableValue: {
               expressionKind: "number",
               value: 1,
@@ -727,8 +728,8 @@ describe("Evaluator", () => {
           },
           {
             statementKind: "funcDecl",
-            functionName: "f",
-            argNames: ["y"],
+            functionName: identifierIso.wrap("f"),
+            argNames: [identifierIso.wrap("y")],
             body: [
               {
                 statementKind: "return",
@@ -737,11 +738,11 @@ describe("Evaluator", () => {
                   operation: "add",
                   leftOperand: {
                     expressionKind: "variableRef",
-                    variableName: "x",
+                    variableName: identifierIso.wrap("x"),
                   },
                   rightOperand: {
                     expressionKind: "variableRef",
-                    variableName: "y",
+                    variableName: identifierIso.wrap("y"),
                   },
                 },
               },
@@ -753,7 +754,7 @@ describe("Evaluator", () => {
               expressionKind: "funcCall",
               callee: {
                 expressionKind: "variableRef",
-                variableName: "f",
+                variableName: identifierIso.wrap("f"),
               },
               args: [
                 {
@@ -787,12 +788,12 @@ describe("Evaluator", () => {
         const ast: Program = [
           {
             statementKind: "funcDecl",
-            functionName: "f",
+            functionName: identifierIso.wrap("f"),
             argNames: [],
             body: [
               {
                 statementKind: "funcDecl",
-                functionName: "g",
+                functionName: identifierIso.wrap("g"),
                 argNames: [],
                 body: [
                   {
@@ -808,7 +809,7 @@ describe("Evaluator", () => {
                 statementKind: "return",
                 returnedValue: {
                   expressionKind: "variableRef",
-                  variableName: "g",
+                  variableName: identifierIso.wrap("g"),
                 },
               },
             ],
@@ -823,7 +824,7 @@ describe("Evaluator", () => {
                 args: [],
                 callee: {
                   expressionKind: "variableRef",
-                  variableName: "f",
+                  variableName: identifierIso.wrap("f"),
                 },
               },
             },
@@ -850,13 +851,13 @@ describe("Evaluator", () => {
         const ast: Program = [
           {
             statementKind: "funcDecl",
-            functionName: "makeAdder",
-            argNames: ["x"],
+            functionName: identifierIso.wrap("makeAdder"),
+            argNames: [identifierIso.wrap("x")],
             body: [
               {
                 statementKind: "funcDecl",
-                functionName: "adder",
-                argNames: ["y"],
+                functionName: identifierIso.wrap("adder"),
+                argNames: [identifierIso.wrap("y")],
                 body: [
                   {
                     statementKind: "return",
@@ -865,11 +866,11 @@ describe("Evaluator", () => {
                       operation: "add",
                       leftOperand: {
                         expressionKind: "variableRef",
-                        variableName: "x",
+                        variableName: identifierIso.wrap("x"),
                       },
                       rightOperand: {
                         expressionKind: "variableRef",
-                        variableName: "y",
+                        variableName: identifierIso.wrap("y"),
                       },
                     },
                   },
@@ -879,14 +880,14 @@ describe("Evaluator", () => {
                 statementKind: "return",
                 returnedValue: {
                   expressionKind: "variableRef",
-                  variableName: "adder",
+                  variableName: identifierIso.wrap("adder"),
                 },
               },
             ],
           },
           {
             statementKind: "assignment",
-            variableName: "addOne",
+            variableName: identifierIso.wrap("addOne"),
             variableValue: {
               expressionKind: "funcCall",
               args: [
@@ -897,7 +898,7 @@ describe("Evaluator", () => {
               ],
               callee: {
                 expressionKind: "variableRef",
-                variableName: "makeAdder",
+                variableName: identifierIso.wrap("makeAdder"),
               },
             },
           },
@@ -913,7 +914,7 @@ describe("Evaluator", () => {
               ],
               callee: {
                 expressionKind: "variableRef",
-                variableName: "addOne",
+                variableName: identifierIso.wrap("addOne"),
               },
             },
           },
@@ -941,7 +942,7 @@ describe("Evaluator", () => {
         const ast: Program = [
           {
             statementKind: "assignment",
-            variableName: "x",
+            variableName: identifierIso.wrap("x"),
             variableValue: {
               expressionKind: "number",
               value: 1,
@@ -949,12 +950,12 @@ describe("Evaluator", () => {
           },
           {
             statementKind: "funcDecl",
-            functionName: "f",
+            functionName: identifierIso.wrap("f"),
             argNames: [],
             body: [
               {
                 statementKind: "assignment",
-                variableName: "x",
+                variableName: identifierIso.wrap("x"),
                 variableValue: {
                   expressionKind: "number",
                   value: 2,
@@ -964,7 +965,7 @@ describe("Evaluator", () => {
                 statementKind: "return",
                 returnedValue: {
                   expressionKind: "variableRef",
-                  variableName: "x",
+                  variableName: identifierIso.wrap("x"),
                 },
               },
             ],
@@ -976,14 +977,14 @@ describe("Evaluator", () => {
               operation: "add",
               leftOperand: {
                 expressionKind: "variableRef",
-                variableName: "x",
+                variableName: identifierIso.wrap("x"),
               },
               rightOperand: {
                 expressionKind: "funcCall",
                 args: [],
                 callee: {
                   expressionKind: "variableRef",
-                  variableName: "f",
+                  variableName: identifierIso.wrap("f"),
                 },
               },
             },
@@ -1010,7 +1011,7 @@ describe("Evaluator", () => {
         const ast: Program = [
           {
             statementKind: "assignment",
-            variableName: "x",
+            variableName: identifierIso.wrap("x"),
             variableValue: {
               expressionKind: "number",
               value: 1,
@@ -1018,29 +1019,29 @@ describe("Evaluator", () => {
           },
           {
             statementKind: "funcDecl",
-            functionName: "returnX",
+            functionName: identifierIso.wrap("returnX"),
             argNames: [],
             body: [
               {
                 statementKind: "return",
                 returnedValue: {
                   expressionKind: "variableRef",
-                  variableName: "x",
+                  variableName: identifierIso.wrap("x"),
                 },
               },
             ],
           },
           {
             statementKind: "assignment",
-            variableName: "y",
+            variableName: identifierIso.wrap("y"),
             variableValue: {
               expressionKind: "variableRef",
-              variableName: "x",
+              variableName: identifierIso.wrap("x"),
             },
           },
           {
             statementKind: "assignment",
-            variableName: "x",
+            variableName: identifierIso.wrap("x"),
             variableValue: {
               expressionKind: "number",
               value: 2,
@@ -1053,14 +1054,14 @@ describe("Evaluator", () => {
               operation: "add",
               leftOperand: {
                 expressionKind: "variableRef",
-                variableName: "y",
+                variableName: identifierIso.wrap("y"),
               },
               rightOperand: {
                 expressionKind: "funcCall",
                 args: [],
                 callee: {
                   expressionKind: "variableRef",
-                  variableName: "returnX",
+                  variableName: identifierIso.wrap("returnX"),
                 },
               },
             },
@@ -1089,14 +1090,14 @@ describe("Evaluator", () => {
         const ast: Program = [
           {
             statementKind: "funcDecl",
-            functionName: "f",
+            functionName: identifierIso.wrap("f"),
             argNames: [],
             body: [
               {
                 statementKind: "return",
                 returnedValue: {
                   expressionKind: "variableRef",
-                  variableName: "x",
+                  variableName: identifierIso.wrap("x"),
                 },
               },
             ],
@@ -1135,7 +1136,7 @@ describe("Evaluator", () => {
           statementKind: "return",
           returnedValue: {
             expressionKind: "variableRef",
-            variableName: "x",
+            variableName: identifierIso.wrap("x"),
           },
         },
       ];
@@ -1160,14 +1161,14 @@ describe("Evaluator", () => {
       const ast: Program = [
         {
           statementKind: "funcDecl",
-          functionName: "f",
+          functionName: identifierIso.wrap("f"),
           argNames: [],
           body: [
             {
               statementKind: "return",
               returnedValue: {
                 expressionKind: "variableRef",
-                variableName: "x",
+                variableName: identifierIso.wrap("x"),
               },
             },
           ],
@@ -1179,7 +1180,7 @@ describe("Evaluator", () => {
             args: [],
             callee: {
               expressionKind: "variableRef",
-              variableName: "f",
+              variableName: identifierIso.wrap("f"),
             },
           },
         },
@@ -1236,7 +1237,7 @@ describe("Evaluator", () => {
       const ast: Program = [
         {
           statementKind: "funcDecl",
-          functionName: "f",
+          functionName: identifierIso.wrap("f"),
           argNames: [],
           body: [],
         },
@@ -1251,7 +1252,7 @@ describe("Evaluator", () => {
             },
             rightOperand: {
               expressionKind: "variableRef",
-              variableName: "f",
+              variableName: identifierIso.wrap("f"),
             },
           },
         },
@@ -1278,7 +1279,7 @@ describe("Evaluator", () => {
       const ast: Program = [
         {
           statementKind: "funcDecl",
-          functionName: "f",
+          functionName: identifierIso.wrap("f"),
           argNames: [],
           body: [],
         },
@@ -1289,7 +1290,7 @@ describe("Evaluator", () => {
             operation: "add",
             leftOperand: {
               expressionKind: "variableRef",
-              variableName: "f",
+              variableName: identifierIso.wrap("f"),
             },
             rightOperand: {
               expressionKind: "number",
@@ -1337,14 +1338,14 @@ describe("Evaluator", () => {
       const ast: Program = [
         {
           statementKind: "funcDecl",
-          functionName: "f",
-          argNames: ["x"],
+          functionName: identifierIso.wrap("f"),
+          argNames: [identifierIso.wrap("x")],
           body: [
             {
               statementKind: "return",
               returnedValue: {
                 expressionKind: "variableRef",
-                variableName: "x",
+                variableName: identifierIso.wrap("x"),
               },
             },
           ],
@@ -1356,7 +1357,7 @@ describe("Evaluator", () => {
             args: [],
             callee: {
               expressionKind: "variableRef",
-              variableName: "f",
+              variableName: identifierIso.wrap("f"),
             },
           },
         },
@@ -1383,7 +1384,7 @@ describe("Evaluator", () => {
       const ast: Program = [
         {
           statementKind: "funcDecl",
-          functionName: "f",
+          functionName: identifierIso.wrap("f"),
           argNames: [],
           body: [
             {
@@ -1407,7 +1408,7 @@ describe("Evaluator", () => {
             ],
             callee: {
               expressionKind: "variableRef",
-              variableName: "f",
+              variableName: identifierIso.wrap("f"),
             },
           },
         },

@@ -6,7 +6,7 @@ import { Identifier } from "./types";
  * TYPES
  */
 
-type Environment = Record<Identifier, Value>; // TODO use newtype-ts for this?
+type Environment = Map<Identifier, Value>;
 
 interface NotInScopeError {
   runtimeErrorKind: "notInScope";
@@ -113,7 +113,7 @@ export const evaluate: Evaluate = (program) => {
         }
       }
       case "variableRef": {
-        const variableValue = env[expr.variableName];
+        const variableValue = env.get(expr.variableName);
         if (variableValue === undefined) {
           throw new RuntimeError(`Variable ${expr.variableName} not in scope`, {
             runtimeErrorKind: "notInScope",
@@ -147,41 +147,39 @@ export const evaluate: Evaluate = (program) => {
       });
     }
 
-    const envWithArgs: Environment = {};
+    const envWithArgs: Environment = new Map<Identifier, Value>();
     for (let i = 0; i < func.argNames.length; i++) {
-      envWithArgs[func.argNames[i]] = args[i];
+      envWithArgs.set(func.argNames[i], args[i]);
     }
 
-    return evaluateBlock(
-      {
-        ...envWithArgs,
-        ...func.env,
-      },
-      func.body,
-    );
+    for (const [ident, val] of func.env) {
+      envWithArgs.set(ident, val);
+    }
+
+    return evaluateBlock(envWithArgs, func.body);
   };
 
   const evaluateBlock = (env: Environment, block: Block): Value => {
-    const blockEnv = { ...env }; // TODO immer for guaranteed immutability?
+    // TODO check that is true deep copy with Map copy constructor
+    const blockEnv = new Map(env); // TODO immer for guaranteed immutability?
     for (const statement of block) {
       switch (statement.statementKind) {
         case "return": {
           return evaluateExpr(blockEnv, statement.returnedValue);
         }
         case "assignment": {
-          blockEnv[statement.variableName] = evaluateExpr(blockEnv, statement.variableValue);
+          blockEnv.set(statement.variableName, evaluateExpr(blockEnv, statement.variableValue));
           break;
         }
         case "funcDecl": {
-          blockEnv[statement.functionName] = makeClosureValue(
+          const closureValue = makeClosureValue(
             statement.functionName,
             statement.argNames,
             statement.body,
-            {
-              ...blockEnv, // make copy of blockEnv so later changes to blockEnv don't affect the environment captured by the closure
-              // TODO immer?
-            },
+            new Map(blockEnv), // make copy of blockEnv so later changes to blockEnv don't affect the environment captured by the closure
+            // TODO immer?
           );
+          blockEnv.set(statement.functionName, closureValue);
           break;
         }
       }
@@ -194,7 +192,7 @@ export const evaluate: Evaluate = (program) => {
 
   // main driver
   try {
-    const evalResult = evaluateBlock({}, program);
+    const evalResult = evaluateBlock(new Map<Identifier, Value>(), program);
     return right(evalResult);
   } catch (err) {
     if (err instanceof RuntimeError) {

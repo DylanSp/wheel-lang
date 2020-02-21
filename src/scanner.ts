@@ -1,5 +1,5 @@
 import { Either, left, right } from "fp-ts/lib/Either";
-import { Identifier } from "./types";
+import { Identifier, identifierIso } from "./types";
 
 /**
  * TYPES
@@ -210,7 +210,7 @@ export const scan: Scan = (input: string) => {
 
             tokens.push({
               tokenKind: "identifier",
-              name,
+              name: identifierIso.wrap(name),
             });
             position += name.length;
           }
