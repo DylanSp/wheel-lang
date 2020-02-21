@@ -25,7 +25,6 @@ interface PipelineEvalError {
 
 type PipelineError = PipelineScanError | PipelineParseError | PipelineEvalError;
 
-// TODO should this return Value? or should we constrain it to just number?
 type RunProgram = (programText: string) => Either<PipelineError, Value>;
 
 export const runProgram: RunProgram = (programText) => {

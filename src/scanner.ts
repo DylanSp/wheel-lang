@@ -72,7 +72,7 @@ export interface IdentifierToken {
   name: Identifier;
 }
 
-interface ScanError {
+export interface ScanError {
   invalidLexeme: string;
 }
 

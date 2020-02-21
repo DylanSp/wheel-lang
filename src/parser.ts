@@ -55,7 +55,7 @@ interface VariableRef {
   variableName: Identifier;
 }
 
-interface ParseFailure {
+export interface ParseFailure {
   message: string;
 }
 
