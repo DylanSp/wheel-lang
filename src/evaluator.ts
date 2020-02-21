@@ -162,8 +162,7 @@ export const evaluate: Evaluate = (program) => {
   };
 
   const evaluateBlock = (env: Environment, block: Block): Value => {
-    // TODO check that is true deep copy with Map copy constructor
-    const blockEnv = new Map(env); // TODO immer for guaranteed immutability?
+    const blockEnv = new Map(env);
     for (const statement of block) {
       switch (statement.statementKind) {
         case "return": {
@@ -179,7 +178,6 @@ export const evaluate: Evaluate = (program) => {
             statement.argNames,
             statement.body,
             new Map(blockEnv), // make copy of blockEnv so later changes to blockEnv don't affect the environment captured by the closure
-            // TODO immer?
           );
           blockEnv.set(statement.functionName, closureValue);
           break;
