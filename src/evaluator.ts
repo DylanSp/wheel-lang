@@ -1,6 +1,8 @@
 import { Program, Expression, Block } from "./parser";
 import { Either, right, left } from "fp-ts/lib/Either";
-import { Identifier } from "./types";
+import { lookup } from "fp-ts/lib/Map";
+import { Identifier, eqIdentifier } from "./types";
+import { isNone } from "fp-ts/lib/Option";
 
 /**
  * TYPES
@@ -113,15 +115,15 @@ export const evaluate: Evaluate = (program) => {
         }
       }
       case "variableRef": {
-        const variableValue = env.get(expr.variableName);
-        if (variableValue === undefined) {
+        const variableValue = lookup(eqIdentifier)(expr.variableName, env);
+        if (isNone(variableValue)) {
           throw new RuntimeError(`Variable ${expr.variableName} not in scope`, {
             runtimeErrorKind: "notInScope",
             outOfScopeIdentifier: expr.variableName,
           });
         }
 
-        return variableValue;
+        return variableValue.value;
       }
       case "funcCall": {
         const func = evaluateExpr(env, expr.callee);
