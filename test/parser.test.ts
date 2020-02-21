@@ -3,8 +3,6 @@ import { Token } from "../src/scanner";
 import { parse, Program } from "../src/parser";
 import { isRight, isLeft } from "fp-ts/lib/Either";
 
-// TODO - put string representations of inputs in comments by declarations of tokens?
-// TODO - data-driven tests?
 describe("Parser", () => {
   describe("Successful parses", () => {
     describe("Simple variable assignments", () => {
