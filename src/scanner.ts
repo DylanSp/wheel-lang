@@ -19,39 +19,39 @@ export type Token =
   | OperationToken
   | IdentifierToken;
 
-export interface LeftBrace {
+interface LeftBrace {
   tokenKind: "leftBrace";
 }
 
-export interface RightBrace {
+interface RightBrace {
   tokenKind: "rightBrace";
 }
 
-export interface LeftParen {
+interface LeftParen {
   tokenKind: "leftParen";
 }
 
-export interface RightParen {
+interface RightParen {
   tokenKind: "rightParen";
 }
 
-export interface SingleEquals {
+interface SingleEquals {
   tokenKind: "singleEquals";
 }
 
-export interface FunctionKeyword {
+interface FunctionKeyword {
   tokenKind: "function";
 }
 
-export interface ReturnKeyword {
+interface ReturnKeyword {
   tokenKind: "return";
 }
 
-export interface Semicolon {
+interface Semicolon {
   tokenKind: "semicolon";
 }
 
-export interface Comma {
+interface Comma {
   tokenKind: "comma";
 }
 
@@ -72,7 +72,7 @@ export interface IdentifierToken {
   name: Identifier;
 }
 
-export interface ScanError {
+interface ScanError {
   invalidLexeme: string;
 }
 

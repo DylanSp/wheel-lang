@@ -6,26 +6,25 @@ import { Identifier } from "./types";
  * TYPES
  */
 
-// TODO how many of these do I actually need to export?
 export type Program = Block;
 
 export type Block = Array<Statement>;
 
-export type Statement = FunctionDeclaration | ReturnStatement | VariableAssignment;
+type Statement = FunctionDeclaration | ReturnStatement | VariableAssignment;
 
-export interface FunctionDeclaration {
+interface FunctionDeclaration {
   statementKind: "funcDecl";
   functionName: Identifier;
   argNames: Array<Identifier>;
   body: Block;
 }
 
-export interface ReturnStatement {
+interface ReturnStatement {
   statementKind: "return";
   returnedValue: Expression;
 }
 
-export interface VariableAssignment {
+interface VariableAssignment {
   statementKind: "assignment";
   variableName: Identifier;
   variableValue: Expression;
@@ -33,30 +32,30 @@ export interface VariableAssignment {
 
 export type Expression = BinaryOperation | NumberExpr | FunctionCall | VariableRef;
 
-export interface BinaryOperation {
+interface BinaryOperation {
   expressionKind: "binOp";
   operation: Operation;
   leftOperand: Expression;
   rightOperand: Expression;
 }
 
-export interface NumberExpr {
+interface NumberExpr {
   expressionKind: "number";
   value: number;
 }
 
-export interface FunctionCall {
+interface FunctionCall {
   expressionKind: "funcCall";
   callee: Expression; // needs to be an expression to allow for multiple calls, i.e. f()()
   args: Array<Expression>;
 }
 
-export interface VariableRef {
+interface VariableRef {
   expressionKind: "variableRef";
   variableName: Identifier;
 }
 
-export interface ParseFailure {
+interface ParseFailure {
   message: string;
 }
 
