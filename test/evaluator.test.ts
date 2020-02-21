@@ -7,7 +7,7 @@ import { identifierIso } from "../src/types";
 describe("Evaluator", () => {
   describe("Successful evaluations", () => {
     describe("Simple programs with no functions or variables", () => {
-      it("Evaluates { return 1; } to 1", () => {
+      it("Evaluates { return 1; } to 1 (evaluating numeric literals)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -34,7 +34,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(1);
       });
 
-      it("Evaluates { return 2; } to 2", () => {
+      it("Evaluates { return 2; } to 2 (evaluating numeric literals)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -61,7 +61,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(2);
       });
 
-      it("Evaluates { return 1 + 2; } to 3", () => {
+      it("Evaluates { return 1 + 2; } to 3 (evaluating addition)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -96,7 +96,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(3);
       });
 
-      it("Evaluates { return 3 - 4; } to -1", () => {
+      it("Evaluates { return 3 - 4; } to -1 (evaluating subtraction)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -131,7 +131,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(-1);
       });
 
-      it("Evaluates { return 5 * 6; } to 30", () => {
+      it("Evaluates { return 5 * 6; } to 30 (evaluating multiplication)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -166,7 +166,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(30);
       });
 
-      it("Evaluates { return 8 / 2; } to 4", () => {
+      it("Evaluates { return 8 / 2; } to 4 (evaluating division)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -201,7 +201,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(4);
       });
 
-      it("Evaluates { return 1 + 2 + 3; } to 6", () => {
+      it("Evaluates { return 1 + 2 + 3; } to 6 (evaluating multiple additions in one expression)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -244,7 +244,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(6);
       });
 
-      it("Evaluates { return 4 + 5 * 6; } to 34", () => {
+      it("Evaluates { return 4 + 5 * 6; } to 34 (evaluating expressions with different precedence)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -287,7 +287,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(34);
       });
 
-      it("Evaluates { return 7 * 8 - 9; } to 47", () => {
+      it("Evaluates { return 7 * 8 - 9; } to 47 (evaluating expressions with different precedence)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -332,7 +332,7 @@ describe("Evaluator", () => {
     });
 
     describe("Programs with simple variable use", () => {
-      it("Evaluates { x = 1; return x; } to 1", () => {
+      it("Evaluates { x = 1; return x; } to 1 (assigning numeric literal expression to a variable)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -367,7 +367,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(1);
       });
 
-      it("Evaluates { x = 2; return x; } to 2", () => {
+      it("Evaluates { x = 2; return x; } to 2 (assigning numeric literal expression to a variable)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -402,7 +402,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(2);
       });
 
-      it("Evaluates { x = 1; y = 2; return x; } to 1", () => {
+      it("Evaluates { x = 1; y = 2; return x; } to 1 (checking that the correct variable's value is used)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -445,7 +445,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(1);
       });
 
-      it("Evaluates { x = 1; y = 2; return y; } to 2", () => {
+      it("Evaluates { x = 1; y = 2; return y; } to 2 (checking that the correct variable's value is used)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -488,7 +488,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(2);
       });
 
-      it("Evaluates { x = 1; y = 2; return x + y; } to 3", () => {
+      it("Evaluates { x = 1; y = 2; return x + y; } to 3 (checking operations with variables)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -541,7 +541,7 @@ describe("Evaluator", () => {
     });
 
     describe("Programs with simple first-order functions", () => {
-      it("Evaluates { function f() { return 1; } return f(); } to 1", () => {
+      it("Evaluates { function f() { return 1; } return f(); } to 1 (checking single function call evaluation)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -586,7 +586,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(1);
       });
 
-      it("Evaluates { function f() { return 1; } function g() { return 2; } return f() + g(); } to 3", () => {
+      it("Evaluates { function f() { return 1; } function g() { return 2; } return f() + g(); } to 3 (checking evaluation of expression with multiple function calls)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -657,7 +657,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(3);
       });
 
-      it("Evaluates { x = 1; function f(y) { return y; } return f(x); } to 1", () => {
+      it("Evaluates { x = 1; function f(y) { return y; } return f(x); } to 1 (checking function called with a variable as argument)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -715,7 +715,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(1);
       });
 
-      it("Evaluates { x = 1; function f(y) { return x + y; } return f(2); } to 3", () => {
+      it("Evaluates { x = 1; function f(y) { return x + y; } return f(2); } to 3 (checking calling function which uses an operation)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -783,7 +783,7 @@ describe("Evaluator", () => {
     });
 
     describe("Programs with higher-order functions", () => {
-      it("Evaluates { function f() { function g() { return 1; } return g; } return f()(); } to 1", () => {
+      it("Evaluates { function f() { function g() { return 1; } return g; } return f()(); } to 1 (checking call of higher-order function in single statement)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -846,7 +846,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(1);
       });
 
-      it("Evaluates { function makeAdder(x) { function adder(y) { return x + y; } return adder; } addOne = makeAdder(1); return addOne(2); } to 3", () => {
+      it("Evaluates { function makeAdder(x) { function adder(y) { return x + y; } return adder; } addOne = makeAdder(1); return addOne(2); } to 3 (checking call of higher-order function over multiple statements", () => {
         // Arrange
         const ast: Program = [
           {
@@ -937,7 +937,7 @@ describe("Evaluator", () => {
     });
 
     describe("Other complex programs", () => {
-      it("Evaluates { x = 1; function f() { x = 2; return x; } return x + f(); } to 3", () => {
+      it("Evaluates { x = 1; function f() { x = 2; return x; } return x + f(); } to 3 (checking that local variables shadow variables in outer scopes)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -1006,7 +1006,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(3);
       });
 
-      it("Evaluates { x = 1; function returnX() { return x; } y = x; x = 2; return y + returnX(); } to 2 (not 3)", () => {
+      it("Evaluates { x = 1; function returnX() { return x; } y = x; x = 2; return y + returnX(); } to 2 (not 3) (checking that closures capture environment at time of definition)", () => {
         // Arrange
         const ast: Program = [
           {
