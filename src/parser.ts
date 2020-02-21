@@ -253,7 +253,6 @@ export const parse: Parse = (input) => {
     while (input[position]?.tokenKind === "leftParen") {
       position += 1;
 
-      // TODO similar code to parsing argument list in parseBlock(); is there a way to abstract out similarities?
       const args: Array<Expression> = [];
       while (input[position]?.tokenKind !== "rightParen") {
         args.push(parseExpr());
