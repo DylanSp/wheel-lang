@@ -381,7 +381,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = f(); }", () => {
+      it("Parses { x = f(); } (function call with no arguments)", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -438,7 +438,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { y = g(1); }", () => {
+      it("Parses { y = g(1); } (function call with one argument)", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -504,7 +504,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { z = h(2, 3); }", () => {
+      it("Parses { z = h(2, 3); } (function call with >1 argument)", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -581,7 +581,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { i = f() + 1; }", () => {
+      it("Parses { i = f() + 1; } (function call with operation after it)", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -654,7 +654,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { j = 2 * f(); }", () => {
+      it("Parses { j = 2 * f(); } (function call with operation before it)", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -727,7 +727,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { higherOrderResult = higher()(); }", () => {
+      it("Parses { higherOrderResult = higher()(); } (higher-order function call)", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -797,7 +797,7 @@ describe("Parser", () => {
     });
 
     describe("Simple return statements", () => {
-      it("Parses { return 1 + 2; }", () => {
+      it("Parses { return 1 + 2; } (return of operation)", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -857,7 +857,7 @@ describe("Parser", () => {
     });
 
     describe("Simple function declarations", () => {
-      it("Parses { function f() {} } function with no parameters or body)", () => {
+      it("Parses { function f() {} } (function with no parameters or body)", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -1022,7 +1022,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { function foo() { return 1; } } function with no parameters, one statement in body)", () => {
+      it("Parses { function foo() { return 1; } } (function with no parameters, one statement in body)", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -1090,7 +1090,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { function bar() { x = 1; return x; } } function with no parameters, multiple statements in body)", () => {
+      it("Parses { function bar() { x = 1; return x; } } (function with no parameters, multiple statements in body)", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -1182,7 +1182,7 @@ describe("Parser", () => {
     });
 
     describe("Multi-statement programs", () => {
-      it("Parses { x = 1; return x; }", () => {
+      it("Parses { x = 1; return x; } (program with multiple simple statements)", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
