@@ -248,7 +248,7 @@ export const parse: Parse = (input) => {
   };
 
   const parseCall = (): Expression => {
-    let callee = parsePrimary();
+    let callee = parseNumberOrIdentifier();
 
     while (input[position]?.tokenKind === "leftParen") {
       position += 1;
@@ -276,9 +276,7 @@ export const parse: Parse = (input) => {
     return callee;
   };
 
-  // handles numbers, identifiers
-  // TODO better name?
-  const parsePrimary = (): Expression => {
+  const parseNumberOrIdentifier = (): Expression => {
     if (input[position]?.tokenKind === "number") {
       // need the conditional access to .tokenKind in case this.position goes past input.length
       const numToken = input[position] as NumberToken; // cast should always succeed
