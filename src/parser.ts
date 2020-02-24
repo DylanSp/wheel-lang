@@ -247,6 +247,7 @@ export const parse: Parse = (input) => {
     return parseCall();
   };
 
+  // TODO better name? not necessarily a call
   const parseCall = (): Expression => {
     let callee = parseNumberOrIdentifier();
 
