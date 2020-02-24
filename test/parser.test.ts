@@ -71,6 +71,86 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
+      it("Parses { x = 1 + 2 + 3; } with proper associativity", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 1,
+          },
+          {
+            tokenKind: "operation",
+            operation: "add",
+          },
+          {
+            tokenKind: "number",
+            value: 2,
+          },
+          {
+            tokenKind: "operation",
+            operation: "add",
+          },
+          {
+            tokenKind: "number",
+            value: 3,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          console.error(parseResult.left.message);
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              operation: "add",
+              leftOperand: {
+                expressionKind: "binOp",
+                operation: "add",
+                leftOperand: {
+                  expressionKind: "number",
+                  value: 1,
+                },
+                rightOperand: {
+                  expressionKind: "number",
+                  value: 2,
+                },
+              },
+              rightOperand: {
+                expressionKind: "number",
+                value: 3,
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
       it("Parses { x = 1 * 2; }", () => {
         // Arrange
         const tokens: Array<Token> = [
