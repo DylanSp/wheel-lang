@@ -114,9 +114,137 @@ describe("Scanner", () => {
         expect(scanResult.right[0].tokenKind).toBe("identifier");
       });
 
+      it('Recognizes a word beginning with "function" as an identifier', () => {
+        // Arrange
+        const input = "functional";
+
+        // Act
+        const scanResult = scan(input);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(1);
+        expect(scanResult.right[0].tokenKind).toBe("identifier");
+      });
+
       it('Recognizes a word with "return" in it as an identifier', () => {
         // Arrange
         const input = "subreturn";
+
+        // Act
+        const scanResult = scan(input);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(1);
+        expect(scanResult.right[0].tokenKind).toBe("identifier");
+      });
+
+      it('Recognizes a word beginning with "return" as an identifier', () => {
+        // Arrange
+        const input = "returning";
+
+        // Act
+        const scanResult = scan(input);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(1);
+        expect(scanResult.right[0].tokenKind).toBe("identifier");
+      });
+
+      it('Recognizes a word with "if" in it as an identifier', () => {
+        // Arrange
+        const input = "apertif";
+
+        // Act
+        const scanResult = scan(input);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(1);
+        expect(scanResult.right[0].tokenKind).toBe("identifier");
+      });
+
+      it('Recognizes a word beginning with "if" as an identifier', () => {
+        // Arrange
+        const input = "ifIAmATaco";
+
+        // Act
+        const scanResult = scan(input);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(1);
+        expect(scanResult.right[0].tokenKind).toBe("identifier");
+      });
+
+      it('Recognizes a word with "else" in it as an identifier', () => {
+        // Arrange
+        const input = "orElse";
+
+        // Act
+        const scanResult = scan(input);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(1);
+        expect(scanResult.right[0].tokenKind).toBe("identifier");
+      });
+
+      it('Recognizes a word beginning with "else" as an identifier', () => {
+        // Arrange
+        const input = "elsewhere";
+
+        // Act
+        const scanResult = scan(input);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(1);
+        expect(scanResult.right[0].tokenKind).toBe("identifier");
+      });
+
+      it('Recognizes a word with "while" in it as an identifier', () => {
+        // Arrange
+        const input = "meanwhile";
+
+        // Act
+        const scanResult = scan(input);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(1);
+        expect(scanResult.right[0].tokenKind).toBe("identifier");
+      });
+
+      it('Recognizes a word beginning with "while" as an identifier', () => {
+        // Arrange
+        const input = "whiled";
 
         // Act
         const scanResult = scan(input);
@@ -205,7 +333,7 @@ describe("Scanner", () => {
         expect(scanResult.right[1].value).toBe(2);
       });
 
-      it("Recognizes (( as two distinct tokens", () => {
+      it('Recognizes "((" as two distinct tokens', () => {
         // Arrange
         const inputStr = "((";
 
@@ -221,6 +349,23 @@ describe("Scanner", () => {
         scanResult.right.forEach((token) => {
           expect(token.tokenKind).toBe("leftParen");
         });
+      });
+
+      it('Recognizes "if 1" as two distinct tokens', () => {
+        // Arrange
+        const inputStr = "if 1";
+
+        // Act
+        const scanResult = scan(inputStr);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(2);
+        expect(scanResult.right[0].tokenKind).toBe("if");
+        expect(scanResult.right[1].tokenKind).toBe("number");
       });
     });
   });

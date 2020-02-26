@@ -106,27 +106,39 @@ export const scan: Scan = (input: string) => {
     const char = input[position];
 
     // TODO add general way of recognizing keywords? same logic for "function"/"return"/"if"/"else"/"while"
-    if (/^function/.test(input.substring(position))) {
+    if (
+      /^function/.test(input.substring(position)) &&
+      !/^[a-zA-Z0-9]/.test(input.substring(position + "function".length))
+    ) {
       tokens.push({
         tokenKind: "function",
       });
       position += "function".length;
-    } else if (/^return/.test(input.substring(position))) {
+    } else if (
+      /^return/.test(input.substring(position)) &&
+      !/^[a-zA-Z0-9]/.test(input.substring(position + "return".length))
+    ) {
       tokens.push({
         tokenKind: "return",
       });
       position += "return".length;
-    } else if (/^if/.test(input.substring(position))) {
+    } else if (/^if/.test(input.substring(position)) && !/^[a-zA-Z0-9]/.test(input.substring(position + "if".length))) {
       tokens.push({
         tokenKind: "if",
       });
       position += "if".length;
-    } else if (/^else/.test(input.substring(position))) {
+    } else if (
+      /^else/.test(input.substring(position)) &&
+      !/^[a-zA-Z0-9]/.test(input.substring(position + "else".length))
+    ) {
       tokens.push({
         tokenKind: "else",
       });
       position += "else".length;
-    } else if (/^while/.test(input.substring(position))) {
+    } else if (
+      /^while/.test(input.substring(position)) &&
+      !/^[a-zA-Z0-9]/.test(input.substring(position + "while".length))
+    ) {
       tokens.push({
         tokenKind: "while",
       });
