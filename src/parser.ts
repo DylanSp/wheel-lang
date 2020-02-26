@@ -36,7 +36,7 @@ interface VariableAssignment {
   variableValue: Expression;
 }
 
-export type Expression = BinaryOperation | NumberExpr | FunctionCall | VariableRef;
+export type Expression = BinaryOperation | NumberExpr | FunctionCall | VariableRef | BooleanLiteral;
 
 interface BinaryOperation {
   expressionKind: "binOp";
@@ -59,6 +59,11 @@ interface FunctionCall {
 interface VariableRef {
   expressionKind: "variableRef";
   variableName: Identifier;
+}
+
+interface BooleanLiteral {
+  expressionKind: "boolean";
+  isTrue: boolean;
 }
 
 export interface ParseFailure {

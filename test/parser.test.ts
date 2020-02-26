@@ -874,6 +874,53 @@ describe("Parser", () => {
 
         expect(parseResult.right).toEqual(desiredResult);
       });
+
+      it("Parses { x = true; }", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: true,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "boolean",
+              isTrue: true,
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
     });
 
     describe("Simple return statements", () => {
