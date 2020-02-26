@@ -134,6 +134,7 @@ export const scan: Scan = (input: string) => {
   let position = 0;
   while (position < input.length) {
     const char = input[position];
+    const peekAhead = input[position + 1];
 
     // TODO add general way of recognizing keywords? same logic for "function"/"return"/"if"/"else"/"while"
     if (
@@ -211,7 +212,7 @@ export const scan: Scan = (input: string) => {
           position += 1;
           break;
         case "=":
-          if (input[position + 1] === "=") {
+          if (peekAhead === "=") {
             tokens.push({
               tokenKind: "relationalOp",
               relationalOp: "equals",
@@ -225,7 +226,7 @@ export const scan: Scan = (input: string) => {
           }
           break;
         case "<":
-          if (input[position + 1] === "=") {
+          if (peekAhead === "=") {
             tokens.push({
               tokenKind: "relationalOp",
               relationalOp: "lessThanEquals",
@@ -240,7 +241,7 @@ export const scan: Scan = (input: string) => {
           }
           break;
         case ">":
-          if (input[position + 1] === "=") {
+          if (peekAhead === "=") {
             tokens.push({
               tokenKind: "relationalOp",
               relationalOp: "greaterThanEquals",
@@ -288,7 +289,7 @@ export const scan: Scan = (input: string) => {
           position += 1;
           break;
         case "/":
-          if (input[position + 1] === "=") {
+          if (peekAhead === "=") {
             tokens.push({
               tokenKind: "relationalOp",
               relationalOp: "notEqual",
