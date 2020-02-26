@@ -19,6 +19,7 @@ export type Token =
   | Semicolon
   | Comma
   | NumberToken
+  | BooleanToken
   | ArithmeticBinaryOperationToken
   | LogicalBinaryOperationToken
   | LogicalUnaryOperationToken
@@ -76,6 +77,11 @@ interface Comma {
 export interface NumberToken {
   tokenKind: "number";
   value: number;
+}
+
+interface BooleanToken {
+  tokenKind: "boolean";
+  isTrue: boolean;
 }
 
 export type ArithmeticBinaryOperation = "add" | "subtract" | "multiply" | "divide";
@@ -174,6 +180,24 @@ export const scan: Scan = (input: string) => {
         tokenKind: "while",
       });
       position += "while".length;
+    } else if (
+      /^true/.test(input.substring(position)) &&
+      !/^[a-zA-Z0-9]/.test(input.substring(position + "true".length))
+    ) {
+      tokens.push({
+        tokenKind: "boolean",
+        isTrue: true,
+      });
+      position += "true".length;
+    } else if (
+      /^false/.test(input.substring(position)) &&
+      !/^[a-zA-Z0-9]/.test(input.substring(position + "false".length))
+    ) {
+      tokens.push({
+        tokenKind: "boolean",
+        isTrue: false,
+      });
+      position += "false".length;
     } else if (/\d{1}/.test(char)) {
       const numberMatches = input.substring(position).match(/^[\d]+([.][\d]+)?/);
       if (numberMatches === null) {

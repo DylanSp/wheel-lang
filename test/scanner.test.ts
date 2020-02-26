@@ -378,6 +378,50 @@ describe("Scanner", () => {
       });
     });
 
+    describe("Boolean literals", () => {
+      it('Scans "true"', () => {
+        // Arrange
+        const input = "true";
+
+        // Act
+        const scanResult = scan(input);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(1);
+
+        if (scanResult.right[0].tokenKind !== "boolean") {
+          throw new Error(`${input} not recognized as boolean literal`);
+        }
+
+        expect(scanResult.right[0].isTrue).toBe(true);
+      });
+
+      it('Scans "false"', () => {
+        // Arrange
+        const input = "false";
+
+        // Act
+        const scanResult = scan(input);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(1);
+
+        if (scanResult.right[0].tokenKind !== "boolean") {
+          throw new Error(`${input} not recognized as boolean literal`);
+        }
+
+        expect(scanResult.right[0].isTrue).toBe(false);
+      });
+    });
+
     describe("Multiple tokens", () => {
       it("Recognizes whitespace as a separator", () => {
         // Arrange
