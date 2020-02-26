@@ -227,11 +227,11 @@ export const parse: Parse = (input) => {
       return expr;
     }
 
-    return parseCall();
+    return parsePotentialCall();
   };
 
-  // TODO better name? not necessarily a call
-  const parseCall = (): Expression => {
+  // could be a call, could just be a number/identifier
+  const parsePotentialCall = (): Expression => {
     let callee = parseNumberOrIdentifier();
 
     while (input[position]?.tokenKind === "leftParen") {
