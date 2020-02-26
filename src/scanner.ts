@@ -20,6 +20,7 @@ export type Token =
   | Comma
   | NumberToken
   | ArithmeticBinaryOperationToken
+  | LogicalBinaryOperationToken
   | IdentifierToken;
 
 interface LeftBrace {
@@ -79,7 +80,14 @@ export type ArithmeticBinaryOperation = "add" | "subtract" | "multiply" | "divid
 
 export interface ArithmeticBinaryOperationToken {
   tokenKind: "arithBinaryOp";
-  operation: ArithmeticBinaryOperation;
+  arithBinaryOp: ArithmeticBinaryOperation;
+}
+
+export type LogicalBinaryOperation = "and" | "or";
+
+export interface LogicalBinaryOperationToken {
+  tokenKind: "logicalBinaryOp";
+  logicalBinaryOp: LogicalBinaryOperation;
 }
 
 export interface IdentifierToken {
@@ -201,28 +209,42 @@ export const scan: Scan = (input: string) => {
         case "+":
           tokens.push({
             tokenKind: "arithBinaryOp",
-            operation: "add",
+            arithBinaryOp: "add",
           });
           position += 1;
           break;
         case "-":
           tokens.push({
             tokenKind: "arithBinaryOp",
-            operation: "subtract",
+            arithBinaryOp: "subtract",
           });
           position += 1;
           break;
         case "*":
           tokens.push({
             tokenKind: "arithBinaryOp",
-            operation: "multiply",
+            arithBinaryOp: "multiply",
           });
           position += 1;
           break;
         case "/":
           tokens.push({
             tokenKind: "arithBinaryOp",
-            operation: "divide",
+            arithBinaryOp: "divide",
+          });
+          position += 1;
+          break;
+        case "&":
+          tokens.push({
+            tokenKind: "logicalBinaryOp",
+            logicalBinaryOp: "and",
+          });
+          position += 1;
+          break;
+        case "|":
+          tokens.push({
+            tokenKind: "logicalBinaryOp",
+            logicalBinaryOp: "or",
           });
           position += 1;
           break;

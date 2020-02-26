@@ -181,7 +181,7 @@ export const parse: Parse = (input) => {
       const opToken = input[position] as ArithmeticBinaryOperationToken; // cast should always succeed
 
       // this condition should never be true; parseTerm() should consume all *'s and /'s, right now that leaves only + and -
-      if (opToken.operation !== "add" && opToken.operation !== "subtract") {
+      if (opToken.arithBinaryOp !== "add" && opToken.arithBinaryOp !== "subtract") {
         throw new Error("Programming error when trying to parse an expression; detected an anomalous operation token");
       }
 
@@ -189,7 +189,7 @@ export const parse: Parse = (input) => {
       const rightSide = parseTerm();
       expr = {
         expressionKind: "binOp",
-        operation: opToken.operation,
+        operation: opToken.arithBinaryOp,
         leftOperand: expr,
         rightOperand: rightSide,
       };
@@ -203,7 +203,7 @@ export const parse: Parse = (input) => {
     while (input[position]?.tokenKind === "arithBinaryOp") {
       // need the conditional access to .tokenKind in case this.position goes past input.length
       const opToken = input[position] as ArithmeticBinaryOperationToken; // cast should always succeed
-      if (opToken.operation !== "multiply" && opToken.operation !== "divide") {
+      if (opToken.arithBinaryOp !== "multiply" && opToken.arithBinaryOp !== "divide") {
         break;
       }
 
@@ -211,7 +211,7 @@ export const parse: Parse = (input) => {
       const rightSide = parseFactor();
       term = {
         expressionKind: "binOp",
-        operation: opToken.operation,
+        operation: opToken.arithBinaryOp,
         leftOperand: term,
         rightOperand: rightSide,
       };

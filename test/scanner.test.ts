@@ -32,7 +32,7 @@ describe("Scanner", () => {
       });
     });
 
-    describe("Arithmetic operations", () => {
+    describe("Arithmetic binary operations", () => {
       test.each([
         ["+", "add"],
         ["-", "subtract"],
@@ -50,10 +50,33 @@ describe("Scanner", () => {
         expect(scanResult.right).toHaveLength(1);
 
         if (scanResult.right[0].tokenKind !== "arithBinaryOp") {
-          throw new Error(`Scan produced ${scanResult.right[0].tokenKind} instead of operation`);
+          throw new Error(`Scan produced ${scanResult.right[0].tokenKind} instead of arithmetic binary operation`);
         }
 
-        expect(scanResult.right[0].operation).toBe(operationKind);
+        expect(scanResult.right[0].arithBinaryOp).toBe(operationKind);
+      });
+    });
+
+    describe("Logical binary operations", () => {
+      test.each([
+        ["&", "and"],
+        ["|", "or"],
+      ])('Recognizes "%s"', (input, operationKind) => {
+        // Act
+        const scanResult = scan(input);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(1);
+
+        if (scanResult.right[0].tokenKind !== "logicalBinaryOp") {
+          throw new Error(`Scan produced ${scanResult.right[0].tokenKind} instead of logical binary operation`);
+        }
+
+        expect(scanResult.right[0].logicalBinaryOp).toBe(operationKind);
       });
     });
 
