@@ -70,10 +70,6 @@ describe("Full interpretation pipeline", () => {
 
       // Assert
       if (!isRight(runResult)) {
-        console.log(runResult.left.pipelineErrorKind);
-        if (runResult.left.pipelineErrorKind === "scan") {
-          runResult.left.scanErrors.forEach((err) => console.log(err.invalidLexeme));
-        }
         throw new Error("Program failed, should have succeeded");
       }
 
