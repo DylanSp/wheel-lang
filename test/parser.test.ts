@@ -25,7 +25,7 @@ describe("Parser", () => {
             value: 1,
           },
           {
-            tokenKind: "operation",
+            tokenKind: "arithBinaryOp",
             operation: "add",
           },
           {
@@ -89,7 +89,7 @@ describe("Parser", () => {
             value: 1,
           },
           {
-            tokenKind: "operation",
+            tokenKind: "arithBinaryOp",
             operation: "add",
           },
           {
@@ -97,7 +97,7 @@ describe("Parser", () => {
             value: 2,
           },
           {
-            tokenKind: "operation",
+            tokenKind: "arithBinaryOp",
             operation: "add",
           },
           {
@@ -169,7 +169,7 @@ describe("Parser", () => {
             value: 1,
           },
           {
-            tokenKind: "operation",
+            tokenKind: "arithBinaryOp",
             operation: "multiply",
           },
           {
@@ -233,7 +233,7 @@ describe("Parser", () => {
             value: 1,
           },
           {
-            tokenKind: "operation",
+            tokenKind: "arithBinaryOp",
             operation: "multiply",
           },
           {
@@ -241,7 +241,7 @@ describe("Parser", () => {
             value: 2,
           },
           {
-            tokenKind: "operation",
+            tokenKind: "arithBinaryOp",
             operation: "subtract",
           },
           {
@@ -313,7 +313,7 @@ describe("Parser", () => {
             value: 4,
           },
           {
-            tokenKind: "operation",
+            tokenKind: "arithBinaryOp",
             operation: "add",
           },
           {
@@ -321,7 +321,7 @@ describe("Parser", () => {
             value: 5,
           },
           {
-            tokenKind: "operation",
+            tokenKind: "arithBinaryOp",
             operation: "divide",
           },
           {
@@ -396,7 +396,7 @@ describe("Parser", () => {
             value: 7,
           },
           {
-            tokenKind: "operation",
+            tokenKind: "arithBinaryOp",
             operation: "add",
           },
           {
@@ -407,7 +407,7 @@ describe("Parser", () => {
             tokenKind: "rightParen",
           },
           {
-            tokenKind: "operation",
+            tokenKind: "arithBinaryOp",
             operation: "divide",
           },
           {
@@ -685,7 +685,7 @@ describe("Parser", () => {
             tokenKind: "rightParen",
           },
           {
-            tokenKind: "operation",
+            tokenKind: "arithBinaryOp",
             operation: "add",
           },
           {
@@ -752,7 +752,7 @@ describe("Parser", () => {
             value: 2,
           },
           {
-            tokenKind: "operation",
+            tokenKind: "arithBinaryOp",
             operation: "multiply",
           },
           {
@@ -891,7 +891,7 @@ describe("Parser", () => {
             value: 1,
           },
           {
-            tokenKind: "operation",
+            tokenKind: "arithBinaryOp",
             operation: "add",
           },
           {

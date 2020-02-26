@@ -32,7 +32,7 @@ describe("Scanner", () => {
       });
     });
 
-    describe("Operations", () => {
+    describe("Arithmetic operations", () => {
       test.each([
         ["+", "add"],
         ["-", "subtract"],
@@ -49,7 +49,7 @@ describe("Scanner", () => {
 
         expect(scanResult.right).toHaveLength(1);
 
-        if (scanResult.right[0].tokenKind !== "operation") {
+        if (scanResult.right[0].tokenKind !== "arithBinaryOp") {
           throw new Error(`Scan produced ${scanResult.right[0].tokenKind} instead of operation`);
         }
 

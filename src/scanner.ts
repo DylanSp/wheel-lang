@@ -19,7 +19,7 @@ export type Token =
   | Semicolon
   | Comma
   | NumberToken
-  | OperationToken
+  | ArithmeticBinaryOperationToken
   | IdentifierToken;
 
 interface LeftBrace {
@@ -75,11 +75,11 @@ export interface NumberToken {
   value: number;
 }
 
-export type Operation = "add" | "subtract" | "multiply" | "divide";
+export type ArithmeticBinaryOperation = "add" | "subtract" | "multiply" | "divide";
 
-export interface OperationToken {
-  tokenKind: "operation";
-  operation: Operation;
+export interface ArithmeticBinaryOperationToken {
+  tokenKind: "arithBinaryOp";
+  operation: ArithmeticBinaryOperation;
 }
 
 export interface IdentifierToken {
@@ -200,28 +200,28 @@ export const scan: Scan = (input: string) => {
           break;
         case "+":
           tokens.push({
-            tokenKind: "operation",
+            tokenKind: "arithBinaryOp",
             operation: "add",
           });
           position += 1;
           break;
         case "-":
           tokens.push({
-            tokenKind: "operation",
+            tokenKind: "arithBinaryOp",
             operation: "subtract",
           });
           position += 1;
           break;
         case "*":
           tokens.push({
-            tokenKind: "operation",
+            tokenKind: "arithBinaryOp",
             operation: "multiply",
           });
           position += 1;
           break;
         case "/":
           tokens.push({
-            tokenKind: "operation",
+            tokenKind: "arithBinaryOp",
             operation: "divide",
           });
           position += 1;

@@ -1,4 +1,10 @@
-import { Operation, IdentifierToken, Token, OperationToken, NumberToken } from "./scanner";
+import {
+  ArithmeticBinaryOperation,
+  IdentifierToken,
+  Token,
+  ArithmeticBinaryOperationToken,
+  NumberToken,
+} from "./scanner";
 import { Either, right, left } from "fp-ts/lib/Either";
 import { Identifier } from "./types";
 
@@ -34,7 +40,7 @@ export type Expression = BinaryOperation | NumberExpr | FunctionCall | VariableR
 
 interface BinaryOperation {
   expressionKind: "binOp";
-  operation: Operation;
+  operation: ArithmeticBinaryOperation;
   leftOperand: Expression;
   rightOperand: Expression;
 }
@@ -170,9 +176,9 @@ export const parse: Parse = (input) => {
   /** Expression parsing */
   const parseExpr = (): Expression => {
     let expr: Expression = parseTerm();
-    while (input[position]?.tokenKind === "operation") {
+    while (input[position]?.tokenKind === "arithBinaryOp") {
       // need the conditional access to .tokenKind in case this.position goes past input.length
-      const opToken = input[position] as OperationToken; // cast should always succeed
+      const opToken = input[position] as ArithmeticBinaryOperationToken; // cast should always succeed
 
       // this condition should never be true; parseTerm() should consume all *'s and /'s, right now that leaves only + and -
       if (opToken.operation !== "add" && opToken.operation !== "subtract") {
@@ -194,9 +200,9 @@ export const parse: Parse = (input) => {
 
   const parseTerm = (): Expression => {
     let term: Expression = parseFactor();
-    while (input[position]?.tokenKind === "operation") {
+    while (input[position]?.tokenKind === "arithBinaryOp") {
       // need the conditional access to .tokenKind in case this.position goes past input.length
-      const opToken = input[position] as OperationToken; // cast should always succeed
+      const opToken = input[position] as ArithmeticBinaryOperationToken; // cast should always succeed
       if (opToken.operation !== "multiply" && opToken.operation !== "divide") {
         break;
       }
