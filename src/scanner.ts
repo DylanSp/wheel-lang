@@ -13,6 +13,9 @@ export type Token =
   | SingleEquals
   | FunctionKeyword
   | ReturnKeyword
+  | IfKeyword
+  | ElseKeyword
+  | WhileKeyword
   | Semicolon
   | Comma
   | NumberToken
@@ -45,6 +48,18 @@ interface FunctionKeyword {
 
 interface ReturnKeyword {
   tokenKind: "return";
+}
+
+interface IfKeyword {
+  tokenKind: "if";
+}
+
+interface ElseKeyword {
+  tokenKind: "else";
+}
+
+interface WhileKeyword {
+  tokenKind: "while";
 }
 
 interface Semicolon {
@@ -90,6 +105,7 @@ export const scan: Scan = (input: string) => {
   while (position < input.length) {
     const char = input[position];
 
+    // TODO add general way of recognizing keywords? same logic for "function"/"return"/"if"/"else"/"while"
     if (/^function/.test(input.substring(position))) {
       tokens.push({
         tokenKind: "function",
@@ -100,6 +116,21 @@ export const scan: Scan = (input: string) => {
         tokenKind: "return",
       });
       position += "return".length;
+    } else if (/^if/.test(input.substring(position))) {
+      tokens.push({
+        tokenKind: "if",
+      });
+      position += "if".length;
+    } else if (/^else/.test(input.substring(position))) {
+      tokens.push({
+        tokenKind: "else",
+      });
+      position += "else".length;
+    } else if (/^while/.test(input.substring(position))) {
+      tokens.push({
+        tokenKind: "while",
+      });
+      position += "while".length;
     } else if (/\d{1}/.test(char)) {
       const numberMatches = input.substring(position).match(/^[\d]+([.][\d]+)?/);
       if (numberMatches === null) {

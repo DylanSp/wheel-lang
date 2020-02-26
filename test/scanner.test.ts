@@ -15,6 +15,9 @@ describe("Scanner", () => {
         [";", "semicolon"],
         ["function", "function"],
         ["return", "return"],
+        ["if", "if"],
+        ["else", "else"],
+        ["while", "while"],
       ])('Recognizes "%s"', (input, tokenKind) => {
         // Act
         const scanResult = scan(input);
