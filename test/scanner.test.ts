@@ -103,6 +103,29 @@ describe("Scanner", () => {
       });
     });
 
+    describe("Relational operations", () => {
+      test.each([
+        ["<", "lessThan"],
+        [">", "greaterThan"],
+      ])('Recognizes "%s"', (input, operationKind) => {
+        // Act
+        const scanResult = scan(input);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(1);
+
+        if (scanResult.right[0].tokenKind !== "relationalOp") {
+          throw new Error(`Scan produced ${scanResult.right[0].tokenKind} instead of relational operation`);
+        }
+
+        expect(scanResult.right[0].relationalOp).toBe(operationKind);
+      });
+    });
+
     describe("Identifiers", () => {
       it("Recognizes a generic word as an identifier", () => {
         // Arrange

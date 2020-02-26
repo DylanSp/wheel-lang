@@ -22,6 +22,7 @@ export type Token =
   | ArithmeticBinaryOperationToken
   | LogicalBinaryOperationToken
   | LogicalUnaryOperationToken
+  | RelationalOperationToken
   | IdentifierToken;
 
 interface LeftBrace {
@@ -96,6 +97,13 @@ export type LogicalUnaryOperation = "not";
 export interface LogicalUnaryOperationToken {
   tokenKind: "logicalUnaryOp";
   logicalUnaryOp: LogicalUnaryOperation;
+}
+
+export type RelationalOperation = "lessThan" | "greaterThan";
+
+export interface RelationalOperationToken {
+  tokenKind: "relationalOp";
+  relationalOp: RelationalOperation;
 }
 
 export interface IdentifierToken {
@@ -199,6 +207,20 @@ export const scan: Scan = (input: string) => {
         case "=":
           tokens.push({
             tokenKind: "singleEquals",
+          });
+          position += 1;
+          break;
+        case "<":
+          tokens.push({
+            tokenKind: "relationalOp",
+            relationalOp: "lessThan",
+          });
+          position += 1;
+          break;
+        case ">":
+          tokens.push({
+            tokenKind: "relationalOp",
+            relationalOp: "greaterThan",
           });
           position += 1;
           break;
