@@ -95,8 +95,6 @@ export const parse: Parse = (input) => {
         const functionName = (input[position] as IdentifierToken).name;
         position += 1; // move past identifier
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-        // @ts-ignore
         if (input[position]?.tokenKind !== "leftParen") {
           throw new ParseError("Expected (");
         }
@@ -107,8 +105,6 @@ export const parse: Parse = (input) => {
           args.push((input[position] as IdentifierToken).name);
           position += 1;
 
-          // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-          // @ts-ignore
           if (input[position]?.tokenKind === "comma") {
             position += 1; // move past comma
           }
@@ -130,8 +126,6 @@ export const parse: Parse = (input) => {
         position += 1; // move past "return"
         const expr = parseExpr();
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-        // @ts-ignore
         if (input[position]?.tokenKind !== "semicolon") {
           throw new ParseError("Expected ;");
         }
@@ -145,8 +139,6 @@ export const parse: Parse = (input) => {
         const ident = (input[position] as IdentifierToken).name;
         position += 1; // move past identifier
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-        // @ts-ignore
         if (input[position]?.tokenKind !== "singleEquals") {
           throw new ParseError("Expected =");
         }
@@ -154,8 +146,6 @@ export const parse: Parse = (input) => {
         position += 1; // move past "="
         const expr = parseExpr();
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-        // @ts-ignore
         if (input[position]?.tokenKind !== "semicolon") {
           throw new ParseError("Expected ;");
         }
@@ -169,9 +159,6 @@ export const parse: Parse = (input) => {
       }
     }
 
-    // position changes, so input[position] is different, but TypeScript doesn't recognize this
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-    // @ts-ignore
     if (input[position]?.tokenKind !== "rightBrace") {
       throw new ParseError("Expected }");
     }
@@ -233,10 +220,6 @@ export const parse: Parse = (input) => {
       position += 1; // move past left paren
       const expr = parseExpr();
 
-      // typescript thinks this is same expression as above if condition, but this.position gets advanced by parseExpr()
-      // so ignore TS error saying condition will always return true
-      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-      // @ts-ignore
       if (input[position]?.tokenKind !== "rightParen") {
         throw new ParseError("Expected )");
       }
