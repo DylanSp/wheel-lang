@@ -21,6 +21,7 @@ export type Token =
   | NumberToken
   | ArithmeticBinaryOperationToken
   | LogicalBinaryOperationToken
+  | LogicalUnaryOperationToken
   | IdentifierToken;
 
 interface LeftBrace {
@@ -88,6 +89,13 @@ export type LogicalBinaryOperation = "and" | "or";
 export interface LogicalBinaryOperationToken {
   tokenKind: "logicalBinaryOp";
   logicalBinaryOp: LogicalBinaryOperation;
+}
+
+export type LogicalUnaryOperation = "not";
+
+export interface LogicalUnaryOperationToken {
+  tokenKind: "logicalUnaryOp";
+  logicalUnaryOp: LogicalUnaryOperation;
 }
 
 export interface IdentifierToken {
@@ -245,6 +253,13 @@ export const scan: Scan = (input: string) => {
           tokens.push({
             tokenKind: "logicalBinaryOp",
             logicalBinaryOp: "or",
+          });
+          position += 1;
+          break;
+        case "!":
+          tokens.push({
+            tokenKind: "logicalUnaryOp",
+            logicalUnaryOp: "not",
           });
           position += 1;
           break;

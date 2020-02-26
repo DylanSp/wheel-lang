@@ -80,6 +80,29 @@ describe("Scanner", () => {
       });
     });
 
+    describe("Logical unary operations", () => {
+      it("Recognizes !", () => {
+        // Arrange
+        const input = "!";
+
+        // Act
+        const scanResult = scan(input);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(1);
+
+        if (scanResult.right[0].tokenKind !== "logicalUnaryOp") {
+          throw new Error(`Scan produced ${scanResult.right[0].tokenKind} instead of logical unary operation`);
+        }
+
+        expect(scanResult.right[0].logicalUnaryOp).toBe("not");
+      });
+    });
+
     describe("Identifiers", () => {
       it("Recognizes a generic word as an identifier", () => {
         // Arrange
@@ -412,7 +435,7 @@ describe("Scanner", () => {
 
     it("Reports error on special characters", () => {
       // Arrange
-      const inputStr = "!";
+      const inputStr = "#";
 
       // Act
       const scanResult = scan(inputStr);
@@ -427,7 +450,7 @@ describe("Scanner", () => {
 
     it("Reports multiple errors for multiple bad lexemes", () => {
       // Arrange
-      const bad1 = "!";
+      const bad1 = "#";
       const bad2 = "@";
 
       // Act

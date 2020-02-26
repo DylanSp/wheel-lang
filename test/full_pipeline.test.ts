@@ -140,9 +140,9 @@ describe("Full interpretation pipeline", () => {
       expect(runResult.left.scanErrors.map((error) => error.invalidLexeme)).toContain("#");
     });
 
-    it("Reports multiple scan errors on { # ! }", () => {
+    it("Reports multiple scan errors on { # @ }", () => {
       // Arrange
-      const programText = "{ # ! }";
+      const programText = "{ # @ }";
 
       // Act
       const runResult = runProgram(programText);
@@ -157,7 +157,7 @@ describe("Full interpretation pipeline", () => {
       }
 
       expect(runResult.left.scanErrors.map((error) => error.invalidLexeme)).toContain("#");
-      expect(runResult.left.scanErrors.map((error) => error.invalidLexeme)).toContain("!");
+      expect(runResult.left.scanErrors.map((error) => error.invalidLexeme)).toContain("@");
     });
   });
 
