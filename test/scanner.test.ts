@@ -107,6 +107,10 @@ describe("Scanner", () => {
       test.each([
         ["<", "lessThan"],
         [">", "greaterThan"],
+        ["<=", "lessThanEquals"],
+        [">=", "greaterThanEquals"],
+        ["==", "equals"],
+        ["/=", "notEqual"],
       ])('Recognizes "%s"', (input, operationKind) => {
         // Act
         const scanResult = scan(input);

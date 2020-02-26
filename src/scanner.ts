@@ -99,7 +99,13 @@ export interface LogicalUnaryOperationToken {
   logicalUnaryOp: LogicalUnaryOperation;
 }
 
-export type RelationalOperation = "lessThan" | "greaterThan";
+export type RelationalOperation =
+  | "lessThan"
+  | "greaterThan"
+  | "lessThanEquals"
+  | "greaterThanEquals"
+  | "equals"
+  | "notEqual";
 
 export interface RelationalOperationToken {
   tokenKind: "relationalOp";
@@ -205,24 +211,48 @@ export const scan: Scan = (input: string) => {
           position += 1;
           break;
         case "=":
-          tokens.push({
-            tokenKind: "singleEquals",
-          });
-          position += 1;
+          if (input[position + 1] === "=") {
+            tokens.push({
+              tokenKind: "relationalOp",
+              relationalOp: "equals",
+            });
+            position += 2;
+          } else {
+            tokens.push({
+              tokenKind: "singleEquals",
+            });
+            position += 1;
+          }
           break;
         case "<":
-          tokens.push({
-            tokenKind: "relationalOp",
-            relationalOp: "lessThan",
-          });
-          position += 1;
+          if (input[position + 1] === "=") {
+            tokens.push({
+              tokenKind: "relationalOp",
+              relationalOp: "lessThanEquals",
+            });
+            position += 2;
+          } else {
+            tokens.push({
+              tokenKind: "relationalOp",
+              relationalOp: "lessThan",
+            });
+            position += 1;
+          }
           break;
         case ">":
-          tokens.push({
-            tokenKind: "relationalOp",
-            relationalOp: "greaterThan",
-          });
-          position += 1;
+          if (input[position + 1] === "=") {
+            tokens.push({
+              tokenKind: "relationalOp",
+              relationalOp: "greaterThanEquals",
+            });
+            position += 2;
+          } else {
+            tokens.push({
+              tokenKind: "relationalOp",
+              relationalOp: "greaterThan",
+            });
+            position += 1;
+          }
           break;
         case ",":
           tokens.push({
@@ -258,11 +288,19 @@ export const scan: Scan = (input: string) => {
           position += 1;
           break;
         case "/":
-          tokens.push({
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "divide",
-          });
-          position += 1;
+          if (input[position + 1] === "=") {
+            tokens.push({
+              tokenKind: "relationalOp",
+              relationalOp: "notEqual",
+            });
+            position += 2;
+          } else {
+            tokens.push({
+              tokenKind: "arithBinaryOp",
+              arithBinaryOp: "divide",
+            });
+            position += 1;
+          }
           break;
         case "&":
           tokens.push({
