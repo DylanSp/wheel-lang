@@ -1481,7 +1481,1627 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      // TODO tests checking precedence
+      it("Parses { x = !f() } with proper precedence", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "logicalUnaryOp",
+            logicalUnaryOp: "not",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("f"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "unaryOp",
+              unaryOp: "not",
+              operand: {
+                expressionKind: "funcCall",
+                callee: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("f"),
+                },
+                args: [],
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = 2 * f() } with proper precedence", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 2,
+          },
+          {
+            tokenKind: "arithBinaryOp",
+            arithBinaryOp: "multiply",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("f"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              binOp: "multiply",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 2,
+              },
+              rightOperand: {
+                expressionKind: "funcCall",
+                callee: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("f"),
+                },
+                args: [],
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = 1 + f() } with proper precedence", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 1,
+          },
+          {
+            tokenKind: "arithBinaryOp",
+            arithBinaryOp: "add",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("f"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              binOp: "add",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+              rightOperand: {
+                expressionKind: "funcCall",
+                callee: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("f"),
+                },
+                args: [],
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = 3 < f() } with proper precedence", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 3,
+          },
+          {
+            tokenKind: "relationalOp",
+            relationalOp: "lessThan",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("f"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              binOp: "lessThan",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 3,
+              },
+              rightOperand: {
+                expressionKind: "funcCall",
+                callee: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("f"),
+                },
+                args: [],
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = true & f() } with proper precedence", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: true,
+          },
+          {
+            tokenKind: "logicalBinaryOp",
+            logicalBinaryOp: "and",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("f"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              binOp: "and",
+              leftOperand: {
+                expressionKind: "booleanLit",
+                isTrue: true,
+              },
+              rightOperand: {
+                expressionKind: "funcCall",
+                callee: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("f"),
+                },
+                args: [],
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = false | f() } with proper precedence", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: false,
+          },
+          {
+            tokenKind: "logicalBinaryOp",
+            logicalBinaryOp: "or",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("f"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              binOp: "or",
+              leftOperand: {
+                expressionKind: "booleanLit",
+                isTrue: false,
+              },
+              rightOperand: {
+                expressionKind: "funcCall",
+                callee: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("f"),
+                },
+                args: [],
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = 4 / !true } with proper precedence", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 4,
+          },
+          {
+            tokenKind: "arithBinaryOp",
+            arithBinaryOp: "divide",
+          },
+          {
+            tokenKind: "logicalUnaryOp",
+            logicalUnaryOp: "not",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: true,
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              binOp: "divide",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 4,
+              },
+              rightOperand: {
+                expressionKind: "unaryOp",
+                unaryOp: "not",
+                operand: {
+                  expressionKind: "booleanLit",
+                  isTrue: true,
+                },
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = 5 - !6 } with proper precedence", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 5,
+          },
+          {
+            tokenKind: "arithBinaryOp",
+            arithBinaryOp: "subtract",
+          },
+          {
+            tokenKind: "logicalUnaryOp",
+            logicalUnaryOp: "not",
+          },
+          {
+            tokenKind: "number",
+            value: 6,
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              binOp: "divide",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 5,
+              },
+              rightOperand: {
+                expressionKind: "unaryOp",
+                unaryOp: "not",
+                operand: {
+                  expressionKind: "numberLit",
+                  value: 6,
+                },
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = 7 < !8 } with proper precedence", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 7,
+          },
+          {
+            tokenKind: "relationalOp",
+            relationalOp: "lessThan",
+          },
+          {
+            tokenKind: "logicalUnaryOp",
+            logicalUnaryOp: "not",
+          },
+          {
+            tokenKind: "number",
+            value: 8,
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              binOp: "lessThan",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 7,
+              },
+              rightOperand: {
+                expressionKind: "unaryOp",
+                unaryOp: "not",
+                operand: {
+                  expressionKind: "numberLit",
+                  value: 8,
+                },
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = false & !true } with proper precedence", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: false,
+          },
+          {
+            tokenKind: "logicalBinaryOp",
+            logicalBinaryOp: "and",
+          },
+          {
+            tokenKind: "logicalUnaryOp",
+            logicalUnaryOp: "not",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: true,
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              binOp: "and",
+              leftOperand: {
+                expressionKind: "booleanLit",
+                isTrue: false,
+              },
+              rightOperand: {
+                expressionKind: "unaryOp",
+                unaryOp: "not",
+                operand: {
+                  expressionKind: "booleanLit",
+                  isTrue: true,
+                },
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = true | !false } with proper precedence", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: true,
+          },
+          {
+            tokenKind: "logicalBinaryOp",
+            logicalBinaryOp: "or",
+          },
+          {
+            tokenKind: "logicalUnaryOp",
+            logicalUnaryOp: "not",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: false,
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              binOp: "or",
+              leftOperand: {
+                expressionKind: "booleanLit",
+                isTrue: true,
+              },
+              rightOperand: {
+                expressionKind: "unaryOp",
+                unaryOp: "not",
+                operand: {
+                  expressionKind: "booleanLit",
+                  isTrue: false,
+                },
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = 9 > 10 * 11 } with proper precedence", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 9,
+          },
+          {
+            tokenKind: "relationalOp",
+            relationalOp: "greaterThan",
+          },
+          {
+            tokenKind: "number",
+            value: 10,
+          },
+          {
+            tokenKind: "arithBinaryOp",
+            arithBinaryOp: "multiply",
+          },
+          {
+            tokenKind: "number",
+            value: 11,
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              binOp: "greaterThan",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 9,
+              },
+              rightOperand: {
+                expressionKind: "binOp",
+                binOp: "multiply",
+                leftOperand: {
+                  expressionKind: "numberLit",
+                  value: 10,
+                },
+                rightOperand: {
+                  expressionKind: "numberLit",
+                  value: 11,
+                },
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = true & 12 * 13 } with proper precedence", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: true,
+          },
+          {
+            tokenKind: "logicalBinaryOp",
+            logicalBinaryOp: "and",
+          },
+          {
+            tokenKind: "number",
+            value: 12,
+          },
+          {
+            tokenKind: "arithBinaryOp",
+            arithBinaryOp: "multiply",
+          },
+          {
+            tokenKind: "number",
+            value: 13,
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              binOp: "and",
+              leftOperand: {
+                expressionKind: "booleanLit",
+                isTrue: true,
+              },
+              rightOperand: {
+                expressionKind: "binOp",
+                binOp: "multiply",
+                leftOperand: {
+                  expressionKind: "numberLit",
+                  value: 12,
+                },
+                rightOperand: {
+                  expressionKind: "numberLit",
+                  value: 13,
+                },
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = 14 | 15 / 16 } with proper precedence", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 14,
+          },
+          {
+            tokenKind: "logicalBinaryOp",
+            logicalBinaryOp: "or",
+          },
+          {
+            tokenKind: "number",
+            value: 15,
+          },
+          {
+            tokenKind: "arithBinaryOp",
+            arithBinaryOp: "divide",
+          },
+          {
+            tokenKind: "number",
+            value: 16,
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              binOp: "or",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 14,
+              },
+              rightOperand: {
+                expressionKind: "binOp",
+                binOp: "divide",
+                leftOperand: {
+                  expressionKind: "numberLit",
+                  value: 15,
+                },
+                rightOperand: {
+                  expressionKind: "numberLit",
+                  value: 16,
+                },
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = 17 >= 18 + 19 } with proper precedence", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 17,
+          },
+          {
+            tokenKind: "relationalOp",
+            relationalOp: "greaterThanEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 18,
+          },
+          {
+            tokenKind: "arithBinaryOp",
+            arithBinaryOp: "add",
+          },
+          {
+            tokenKind: "number",
+            value: 19,
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              binOp: "greaterThanEquals",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 17,
+              },
+              rightOperand: {
+                expressionKind: "binOp",
+                binOp: "add",
+                leftOperand: {
+                  expressionKind: "numberLit",
+                  value: 18,
+                },
+                rightOperand: {
+                  expressionKind: "numberLit",
+                  value: 19,
+                },
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = false & 20 - 21 } with proper precedence", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: false,
+          },
+          {
+            tokenKind: "logicalBinaryOp",
+            logicalBinaryOp: "and",
+          },
+          {
+            tokenKind: "number",
+            value: 20,
+          },
+          {
+            tokenKind: "arithBinaryOp",
+            arithBinaryOp: "subtract",
+          },
+          {
+            tokenKind: "number",
+            value: 21,
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              binOp: "and",
+              leftOperand: {
+                expressionKind: "booleanLit",
+                isTrue: false,
+              },
+              rightOperand: {
+                expressionKind: "binOp",
+                binOp: "subtract",
+                leftOperand: {
+                  expressionKind: "numberLit",
+                  value: 20,
+                },
+                rightOperand: {
+                  expressionKind: "numberLit",
+                  value: 21,
+                },
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = true | 22 + 23 } with proper precedence", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: true,
+          },
+          {
+            tokenKind: "logicalBinaryOp",
+            logicalBinaryOp: "or",
+          },
+          {
+            tokenKind: "number",
+            value: 22,
+          },
+          {
+            tokenKind: "arithBinaryOp",
+            arithBinaryOp: "add",
+          },
+          {
+            tokenKind: "number",
+            value: 23,
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              binOp: "or",
+              leftOperand: {
+                expressionKind: "booleanLit",
+                isTrue: true,
+              },
+              rightOperand: {
+                expressionKind: "binOp",
+                binOp: "add",
+                leftOperand: {
+                  expressionKind: "numberLit",
+                  value: 22,
+                },
+                rightOperand: {
+                  expressionKind: "numberLit",
+                  value: 23,
+                },
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = true & 24 >= 25  } with proper precedence", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: true,
+          },
+          {
+            tokenKind: "logicalBinaryOp",
+            logicalBinaryOp: "and",
+          },
+          {
+            tokenKind: "number",
+            value: 24,
+          },
+          {
+            tokenKind: "relationalOp",
+            relationalOp: "greaterThanEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 25,
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              binOp: "and",
+              leftOperand: {
+                expressionKind: "booleanLit",
+                isTrue: true,
+              },
+              rightOperand: {
+                expressionKind: "binOp",
+                binOp: "greaterThanEquals",
+                leftOperand: {
+                  expressionKind: "numberLit",
+                  value: 24,
+                },
+                rightOperand: {
+                  expressionKind: "numberLit",
+                  value: 25,
+                },
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = false | 26 <= 27 } with proper precedence", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: false,
+          },
+          {
+            tokenKind: "logicalBinaryOp",
+            logicalBinaryOp: "or",
+          },
+          {
+            tokenKind: "number",
+            value: 26,
+          },
+          {
+            tokenKind: "relationalOp",
+            relationalOp: "lessThanEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 27,
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              binOp: "or",
+              leftOperand: {
+                expressionKind: "booleanLit",
+                isTrue: false,
+              },
+              rightOperand: {
+                expressionKind: "binOp",
+                binOp: "lessThanEquals",
+                leftOperand: {
+                  expressionKind: "numberLit",
+                  value: 26,
+                },
+                rightOperand: {
+                  expressionKind: "numberLit",
+                  value: 27,
+                },
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = true & true | false } with proper precedence", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: true,
+          },
+          {
+            tokenKind: "logicalBinaryOp",
+            logicalBinaryOp: "and",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: true,
+          },
+          {
+            tokenKind: "logicalBinaryOp",
+            logicalBinaryOp: "or",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: false,
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              binOp: "or",
+              leftOperand: {
+                expressionKind: "binOp",
+                binOp: "and",
+                leftOperand: {
+                  expressionKind: "booleanLit",
+                  isTrue: true,
+                },
+                rightOperand: {
+                  expressionKind: "booleanLit",
+                  isTrue: true,
+                },
+              },
+              rightOperand: {
+                expressionKind: "booleanLit",
+                isTrue: false,
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = 1 < 2 & 3 > 4 | 5 + 6 * 7 == 8 & !f() } with proper precedence", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 1,
+          },
+          {
+            tokenKind: "relationalOp",
+            relationalOp: "lessThan",
+          },
+          {
+            tokenKind: "number",
+            value: 2,
+          },
+          {
+            tokenKind: "logicalBinaryOp",
+            logicalBinaryOp: "and",
+          },
+          {
+            tokenKind: "number",
+            value: 3,
+          },
+          {
+            tokenKind: "relationalOp",
+            relationalOp: "greaterThan",
+          },
+          {
+            tokenKind: "logicalBinaryOp",
+            logicalBinaryOp: "or",
+          },
+          {
+            tokenKind: "number",
+            value: 5,
+          },
+          {
+            tokenKind: "arithBinaryOp",
+            arithBinaryOp: "add",
+          },
+          {
+            tokenKind: "number",
+            value: 6,
+          },
+          {
+            tokenKind: "arithBinaryOp",
+            arithBinaryOp: "multiply",
+          },
+          {
+            tokenKind: "number",
+            value: 7,
+          },
+          {
+            tokenKind: "relationalOp",
+            relationalOp: "equals",
+          },
+          {
+            tokenKind: "number",
+            value: 8,
+          },
+          {
+            tokenKind: "logicalBinaryOp",
+            logicalBinaryOp: "and",
+          },
+          {
+            tokenKind: "logicalUnaryOp",
+            logicalUnaryOp: "not",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("f"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              binOp: "or",
+              leftOperand: {
+                expressionKind: "binOp",
+                binOp: "and",
+                leftOperand: {
+                  expressionKind: "binOp",
+                  binOp: "lessThan",
+                  leftOperand: {
+                    expressionKind: "numberLit",
+                    value: 1,
+                  },
+                  rightOperand: {
+                    expressionKind: "numberLit",
+                    value: 2,
+                  },
+                },
+                rightOperand: {
+                  expressionKind: "binOp",
+                  binOp: "greaterThan",
+                  leftOperand: {
+                    expressionKind: "numberLit",
+                    value: 3,
+                  },
+                  rightOperand: {
+                    expressionKind: "numberLit",
+                    value: 4,
+                  },
+                },
+              },
+              rightOperand: {
+                expressionKind: "binOp",
+                binOp: "and",
+                leftOperand: {
+                  expressionKind: "binOp",
+                  binOp: "notEqual",
+                  leftOperand: {
+                    expressionKind: "binOp",
+                    binOp: "add",
+                    leftOperand: {
+                      expressionKind: "numberLit",
+                      value: 5,
+                    },
+                    rightOperand: {
+                      expressionKind: "binOp",
+                      binOp: "multiply",
+                      leftOperand: {
+                        expressionKind: "numberLit",
+                        value: 6,
+                      },
+                      rightOperand: {
+                        expressionKind: "numberLit",
+                        value: 7,
+                      },
+                    },
+                  },
+                  rightOperand: {
+                    expressionKind: "numberLit",
+                    value: 8,
+                  },
+                },
+                rightOperand: {
+                  expressionKind: "unaryOp",
+                  unaryOp: "not",
+                  operand: {
+                    expressionKind: "funcCall",
+                    callee: {
+                      expressionKind: "variableRef",
+                      variableName: identifierIso.wrap("f"),
+                    },
+                    args: [],
+                  },
+                },
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
     });
 
     describe("Simple return statements", () => {
