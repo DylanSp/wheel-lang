@@ -2033,7 +2033,7 @@ describe("Parser", () => {
             variableName: identifierIso.wrap("x"),
             variableValue: {
               expressionKind: "binOp",
-              binOp: "divide",
+              binOp: "subtract",
               leftOperand: {
                 expressionKind: "numberLit",
                 value: 5,
@@ -2977,7 +2977,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 1 < 2 & 3 > 4 | 5 + 6 * 7 == 8 & !f(); } with proper precedence", () => {
+      it("Parses { x = 1 < 2 & 3 > 4 | 5 + 6 * 7 /= 8 & !f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -3015,6 +3015,10 @@ describe("Parser", () => {
             relationalOp: "greaterThan",
           },
           {
+            tokenKind: "number",
+            value: 4,
+          },
+          {
             tokenKind: "logicalBinaryOp",
             logicalBinaryOp: "or",
           },
@@ -3040,7 +3044,7 @@ describe("Parser", () => {
           },
           {
             tokenKind: "relationalOp",
-            relationalOp: "equals",
+            relationalOp: "notEqual",
           },
           {
             tokenKind: "number",
