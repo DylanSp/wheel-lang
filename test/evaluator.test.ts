@@ -61,6 +61,60 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(2);
       });
 
+      it("Evaluates { return true; } to true (evaluating boolean literals)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "booleanLit",
+              isTrue: true,
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(true);
+      });
+
+      it("Evaluates { return false; } to false (evaluating boolean literals)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "booleanLit",
+              isTrue: false,
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+      });
+
       it("Evaluates { return 1 + 2; } to 3 (evaluating addition)", () => {
         // Arrange
         const ast: Program = [

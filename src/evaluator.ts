@@ -59,6 +59,16 @@ const makeNumberValue = (value: number): NumberValue => ({
   value,
 });
 
+interface BooleanValue {
+  valueKind: "boolean";
+  isTrue: boolean;
+}
+
+const makeBooleanValue = (value: boolean): BooleanValue => ({
+  valueKind: "boolean",
+  isTrue: value,
+});
+
 interface ClosureValue {
   valueKind: "closure";
   closureName: Identifier;
@@ -80,7 +90,7 @@ const makeClosureValue = (
   env,
 });
 
-export type Value = NumberValue | ClosureValue;
+export type Value = NumberValue | BooleanValue | ClosureValue;
 
 type Evaluate = (program: Program) => Either<RuntimeFailure, Value>;
 
@@ -90,6 +100,9 @@ export const evaluate: Evaluate = (program) => {
     switch (expr.expressionKind) {
       case "numberLit": {
         return makeNumberValue(expr.value);
+      }
+      case "booleanLit": {
+        return makeBooleanValue(expr.isTrue);
       }
       case "binOp": {
         const lhsValue = evaluateExpr(env, expr.leftOperand);
