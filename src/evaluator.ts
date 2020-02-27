@@ -108,24 +108,67 @@ export const evaluate: Evaluate = (program) => {
         const lhsValue = evaluateExpr(env, expr.leftOperand);
         const rhsValue = evaluateExpr(env, expr.rightOperand);
 
-        if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
-          throw new RuntimeError("Trying to perform binOp on non-numeric values", {
-            runtimeErrorKind: "typeMismatch",
-            expectedType: "number",
-            actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
-          });
-        }
-
         switch (expr.binOp) {
           case "add":
+            if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
+              throw new RuntimeError("Trying to perform binOp on non-numeric values", {
+                runtimeErrorKind: "typeMismatch",
+                expectedType: "number",
+                actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
+              });
+            }
             return makeNumberValue(lhsValue.value + rhsValue.value);
           case "subtract":
+            if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
+              throw new RuntimeError("Trying to perform binOp on non-numeric values", {
+                runtimeErrorKind: "typeMismatch",
+                expectedType: "number",
+                actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
+              });
+            }
             return makeNumberValue(lhsValue.value - rhsValue.value);
           case "multiply":
+            if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
+              throw new RuntimeError("Trying to perform binOp on non-numeric values", {
+                runtimeErrorKind: "typeMismatch",
+                expectedType: "number",
+                actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
+              });
+            }
             return makeNumberValue(lhsValue.value * rhsValue.value);
           case "divide":
+            if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
+              throw new RuntimeError("Trying to perform binOp on non-numeric values", {
+                runtimeErrorKind: "typeMismatch",
+                expectedType: "number",
+                actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
+              });
+            }
             return makeNumberValue(lhsValue.value / rhsValue.value);
-          default:
+          case "and":
+            if (lhsValue.valueKind !== "boolean" || rhsValue.valueKind !== "boolean") {
+              throw new RuntimeError("Trying to perform logical operation on non-boolean values", {
+                runtimeErrorKind: "typeMismatch",
+                expectedType: "boolean",
+                actualType: lhsValue.valueKind !== "boolean" ? lhsValue.valueKind : rhsValue.valueKind,
+              });
+            }
+            return makeBooleanValue(lhsValue.isTrue && rhsValue.isTrue);
+          case "or":
+            if (lhsValue.valueKind !== "boolean" || rhsValue.valueKind !== "boolean") {
+              throw new RuntimeError("Trying to perform logical operation on non-boolean values", {
+                runtimeErrorKind: "typeMismatch",
+                expectedType: "boolean",
+                actualType: lhsValue.valueKind !== "boolean" ? lhsValue.valueKind : rhsValue.valueKind,
+              });
+            }
+            return makeBooleanValue(lhsValue.isTrue || rhsValue.isTrue);
+          case "lessThan":
+          case "greaterThan":
+          case "lessThanEquals":
+          case "greaterThanEquals":
+          case "equals":
+          case "notEqual":
             throw new Error("Non-arithmetic binary ops not yet implemented!");
         }
       }
@@ -145,8 +188,8 @@ export const evaluate: Evaluate = (program) => {
         const args = expr.args.map((arg) => evaluateExpr(env, arg));
         return apply(func, args);
       }
-      default:
-        throw new Error("Evaluating boolean literals and unary operations not yet implemented!");
+      case "unaryOp":
+        throw new Error("Evaluating unary operations not yet implemented!");
     }
   };
 

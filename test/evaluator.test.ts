@@ -383,6 +383,76 @@ describe("Evaluator", () => {
 
         expect(evalResult.right.value).toBe(47);
       });
+
+      it("Evaluates { return true & false; } to false (evaluating logical and)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "and",
+              leftOperand: {
+                expressionKind: "booleanLit",
+                isTrue: true,
+              },
+              rightOperand: {
+                expressionKind: "booleanLit",
+                isTrue: false,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+      });
+
+      it("Evaluates { return false | true; } to true (evaluating logical or)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "or",
+              leftOperand: {
+                expressionKind: "booleanLit",
+                isTrue: false,
+              },
+              rightOperand: {
+                expressionKind: "booleanLit",
+                isTrue: true,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(true);
+      });
     });
 
     describe("Programs with simple variable use", () => {
