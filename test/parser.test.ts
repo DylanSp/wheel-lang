@@ -1481,7 +1481,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = !f() } with proper precedence", () => {
+      it("Parses { x = !f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -1507,6 +1507,9 @@ describe("Parser", () => {
           },
           {
             tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "semicolon",
           },
           {
             tokenKind: "rightBrace",
@@ -1543,7 +1546,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 2 * f() } with proper precedence", () => {
+      it("Parses { x = 2 * f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -1573,6 +1576,9 @@ describe("Parser", () => {
           },
           {
             tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "semicolon",
           },
           {
             tokenKind: "rightBrace",
@@ -1613,7 +1619,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 1 + f() } with proper precedence", () => {
+      it("Parses { x = 1 + f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -1643,6 +1649,9 @@ describe("Parser", () => {
           },
           {
             tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "semicolon",
           },
           {
             tokenKind: "rightBrace",
@@ -1683,7 +1692,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 3 < f() } with proper precedence", () => {
+      it("Parses { x = 3 < f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -1713,6 +1722,9 @@ describe("Parser", () => {
           },
           {
             tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "semicolon",
           },
           {
             tokenKind: "rightBrace",
@@ -1753,7 +1765,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = true & f() } with proper precedence", () => {
+      it("Parses { x = true & f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -1783,6 +1795,9 @@ describe("Parser", () => {
           },
           {
             tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "semicolon",
           },
           {
             tokenKind: "rightBrace",
@@ -1823,7 +1838,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = false | f() } with proper precedence", () => {
+      it("Parses { x = false | f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -1853,6 +1868,9 @@ describe("Parser", () => {
           },
           {
             tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "semicolon",
           },
           {
             tokenKind: "rightBrace",
@@ -1893,7 +1911,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 4 / !true } with proper precedence", () => {
+      it("Parses { x = 4 / !true; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -1921,6 +1939,9 @@ describe("Parser", () => {
           {
             tokenKind: "boolean",
             isTrue: true,
+          },
+          {
+            tokenKind: "semicolon",
           },
           {
             tokenKind: "rightBrace",
@@ -1961,7 +1982,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 5 - !6 } with proper precedence", () => {
+      it("Parses { x = 5 - !6; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -1989,6 +2010,9 @@ describe("Parser", () => {
           {
             tokenKind: "number",
             value: 6,
+          },
+          {
+            tokenKind: "semicolon",
           },
           {
             tokenKind: "rightBrace",
@@ -2029,7 +2053,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 7 < !8 } with proper precedence", () => {
+      it("Parses { x = 7 < !8; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -2057,6 +2081,9 @@ describe("Parser", () => {
           {
             tokenKind: "number",
             value: 8,
+          },
+          {
+            tokenKind: "semicolon",
           },
           {
             tokenKind: "rightBrace",
@@ -2097,7 +2124,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = false & !true } with proper precedence", () => {
+      it("Parses { x = false & !true; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -2125,6 +2152,9 @@ describe("Parser", () => {
           {
             tokenKind: "boolean",
             isTrue: true,
+          },
+          {
+            tokenKind: "semicolon",
           },
           {
             tokenKind: "rightBrace",
@@ -2165,7 +2195,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = true | !false } with proper precedence", () => {
+      it("Parses { x = true | !false; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -2193,6 +2223,9 @@ describe("Parser", () => {
           {
             tokenKind: "boolean",
             isTrue: false,
+          },
+          {
+            tokenKind: "semicolon",
           },
           {
             tokenKind: "rightBrace",
@@ -2233,7 +2266,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 9 > 10 * 11 } with proper precedence", () => {
+      it("Parses { x = 9 > 10 * 11; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -2265,6 +2298,9 @@ describe("Parser", () => {
           {
             tokenKind: "number",
             value: 11,
+          },
+          {
+            tokenKind: "semicolon",
           },
           {
             tokenKind: "rightBrace",
@@ -2309,7 +2345,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = true & 12 * 13 } with proper precedence", () => {
+      it("Parses { x = true & 12 * 13; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -2341,6 +2377,9 @@ describe("Parser", () => {
           {
             tokenKind: "number",
             value: 13,
+          },
+          {
+            tokenKind: "semicolon",
           },
           {
             tokenKind: "rightBrace",
@@ -2385,7 +2424,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 14 | 15 / 16 } with proper precedence", () => {
+      it("Parses { x = 14 | 15 / 16; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -2417,6 +2456,9 @@ describe("Parser", () => {
           {
             tokenKind: "number",
             value: 16,
+          },
+          {
+            tokenKind: "semicolon",
           },
           {
             tokenKind: "rightBrace",
@@ -2461,7 +2503,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 17 >= 18 + 19 } with proper precedence", () => {
+      it("Parses { x = 17 >= 18 + 19; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -2493,6 +2535,9 @@ describe("Parser", () => {
           {
             tokenKind: "number",
             value: 19,
+          },
+          {
+            tokenKind: "semicolon",
           },
           {
             tokenKind: "rightBrace",
@@ -2537,7 +2582,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = false & 20 - 21 } with proper precedence", () => {
+      it("Parses { x = false & 20 - 21; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -2569,6 +2614,9 @@ describe("Parser", () => {
           {
             tokenKind: "number",
             value: 21,
+          },
+          {
+            tokenKind: "semicolon",
           },
           {
             tokenKind: "rightBrace",
@@ -2613,7 +2661,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = true | 22 + 23 } with proper precedence", () => {
+      it("Parses { x = true | 22 + 23; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -2645,6 +2693,9 @@ describe("Parser", () => {
           {
             tokenKind: "number",
             value: 23,
+          },
+          {
+            tokenKind: "semicolon",
           },
           {
             tokenKind: "rightBrace",
@@ -2689,7 +2740,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = true & 24 >= 25  } with proper precedence", () => {
+      it("Parses { x = true & 24 >= 25; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -2721,6 +2772,9 @@ describe("Parser", () => {
           {
             tokenKind: "number",
             value: 25,
+          },
+          {
+            tokenKind: "semicolon",
           },
           {
             tokenKind: "rightBrace",
@@ -2765,7 +2819,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = false | 26 <= 27 } with proper precedence", () => {
+      it("Parses { x = false | 26 <= 27; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -2797,6 +2851,9 @@ describe("Parser", () => {
           {
             tokenKind: "number",
             value: 27,
+          },
+          {
+            tokenKind: "semicolon",
           },
           {
             tokenKind: "rightBrace",
@@ -2841,7 +2898,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = true & true | false } with proper precedence", () => {
+      it("Parses { x = true & true | false; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -2873,6 +2930,9 @@ describe("Parser", () => {
           {
             tokenKind: "boolean",
             isTrue: false,
+          },
+          {
+            tokenKind: "semicolon",
           },
           {
             tokenKind: "rightBrace",
@@ -2917,7 +2977,7 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 1 < 2 & 3 > 4 | 5 + 6 * 7 == 8 & !f() } with proper precedence", () => {
+      it("Parses { x = 1 < 2 & 3 > 4 | 5 + 6 * 7 == 8 & !f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -3003,6 +3063,9 @@ describe("Parser", () => {
           },
           {
             tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "semicolon",
           },
           {
             tokenKind: "rightBrace",
