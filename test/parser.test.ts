@@ -3552,6 +3552,355 @@ describe("Parser", () => {
         ];
         expect(parseResult.right).toEqual(desiredResult);
       });
+
+      it("Parses { if (true) { return 1; } else {} } (program with if statement, empty else block)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "if",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: true,
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "return",
+          },
+          {
+            tokenKind: "number",
+            value: 1,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "else",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "booleanLit",
+              isTrue: true,
+            },
+            trueBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 1,
+                },
+              },
+            ],
+            falseBody: [],
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { if (false) {} else { return 2; } } (program with if statement, empty then block", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "if",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: false,
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "else",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "return",
+          },
+          {
+            tokenKind: "number",
+            value: 2,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "booleanLit",
+              isTrue: false,
+            },
+            trueBody: [],
+            falseBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 2,
+                },
+              },
+            ],
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { if (1 < 2) { return 3; } else { return 4; } } (program with if statement, statements in both blocks", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "if",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "number",
+            value: 1,
+          },
+          {
+            tokenKind: "relationalOp",
+            relationalOp: "lessThan",
+          },
+          {
+            tokenKind: "number",
+            value: 2,
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "return",
+          },
+          {
+            tokenKind: "number",
+            value: 3,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "else",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "return",
+          },
+          {
+            tokenKind: "number",
+            value: 4,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "binOp",
+              binOp: "lessThan",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+              rightOperand: {
+                expressionKind: "numberLit",
+                value: 2,
+              },
+            },
+            trueBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 3,
+                },
+              },
+            ],
+            falseBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 4,
+                },
+              },
+            ],
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { while (true) { x = 1; } } (program with while statement)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "while",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: true,
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 1,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "while",
+            condition: {
+              expressionKind: "booleanLit",
+              isTrue: true,
+            },
+            body: [
+              {
+                statementKind: "assignment",
+                variableName: identifierIso.wrap("x"),
+                variableValue: {
+                  expressionKind: "numberLit",
+                  value: 1,
+                },
+              },
+            ],
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
     });
   });
 
