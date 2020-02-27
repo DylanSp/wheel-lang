@@ -79,7 +79,7 @@ export interface NumberToken {
   value: number;
 }
 
-interface BooleanToken {
+export interface BooleanToken {
   tokenKind: "boolean";
   isTrue: boolean;
 }

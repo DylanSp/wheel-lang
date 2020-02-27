@@ -7,6 +7,9 @@ import {
   LogicalBinaryOperation,
   RelationalOperation,
   LogicalUnaryOperation,
+  LogicalBinaryOperationToken,
+  RelationalOperationToken,
+  BooleanToken,
 } from "./scanner";
 import { Either, right, left } from "fp-ts/lib/Either";
 import { Identifier } from "./types";
@@ -120,75 +123,143 @@ export const parse: Parse = (input) => {
     while (
       input[position]?.tokenKind === "function" ||
       input[position]?.tokenKind === "return" ||
-      input[position]?.tokenKind === "identifier"
+      input[position]?.tokenKind === "identifier" ||
+      input[position]?.tokenKind === "if" ||
+      input[position]?.tokenKind === "while"
     ) {
-      if (input[position]?.tokenKind === "function") {
-        position += 1; // move past "function"
+      switch (input[position].tokenKind) {
+        case "function": {
+          position += 1; // move past "function"
 
-        const functionName = (input[position] as IdentifierToken).name;
-        position += 1; // move past identifier
+          const functionName = (input[position] as IdentifierToken).name;
+          position += 1; // move past identifier
 
-        if (input[position]?.tokenKind !== "leftParen") {
-          throw new ParseError("Expected (");
-        }
-        position += 1; // move past left paren
-
-        const args: Array<Identifier> = [];
-        while (input[position]?.tokenKind === "identifier") {
-          args.push((input[position] as IdentifierToken).name);
-          position += 1;
-
-          if (input[position]?.tokenKind === "comma") {
-            position += 1; // move past comma
+          if (input[position]?.tokenKind !== "leftParen") {
+            throw new ParseError("Expected (");
           }
+          position += 1; // move past left paren
+
+          const args: Array<Identifier> = [];
+          while (input[position]?.tokenKind === "identifier") {
+            args.push((input[position] as IdentifierToken).name);
+            position += 1;
+
+            if (input[position]?.tokenKind === "comma") {
+              position += 1; // move past comma
+            }
+          }
+
+          if (input[position]?.tokenKind !== "rightParen") {
+            throw new ParseError("Expected )");
+          }
+          position += 1; // move past right paren
+
+          const body = parseBlock();
+          statements.push({
+            statementKind: "funcDecl",
+            functionName,
+            argNames: args,
+            body,
+          });
+          break;
         }
+        case "return": {
+          position += 1; // move past "return"
+          const expr = parseLogicalExpr();
 
-        if (input[position]?.tokenKind !== "rightParen") {
-          throw new ParseError("Expected )");
+          if (input[position]?.tokenKind !== "semicolon") {
+            throw new ParseError("Expected ;");
+          }
+          position += 1; // move past semicolon
+
+          statements.push({
+            statementKind: "return",
+            returnedValue: expr,
+          });
+          break;
         }
-        position += 1; // move past right paren
+        case "identifier": {
+          const ident = (input[position] as IdentifierToken).name;
+          position += 1; // move past identifier
 
-        const body = parseBlock();
-        statements.push({
-          statementKind: "funcDecl",
-          functionName,
-          argNames: args,
-          body,
-        });
-      } else if (input[position]?.tokenKind === "return") {
-        position += 1; // move past "return"
-        const expr = parseExpr();
+          if (input[position]?.tokenKind !== "singleEquals") {
+            throw new ParseError("Expected =");
+          }
 
-        if (input[position]?.tokenKind !== "semicolon") {
-          throw new ParseError("Expected ;");
+          position += 1; // move past "="
+          const expr = parseLogicalExpr();
+
+          if (input[position]?.tokenKind !== "semicolon") {
+            throw new ParseError("Expected ;");
+          }
+          position += 1; // move past semicolon
+
+          statements.push({
+            statementKind: "assignment",
+            variableName: ident,
+            variableValue: expr,
+          });
+          break;
         }
-        position += 1; // move past semicolon
+        case "if": {
+          position += 1; // move past "if"
 
-        statements.push({
-          statementKind: "return",
-          returnedValue: expr,
-        });
-      } else {
-        const ident = (input[position] as IdentifierToken).name;
-        position += 1; // move past identifier
+          if (input[position]?.tokenKind !== "leftParen") {
+            throw new ParseError("Expected (");
+          }
+          position += 1; // move past left paren
 
-        if (input[position]?.tokenKind !== "singleEquals") {
-          throw new ParseError("Expected =");
+          const condition = parseLogicalExpr();
+
+          if (input[position]?.tokenKind !== "rightParen") {
+            throw new ParseError("Expected )");
+          }
+          position += 1; // move past right paren
+
+          const trueBody = parseBlock();
+
+          if (input[position]?.tokenKind !== "else") {
+            throw new ParseError('Expected "else"');
+          }
+          position += 1; // move past "else"
+
+          const falseBody = parseBlock();
+
+          statements.push({
+            statementKind: "if",
+            condition,
+            trueBody,
+            falseBody,
+          });
+          break;
         }
+        case "while": {
+          position += 1; // move past "while"
 
-        position += 1; // move past "="
-        const expr = parseExpr();
+          if (input[position]?.tokenKind !== "leftParen") {
+            throw new ParseError("Expected (");
+          }
+          position += 1; // move past left paren
 
-        if (input[position]?.tokenKind !== "semicolon") {
-          throw new ParseError("Expected ;");
+          const condition = parseLogicalExpr();
+
+          if (input[position]?.tokenKind !== "rightParen") {
+            throw new ParseError("Expected )");
+          }
+          position += 1; // move past right paren
+
+          const body = parseBlock();
+
+          statements.push({
+            statementKind: "while",
+            condition,
+            body,
+          });
+          break;
         }
-        position += 1; // move past semicolon
-
-        statements.push({
-          statementKind: "assignment",
-          variableName: ident,
-          variableValue: expr,
-        });
+        default: {
+          break;
+        }
       }
     }
 
@@ -201,6 +272,61 @@ export const parse: Parse = (input) => {
   };
 
   /** Expression parsing */
+  const parseLogicalExpr = (): Expression => {
+    let logicalExpr: Expression = parseLogicalTerm();
+    while (
+      input[position]?.tokenKind === "logicalBinaryOp" &&
+      (input[position] as LogicalBinaryOperationToken).logicalBinaryOp === "or"
+    ) {
+      position += 1;
+      const rightSide = parseLogicalTerm();
+      logicalExpr = {
+        expressionKind: "binOp",
+        binOp: "or",
+        leftOperand: logicalExpr,
+        rightOperand: rightSide,
+      };
+    }
+
+    return logicalExpr;
+  };
+
+  const parseLogicalTerm = (): Expression => {
+    let logicalTerm: Expression = parseRelation();
+    while (
+      input[position]?.tokenKind === "logicalBinaryOp" &&
+      (input[position] as LogicalBinaryOperationToken).logicalBinaryOp === "and"
+    ) {
+      position += 1;
+      const rightSide = parseRelation();
+      logicalTerm = {
+        expressionKind: "binOp",
+        binOp: "and",
+        leftOperand: logicalTerm,
+        rightOperand: rightSide,
+      };
+    }
+
+    return logicalTerm;
+  };
+
+  const parseRelation = (): Expression => {
+    let relation = parseExpr();
+    if (input[position]?.tokenKind === "relationalOp") {
+      const relOp = (input[position] as RelationalOperationToken).relationalOp;
+      position += 1;
+      const rightSide = parseExpr();
+      relation = {
+        expressionKind: "binOp",
+        binOp: relOp,
+        leftOperand: relation,
+        rightOperand: rightSide,
+      };
+    }
+
+    return relation;
+  };
+
   const parseExpr = (): Expression => {
     let expr: Expression = parseTerm();
     while (input[position]?.tokenKind === "arithBinaryOp") {
@@ -226,7 +352,7 @@ export const parse: Parse = (input) => {
   };
 
   const parseTerm = (): Expression => {
-    let term: Expression = parseFactor();
+    let term: Expression = parseUnaryFactor();
     while (input[position]?.tokenKind === "arithBinaryOp") {
       // need the conditional access to .tokenKind in case this.position goes past input.length
       const opToken = input[position] as ArithmeticBinaryOperationToken; // cast should always succeed
@@ -235,7 +361,7 @@ export const parse: Parse = (input) => {
       }
 
       position += 1;
-      const rightSide = parseFactor();
+      const rightSide = parseUnaryFactor();
       term = {
         expressionKind: "binOp",
         binOp: opToken.arithBinaryOp,
@@ -247,11 +373,25 @@ export const parse: Parse = (input) => {
     return term;
   };
 
+  const parseUnaryFactor = (): Expression => {
+    if (input[position]?.tokenKind === "logicalUnaryOp") {
+      position += 1;
+      const factor = parseFactor();
+      return {
+        expressionKind: "unaryOp",
+        unaryOp: "not",
+        operand: factor,
+      };
+    }
+
+    return parseFactor();
+  };
+
   const parseFactor = (): Expression => {
     // handle grouping parentheses (NOT function calls)
     if (input[position]?.tokenKind === "leftParen") {
       position += 1; // move past left paren
-      const expr = parseExpr();
+      const expr = parseLogicalExpr();
 
       if (input[position]?.tokenKind !== "rightParen") {
         throw new ParseError("Expected )");
@@ -265,14 +405,14 @@ export const parse: Parse = (input) => {
 
   // could be a call, could just be a number/identifier
   const parsePotentialCall = (): Expression => {
-    let callee = parseNumberOrIdentifier();
+    let callee = parseLiteralOrIdentifier();
 
     while (input[position]?.tokenKind === "leftParen") {
       position += 1;
 
       const args: Array<Expression> = [];
       while (input[position]?.tokenKind !== "rightParen") {
-        args.push(parseExpr());
+        args.push(parseLogicalExpr());
 
         if (input[position]?.tokenKind == "comma") {
           position += 1; // move past comma
@@ -292,7 +432,7 @@ export const parse: Parse = (input) => {
     return callee;
   };
 
-  const parseNumberOrIdentifier = (): Expression => {
+  const parseLiteralOrIdentifier = (): Expression => {
     if (input[position]?.tokenKind === "number") {
       // need the conditional access to .tokenKind in case this.position goes past input.length
       const numToken = input[position] as NumberToken; // cast should always succeed
@@ -300,6 +440,15 @@ export const parse: Parse = (input) => {
       return {
         expressionKind: "numberLit",
         value: numToken.value,
+      };
+    }
+
+    if (input[position]?.tokenKind === "boolean") {
+      const boolToken = input[position] as BooleanToken; // cast should always succeed
+      position += 1;
+      return {
+        expressionKind: "booleanLit",
+        isTrue: boolToken.isTrue,
       };
     }
 
