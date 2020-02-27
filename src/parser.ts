@@ -4,6 +4,9 @@ import {
   Token,
   ArithmeticBinaryOperationToken,
   NumberToken,
+  LogicalBinaryOperation,
+  RelationalOperation,
+  LogicalUnaryOperation,
 } from "./scanner";
 import { Either, right, left } from "fp-ts/lib/Either";
 import { Identifier } from "./types";
@@ -16,7 +19,7 @@ export type Program = Block;
 
 export type Block = Array<Statement>;
 
-type Statement = FunctionDeclaration | ReturnStatement | VariableAssignment;
+type Statement = FunctionDeclaration | ReturnStatement | VariableAssignment | IfStatement | WhileStatement;
 
 interface FunctionDeclaration {
   statementKind: "funcDecl";
@@ -36,18 +39,42 @@ interface VariableAssignment {
   variableValue: Expression;
 }
 
-export type Expression = BinaryOperation | NumberExpr | FunctionCall | VariableRef | BooleanLiteral;
+interface IfStatement {
+  statementKind: "if";
+  condition: Expression;
+  trueBody: Block;
+  falseBody: Block;
+}
+
+interface WhileStatement {
+  statementKind: "while";
+  condition: Expression;
+  body: Block;
+}
+
+export type Expression = BinaryOperation | UnaryOperation | NumberLiteral | BooleanLiteral | FunctionCall | VariableRef;
 
 interface BinaryOperation {
   expressionKind: "binOp";
-  operation: ArithmeticBinaryOperation;
+  binOp: ArithmeticBinaryOperation | LogicalBinaryOperation | RelationalOperation;
   leftOperand: Expression;
   rightOperand: Expression;
 }
 
-interface NumberExpr {
-  expressionKind: "number";
+interface UnaryOperation {
+  expressionKind: "unaryOp";
+  unaryOp: LogicalUnaryOperation;
+  operand: Expression;
+}
+
+interface NumberLiteral {
+  expressionKind: "numberLit";
   value: number;
+}
+
+interface BooleanLiteral {
+  expressionKind: "booleanLit";
+  isTrue: boolean;
 }
 
 interface FunctionCall {
@@ -59,11 +86,6 @@ interface FunctionCall {
 interface VariableRef {
   expressionKind: "variableRef";
   variableName: Identifier;
-}
-
-interface BooleanLiteral {
-  expressionKind: "boolean";
-  isTrue: boolean;
 }
 
 export interface ParseFailure {
@@ -194,7 +216,7 @@ export const parse: Parse = (input) => {
       const rightSide = parseTerm();
       expr = {
         expressionKind: "binOp",
-        operation: opToken.arithBinaryOp,
+        binOp: opToken.arithBinaryOp,
         leftOperand: expr,
         rightOperand: rightSide,
       };
@@ -216,7 +238,7 @@ export const parse: Parse = (input) => {
       const rightSide = parseFactor();
       term = {
         expressionKind: "binOp",
-        operation: opToken.arithBinaryOp,
+        binOp: opToken.arithBinaryOp,
         leftOperand: term,
         rightOperand: rightSide,
       };
@@ -276,7 +298,7 @@ export const parse: Parse = (input) => {
       const numToken = input[position] as NumberToken; // cast should always succeed
       position += 1;
       return {
-        expressionKind: "number",
+        expressionKind: "numberLit",
         value: numToken.value,
       };
     }
