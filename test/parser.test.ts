@@ -1032,14 +1032,14 @@ describe("Parser", () => {
             variableName: identifierIso.wrap("x"),
             variableValue: {
               expressionKind: "binOp",
-              binOp: "and",
+              binOp: "or",
               leftOperand: {
                 expressionKind: "booleanLit",
-                isTrue: true,
+                isTrue: false,
               },
               rightOperand: {
                 expressionKind: "booleanLit",
-                isTrue: false,
+                isTrue: true,
               },
             },
           },
