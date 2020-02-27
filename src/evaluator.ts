@@ -88,7 +88,7 @@ export const evaluate: Evaluate = (program) => {
   // utility functions
   const evaluateExpr = (env: Environment, expr: Expression): Value => {
     switch (expr.expressionKind) {
-      case "number": {
+      case "numberLit": {
         return makeNumberValue(expr.value);
       }
       case "binOp": {
@@ -103,7 +103,7 @@ export const evaluate: Evaluate = (program) => {
           });
         }
 
-        switch (expr.operation) {
+        switch (expr.binOp) {
           case "add":
             return makeNumberValue(lhsValue.value + rhsValue.value);
           case "subtract":
@@ -112,6 +112,8 @@ export const evaluate: Evaluate = (program) => {
             return makeNumberValue(lhsValue.value * rhsValue.value);
           case "divide":
             return makeNumberValue(lhsValue.value / rhsValue.value);
+          default:
+            throw new Error("Non-arithmetic binary ops not yet implemented!");
         }
       }
       case "variableRef": {
@@ -130,6 +132,8 @@ export const evaluate: Evaluate = (program) => {
         const args = expr.args.map((arg) => evaluateExpr(env, arg));
         return apply(func, args);
       }
+      default:
+        throw new Error("Evaluating boolean literals and unary operations not yet implemented!");
     }
   };
 

@@ -13,7 +13,7 @@ describe("Evaluator", () => {
           {
             statementKind: "return",
             returnedValue: {
-              expressionKind: "number",
+              expressionKind: "numberLit",
               value: 1,
             },
           },
@@ -40,7 +40,7 @@ describe("Evaluator", () => {
           {
             statementKind: "return",
             returnedValue: {
-              expressionKind: "number",
+              expressionKind: "numberLit",
               value: 2,
             },
           },
@@ -68,13 +68,13 @@ describe("Evaluator", () => {
             statementKind: "return",
             returnedValue: {
               expressionKind: "binOp",
-              operation: "add",
+              binOp: "add",
               leftOperand: {
-                expressionKind: "number",
+                expressionKind: "numberLit",
                 value: 1,
               },
               rightOperand: {
-                expressionKind: "number",
+                expressionKind: "numberLit",
                 value: 2,
               },
             },
@@ -103,13 +103,13 @@ describe("Evaluator", () => {
             statementKind: "return",
             returnedValue: {
               expressionKind: "binOp",
-              operation: "subtract",
+              binOp: "subtract",
               leftOperand: {
-                expressionKind: "number",
+                expressionKind: "numberLit",
                 value: 3,
               },
               rightOperand: {
-                expressionKind: "number",
+                expressionKind: "numberLit",
                 value: 4,
               },
             },
@@ -138,13 +138,13 @@ describe("Evaluator", () => {
             statementKind: "return",
             returnedValue: {
               expressionKind: "binOp",
-              operation: "multiply",
+              binOp: "multiply",
               leftOperand: {
-                expressionKind: "number",
+                expressionKind: "numberLit",
                 value: 5,
               },
               rightOperand: {
-                expressionKind: "number",
+                expressionKind: "numberLit",
                 value: 6,
               },
             },
@@ -173,13 +173,13 @@ describe("Evaluator", () => {
             statementKind: "return",
             returnedValue: {
               expressionKind: "binOp",
-              operation: "divide",
+              binOp: "divide",
               leftOperand: {
-                expressionKind: "number",
+                expressionKind: "numberLit",
                 value: 8,
               },
               rightOperand: {
-                expressionKind: "number",
+                expressionKind: "numberLit",
                 value: 2,
               },
             },
@@ -208,21 +208,21 @@ describe("Evaluator", () => {
             statementKind: "return",
             returnedValue: {
               expressionKind: "binOp",
-              operation: "add",
+              binOp: "add",
               leftOperand: {
                 expressionKind: "binOp",
-                operation: "add",
+                binOp: "add",
                 leftOperand: {
-                  expressionKind: "number",
+                  expressionKind: "numberLit",
                   value: 1,
                 },
                 rightOperand: {
-                  expressionKind: "number",
+                  expressionKind: "numberLit",
                   value: 2,
                 },
               },
               rightOperand: {
-                expressionKind: "number",
+                expressionKind: "numberLit",
                 value: 3,
               },
             },
@@ -251,20 +251,20 @@ describe("Evaluator", () => {
             statementKind: "return",
             returnedValue: {
               expressionKind: "binOp",
-              operation: "add",
+              binOp: "add",
               leftOperand: {
-                expressionKind: "number",
+                expressionKind: "numberLit",
                 value: 4,
               },
               rightOperand: {
                 expressionKind: "binOp",
-                operation: "multiply",
+                binOp: "multiply",
                 leftOperand: {
-                  expressionKind: "number",
+                  expressionKind: "numberLit",
                   value: 5,
                 },
                 rightOperand: {
-                  expressionKind: "number",
+                  expressionKind: "numberLit",
                   value: 6,
                 },
               },
@@ -294,21 +294,21 @@ describe("Evaluator", () => {
             statementKind: "return",
             returnedValue: {
               expressionKind: "binOp",
-              operation: "subtract",
+              binOp: "subtract",
               leftOperand: {
                 expressionKind: "binOp",
-                operation: "multiply",
+                binOp: "multiply",
                 leftOperand: {
-                  expressionKind: "number",
+                  expressionKind: "numberLit",
                   value: 7,
                 },
                 rightOperand: {
-                  expressionKind: "number",
+                  expressionKind: "numberLit",
                   value: 8,
                 },
               },
               rightOperand: {
-                expressionKind: "number",
+                expressionKind: "numberLit",
                 value: 9,
               },
             },
@@ -339,7 +339,7 @@ describe("Evaluator", () => {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
             variableValue: {
-              expressionKind: "number",
+              expressionKind: "numberLit",
               value: 1,
             },
           },
@@ -374,7 +374,7 @@ describe("Evaluator", () => {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
             variableValue: {
-              expressionKind: "number",
+              expressionKind: "numberLit",
               value: 2,
             },
           },
@@ -409,7 +409,7 @@ describe("Evaluator", () => {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
             variableValue: {
-              expressionKind: "number",
+              expressionKind: "numberLit",
               value: 1,
             },
           },
@@ -417,7 +417,7 @@ describe("Evaluator", () => {
             statementKind: "assignment",
             variableName: identifierIso.wrap("y"),
             variableValue: {
-              expressionKind: "number",
+              expressionKind: "numberLit",
               value: 2,
             },
           },
@@ -452,7 +452,7 @@ describe("Evaluator", () => {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
             variableValue: {
-              expressionKind: "number",
+              expressionKind: "numberLit",
               value: 1,
             },
           },
@@ -460,7 +460,7 @@ describe("Evaluator", () => {
             statementKind: "assignment",
             variableName: identifierIso.wrap("y"),
             variableValue: {
-              expressionKind: "number",
+              expressionKind: "numberLit",
               value: 2,
             },
           },
@@ -495,7 +495,7 @@ describe("Evaluator", () => {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
             variableValue: {
-              expressionKind: "number",
+              expressionKind: "numberLit",
               value: 1,
             },
           },
@@ -503,7 +503,7 @@ describe("Evaluator", () => {
             statementKind: "assignment",
             variableName: identifierIso.wrap("y"),
             variableValue: {
-              expressionKind: "number",
+              expressionKind: "numberLit",
               value: 2,
             },
           },
@@ -511,7 +511,7 @@ describe("Evaluator", () => {
             statementKind: "return",
             returnedValue: {
               expressionKind: "binOp",
-              operation: "add",
+              binOp: "add",
               leftOperand: {
                 expressionKind: "variableRef",
                 variableName: identifierIso.wrap("x"),
@@ -552,7 +552,7 @@ describe("Evaluator", () => {
               {
                 statementKind: "return",
                 returnedValue: {
-                  expressionKind: "number",
+                  expressionKind: "numberLit",
                   value: 1,
                 },
               },
@@ -597,7 +597,7 @@ describe("Evaluator", () => {
               {
                 statementKind: "return",
                 returnedValue: {
-                  expressionKind: "number",
+                  expressionKind: "numberLit",
                   value: 1,
                 },
               },
@@ -611,7 +611,7 @@ describe("Evaluator", () => {
               {
                 statementKind: "return",
                 returnedValue: {
-                  expressionKind: "number",
+                  expressionKind: "numberLit",
                   value: 2,
                 },
               },
@@ -621,7 +621,7 @@ describe("Evaluator", () => {
             statementKind: "return",
             returnedValue: {
               expressionKind: "binOp",
-              operation: "add",
+              binOp: "add",
               leftOperand: {
                 expressionKind: "funcCall",
                 callee: {
@@ -664,7 +664,7 @@ describe("Evaluator", () => {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
             variableValue: {
-              expressionKind: "number",
+              expressionKind: "numberLit",
               value: 1,
             },
           },
@@ -722,7 +722,7 @@ describe("Evaluator", () => {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
             variableValue: {
-              expressionKind: "number",
+              expressionKind: "numberLit",
               value: 1,
             },
           },
@@ -735,7 +735,7 @@ describe("Evaluator", () => {
                 statementKind: "return",
                 returnedValue: {
                   expressionKind: "binOp",
-                  operation: "add",
+                  binOp: "add",
                   leftOperand: {
                     expressionKind: "variableRef",
                     variableName: identifierIso.wrap("x"),
@@ -758,7 +758,7 @@ describe("Evaluator", () => {
               },
               args: [
                 {
-                  expressionKind: "number",
+                  expressionKind: "numberLit",
                   value: 2,
                 },
               ],
@@ -799,7 +799,7 @@ describe("Evaluator", () => {
                   {
                     statementKind: "return",
                     returnedValue: {
-                      expressionKind: "number",
+                      expressionKind: "numberLit",
                       value: 1,
                     },
                   },
@@ -863,7 +863,7 @@ describe("Evaluator", () => {
                     statementKind: "return",
                     returnedValue: {
                       expressionKind: "binOp",
-                      operation: "add",
+                      binOp: "add",
                       leftOperand: {
                         expressionKind: "variableRef",
                         variableName: identifierIso.wrap("x"),
@@ -892,7 +892,7 @@ describe("Evaluator", () => {
               expressionKind: "funcCall",
               args: [
                 {
-                  expressionKind: "number",
+                  expressionKind: "numberLit",
                   value: 1,
                 },
               ],
@@ -908,7 +908,7 @@ describe("Evaluator", () => {
               expressionKind: "funcCall",
               args: [
                 {
-                  expressionKind: "number",
+                  expressionKind: "numberLit",
                   value: 2,
                 },
               ],
@@ -944,7 +944,7 @@ describe("Evaluator", () => {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
             variableValue: {
-              expressionKind: "number",
+              expressionKind: "numberLit",
               value: 1,
             },
           },
@@ -957,7 +957,7 @@ describe("Evaluator", () => {
                 statementKind: "assignment",
                 variableName: identifierIso.wrap("x"),
                 variableValue: {
-                  expressionKind: "number",
+                  expressionKind: "numberLit",
                   value: 2,
                 },
               },
@@ -974,7 +974,7 @@ describe("Evaluator", () => {
             statementKind: "return",
             returnedValue: {
               expressionKind: "binOp",
-              operation: "add",
+              binOp: "add",
               leftOperand: {
                 expressionKind: "variableRef",
                 variableName: identifierIso.wrap("x"),
@@ -1013,7 +1013,7 @@ describe("Evaluator", () => {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
             variableValue: {
-              expressionKind: "number",
+              expressionKind: "numberLit",
               value: 1,
             },
           },
@@ -1043,7 +1043,7 @@ describe("Evaluator", () => {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
             variableValue: {
-              expressionKind: "number",
+              expressionKind: "numberLit",
               value: 2,
             },
           },
@@ -1051,7 +1051,7 @@ describe("Evaluator", () => {
             statementKind: "return",
             returnedValue: {
               expressionKind: "binOp",
-              operation: "add",
+              binOp: "add",
               leftOperand: {
                 expressionKind: "variableRef",
                 variableName: identifierIso.wrap("y"),
@@ -1105,7 +1105,7 @@ describe("Evaluator", () => {
           {
             statementKind: "return",
             returnedValue: {
-              expressionKind: "number",
+              expressionKind: "numberLit",
               value: 1,
             },
           },
@@ -1210,7 +1210,7 @@ describe("Evaluator", () => {
             expressionKind: "funcCall",
             args: [],
             callee: {
-              expressionKind: "number",
+              expressionKind: "numberLit",
               value: 1,
             },
           },
@@ -1245,9 +1245,9 @@ describe("Evaluator", () => {
           statementKind: "return",
           returnedValue: {
             expressionKind: "binOp",
-            operation: "add",
+            binOp: "add",
             leftOperand: {
-              expressionKind: "number",
+              expressionKind: "numberLit",
               value: 1,
             },
             rightOperand: {
@@ -1287,13 +1287,13 @@ describe("Evaluator", () => {
           statementKind: "return",
           returnedValue: {
             expressionKind: "binOp",
-            operation: "add",
+            binOp: "add",
             leftOperand: {
               expressionKind: "variableRef",
               variableName: identifierIso.wrap("f"),
             },
             rightOperand: {
-              expressionKind: "number",
+              expressionKind: "numberLit",
               value: 1,
             },
           },
@@ -1390,7 +1390,7 @@ describe("Evaluator", () => {
             {
               statementKind: "return",
               returnedValue: {
-                expressionKind: "number",
+                expressionKind: "numberLit",
                 value: 1,
               },
             },
@@ -1402,7 +1402,7 @@ describe("Evaluator", () => {
             expressionKind: "funcCall",
             args: [
               {
-                expressionKind: "number",
+                expressionKind: "numberLit",
                 value: 2,
               },
             ],
