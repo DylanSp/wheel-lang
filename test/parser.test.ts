@@ -4308,5 +4308,7 @@ describe("Parser", () => {
 
       expect(parseResult.left.message).toMatch(/Expected identifier/);
     });
+
+    // TODO tests related to logical/relational ops, if/while statements (e.g. needing braces, expecting "else")
   });
 });
