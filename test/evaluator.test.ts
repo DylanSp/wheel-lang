@@ -2178,7 +2178,75 @@ describe("Evaluator", () => {
       expect(evalResult.left.expectedType).toBe("number");
     });
 
-    // TODO type mismatch for non-booleans in logical operations
+    it("Recognizes a TypeMismatch error for { return true & 1; } (non-boolean in logical and)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "binOp",
+            binOp: "and",
+            leftOperand: {
+              expressionKind: "booleanLit",
+              isTrue: true,
+            },
+            rightOperand: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+      }
+
+      expect(evalResult.left.expectedType).toBe("boolean");
+    });
+
+    it("Recognizes a TypeMismatch error for { return false | 2; } (non-boolean in logical or)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "binOp",
+            binOp: "or",
+            leftOperand: {
+              expressionKind: "booleanLit",
+              isTrue: false,
+            },
+            rightOperand: {
+              expressionKind: "numberLit",
+              value: 2,
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+      }
+
+      expect(evalResult.left.expectedType).toBe("boolean");
+    });
 
     // TODO type mismatch in equals/not equals relations
 
