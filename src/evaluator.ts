@@ -2,7 +2,7 @@ import { Program, Expression, Block } from "./parser";
 import { Either, right, left } from "fp-ts/lib/Either";
 import { lookup } from "fp-ts/lib/Map";
 import { Identifier, eqIdentifier } from "./types";
-import { isNone } from "fp-ts/lib/Option";
+import { isNone, Option, some, isSome, none } from "fp-ts/lib/Option";
 
 /**
  * TYPES
@@ -266,18 +266,25 @@ export const evaluate: Evaluate = (program) => {
       envWithArgs.set(ident, val);
     }
 
-    return evaluateBlock(envWithArgs, func.body);
+    const result = evaluateBlock(envWithArgs, func.body);
+    if (isNone(result)) {
+      throw new RuntimeError("No return statement in block", {
+        runtimeErrorKind: "noReturn",
+      });
+    }
+
+    return result.value;
   };
 
-  const evaluateBlock = (env: Environment, block: Block): Value => {
-    const blockEnv = new Map(env);
+  const evaluateBlock = (env: Environment, block: Block): Option<Value> => {
+    // const blockEnv = new Map(env);
     for (const statement of block) {
       switch (statement.statementKind) {
         case "return": {
-          return evaluateExpr(blockEnv, statement.returnedValue);
+          return some(evaluateExpr(env, statement.returnedValue));
         }
         case "assignment": {
-          blockEnv.set(statement.variableName, evaluateExpr(blockEnv, statement.variableValue));
+          env.set(statement.variableName, evaluateExpr(env, statement.variableValue));
           break;
         }
         case "funcDecl": {
@@ -285,13 +292,13 @@ export const evaluate: Evaluate = (program) => {
             statement.functionName,
             statement.argNames,
             statement.body,
-            new Map(blockEnv), // make copy of blockEnv so later changes to blockEnv don't affect the environment captured by the closure
+            new Map(env), // make copy of blockEnv so later changes to blockEnv don't affect the environment captured by the closure
           );
-          blockEnv.set(statement.functionName, closureValue);
+          env.set(statement.functionName, closureValue);
           break;
         }
         case "if": {
-          const condition = evaluateExpr(blockEnv, statement.condition);
+          const condition = evaluateExpr(env, statement.condition);
           if (condition.valueKind !== "boolean") {
             throw new RuntimeError("Condition of if-statement evaluated to non-boolean value", {
               runtimeErrorKind: "typeMismatch",
@@ -299,20 +306,16 @@ export const evaluate: Evaluate = (program) => {
               actualType: condition.valueKind,
             });
           }
+
           if (condition.isTrue) {
-            return evaluateBlock(blockEnv, statement.trueBody); // TODO do I need to make a copy of blockEnv here?
+            return evaluateBlock(env, statement.trueBody); // TODO do I need to make a copy of blockEnv here?
           } else {
-            return evaluateBlock(blockEnv, statement.falseBody);
+            return evaluateBlock(env, statement.falseBody);
           }
         }
         case "while": {
-          // TODO while problems
-          // this fails due to noReturn error;
-          // I've been assuming that all blocks have a return statement, but this isn't true for if/while bodies
-          // need to a.) allow evaluateBlock to optionally return a value, b.) keep track of whether I'm in a block that needs a return statement
-          // possible solutions: use the chain-of-environments technique to track whether I'm in main block, use static analysis to detect if function is missing return
           while (true) {
-            const condition = evaluateExpr(blockEnv, statement.condition);
+            const condition = evaluateExpr(env, statement.condition);
             if (condition.valueKind !== "boolean") {
               throw new RuntimeError("Condition of while statement evaluated to non-boolean value", {
                 runtimeErrorKind: "typeMismatch",
@@ -322,7 +325,10 @@ export const evaluate: Evaluate = (program) => {
             }
 
             if (condition.isTrue) {
-              evaluateBlock(blockEnv, statement.body);
+              const blockResult = evaluateBlock(env, statement.body);
+              if (isSome(blockResult)) {
+                return blockResult;
+              }
             } else {
               break;
             }
@@ -331,15 +337,19 @@ export const evaluate: Evaluate = (program) => {
       }
     }
 
-    throw new RuntimeError("No return statement in block", {
-      runtimeErrorKind: "noReturn",
-    });
+    return none;
   };
 
   // main driver
   try {
     const evalResult = evaluateBlock(new Map<Identifier, Value>(), program);
-    return right(evalResult);
+    if (isNone(evalResult)) {
+      throw new RuntimeError("No return statement in main program", {
+        runtimeErrorKind: "noReturn",
+      });
+    }
+
+    return right(evalResult.value);
   } catch (err) {
     if (err instanceof RuntimeError) {
       return left(err.underlyingFailure);
