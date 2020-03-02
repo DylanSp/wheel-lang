@@ -2137,9 +2137,49 @@ describe("Evaluator", () => {
       expect(evalResult.left.expectedType).toBe("boolean");
     });
 
+    test.each([
+      ["lessThan" as const],
+      ["greaterThan" as const],
+      ["lessThanEquals" as const],
+      ["greaterThanEquals" as const],
+    ])("Recognizes a TypeMismatch error for non-numbers in %s relations", (binOp) => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "binOp",
+            binOp,
+            leftOperand: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+            rightOperand: {
+              expressionKind: "booleanLit",
+              isTrue: true,
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+      }
+
+      expect(evalResult.left.expectedType).toBe("number");
+    });
+
     // TODO type mismatch for non-booleans in logical operations
 
-    // TODO type mismatch for non-numbers in relational operations
+    // TODO type mismatch in equals/not equals relations
 
     it("Recognizes a NoReturn error for {}", () => {
       // Arrange
