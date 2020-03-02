@@ -109,6 +109,7 @@ export const evaluate: Evaluate = (program) => {
         const rhsValue = evaluateExpr(env, expr.rightOperand);
 
         switch (expr.binOp) {
+          // TODO refactor type-checking? pull it out into a separate function?
           case "add":
             if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
               throw new RuntimeError("Trying to perform binOp on non-numeric values", {
@@ -164,12 +165,59 @@ export const evaluate: Evaluate = (program) => {
             }
             return makeBooleanValue(lhsValue.isTrue || rhsValue.isTrue);
           case "lessThan":
+            if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
+              throw new RuntimeError("Trying to compare non-numeric values", {
+                runtimeErrorKind: "typeMismatch",
+                expectedType: "number",
+                actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
+              });
+            }
+            return makeBooleanValue(lhsValue.value < rhsValue.value);
           case "greaterThan":
+            if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
+              throw new RuntimeError("Trying to compare non-numeric values", {
+                runtimeErrorKind: "typeMismatch",
+                expectedType: "number",
+                actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
+              });
+            }
+            return makeBooleanValue(lhsValue.value > rhsValue.value);
           case "lessThanEquals":
+            if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
+              throw new RuntimeError("Trying to compare non-numeric values", {
+                runtimeErrorKind: "typeMismatch",
+                expectedType: "number",
+                actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
+              });
+            }
+            return makeBooleanValue(lhsValue.value <= rhsValue.value);
           case "greaterThanEquals":
+            if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
+              throw new RuntimeError("Trying to compare non-numeric values", {
+                runtimeErrorKind: "typeMismatch",
+                expectedType: "number",
+                actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
+              });
+            }
+            return makeBooleanValue(lhsValue.value >= rhsValue.value);
           case "equals":
+            if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
+              throw new RuntimeError("Trying to compare non-numeric values", {
+                runtimeErrorKind: "typeMismatch",
+                expectedType: "number",
+                actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
+              });
+            }
+            return makeBooleanValue(lhsValue.value === rhsValue.value);
           case "notEqual":
-            throw new Error("Non-arithmetic binary ops not yet implemented!");
+            if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
+              throw new RuntimeError("Trying to compare non-numeric values", {
+                runtimeErrorKind: "typeMismatch",
+                expectedType: "number",
+                actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
+              });
+            }
+            return makeBooleanValue(lhsValue.value !== rhsValue.value);
         }
       }
       case "variableRef": {

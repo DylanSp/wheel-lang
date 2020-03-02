@@ -496,6 +496,216 @@ describe("Evaluator", () => {
 
         expect(evalResult.right.isTrue).toBe(true);
       });
+
+      it("Evaluates { return 1 < 2; } to true (evaluating less-than operator)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "lessThan",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+              rightOperand: {
+                expressionKind: "numberLit",
+                value: 2,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(true);
+      });
+
+      it("Evaluates { return 3 > 4; } to false (evaluating greater-than operator)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "greaterThan",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 3,
+              },
+              rightOperand: {
+                expressionKind: "numberLit",
+                value: 4,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+      });
+
+      it("Evaluates { return 5 <= 5; } to true (evaluating less-than-or-equals operator)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "lessThanEquals",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 5,
+              },
+              rightOperand: {
+                expressionKind: "numberLit",
+                value: 5,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(true);
+      });
+
+      it("Evaluates { return 6 >= 6; } to true (evaluating greater-than-or-equals operator)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "greaterThanEquals",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 6,
+              },
+              rightOperand: {
+                expressionKind: "numberLit",
+                value: 6,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(true);
+      });
+
+      it("Evaluates { return 7 == 8; } to false (evaluating equals operator)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 7,
+              },
+              rightOperand: {
+                expressionKind: "numberLit",
+                value: 8,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+      });
+
+      it("Evaluates { return 9 /= 10; } to true (evaluating not-equals operator)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "notEqual",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 9,
+              },
+              rightOperand: {
+                expressionKind: "numberLit",
+                value: 10,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(true);
+      });
     });
 
     describe("Programs with simple variable use", () => {
