@@ -295,6 +295,7 @@ export const evaluate: Evaluate = (program) => {
             statement.body,
             new Map(env), // make copy of blockEnv so later changes to blockEnv don't affect the environment captured by the closure
           );
+          closureValue.env.set(statement.functionName, closureValue);
           env.set(statement.functionName, closureValue);
           break;
         }

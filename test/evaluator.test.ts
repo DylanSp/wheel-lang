@@ -1597,7 +1597,108 @@ describe("Evaluator", () => {
       });
     });
 
-    // TODO recursive functions
+    describe("Recursive functions", () => {
+      it("Evaluates { function factorial(n) if (n == 0) { return 1; } else { return n * factorial(n - 1); } return factorial(3); } to 6 (checking recursive function evaluation)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: identifierIso.wrap("factorial"),
+            argNames: [identifierIso.wrap("n")],
+            body: [
+              {
+                statementKind: "if",
+                condition: {
+                  expressionKind: "binOp",
+                  binOp: "equals",
+                  leftOperand: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("n"),
+                  },
+                  rightOperand: {
+                    expressionKind: "numberLit",
+                    value: 0,
+                  },
+                },
+                trueBody: [
+                  {
+                    statementKind: "return",
+                    returnedValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                ],
+                falseBody: [
+                  {
+                    statementKind: "return",
+                    returnedValue: {
+                      expressionKind: "binOp",
+                      binOp: "multiply",
+                      leftOperand: {
+                        expressionKind: "variableRef",
+                        variableName: identifierIso.wrap("n"),
+                      },
+                      rightOperand: {
+                        expressionKind: "funcCall",
+                        callee: {
+                          expressionKind: "variableRef",
+                          variableName: identifierIso.wrap("factorial"),
+                        },
+                        args: [
+                          {
+                            expressionKind: "binOp",
+                            binOp: "subtract",
+                            leftOperand: {
+                              expressionKind: "variableRef",
+                              variableName: identifierIso.wrap("n"),
+                            },
+                            rightOperand: {
+                              expressionKind: "numberLit",
+                              value: 1,
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "funcCall",
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("factorial"),
+              },
+              args: [
+                {
+                  expressionKind: "numberLit",
+                  value: 3,
+                },
+              ],
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(6);
+      });
+    });
 
     describe("Other complex programs", () => {
       it("Evaluates { x = 1; function f() { x = 2; return x; } return x + f(); } to 3 (checking that local variables shadow variables in outer scopes)", () => {
