@@ -290,7 +290,7 @@ export const evaluate: Evaluate = (program) => {
           blockEnv.set(statement.functionName, closureValue);
           break;
         }
-        case "if":
+        case "if": {
           const condition = evaluateExpr(blockEnv, statement.condition);
           if (condition.valueKind !== "boolean") {
             throw new RuntimeError("Condition of if-statement evaluated to non-boolean value", {
@@ -304,8 +304,30 @@ export const evaluate: Evaluate = (program) => {
           } else {
             return evaluateBlock(blockEnv, statement.falseBody);
           }
-        case "while":
-          throw new Error("Evaluating while statements not yet implemented!");
+        }
+        case "while": {
+          // TODO while problems
+          // this fails due to noReturn error;
+          // I've been assuming that all blocks have a return statement, but this isn't true for if/while bodies
+          // need to a.) allow evaluateBlock to optionally return a value, b.) keep track of whether I'm in a block that needs a return statement
+          // possible solutions: use the chain-of-environments technique to track whether I'm in main block, use static analysis to detect if function is missing return
+          while (true) {
+            const condition = evaluateExpr(blockEnv, statement.condition);
+            if (condition.valueKind !== "boolean") {
+              throw new RuntimeError("Condition of while statement evaluated to non-boolean value", {
+                runtimeErrorKind: "typeMismatch",
+                expectedType: "boolean",
+                actualType: condition.valueKind,
+              });
+            }
+
+            if (condition.isTrue) {
+              evaluateBlock(blockEnv, statement.body);
+            } else {
+              break;
+            }
+          }
+        }
       }
     }
 

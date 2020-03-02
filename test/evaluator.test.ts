@@ -1405,8 +1405,100 @@ describe("Evaluator", () => {
       });
     });
 
-    // TODO while statements
-    // TODO assignment to previously defined variables, e.g. x = x + 1; does that work?
+    describe("Programs with while statements", () => {
+      it("Evaluates {x = 0; y = 0; while (x < 2) { y = y + 5; x = x + 1; } return y; } to 10 (evaluating while statement)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "numberLit",
+              value: 0,
+            },
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("y"),
+            variableValue: {
+              expressionKind: "numberLit",
+              value: 0,
+            },
+          },
+          {
+            statementKind: "while",
+            condition: {
+              expressionKind: "binOp",
+              binOp: "lessThan",
+              leftOperand: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("x"),
+              },
+              rightOperand: {
+                expressionKind: "numberLit",
+                value: 2,
+              },
+            },
+            body: [
+              {
+                statementKind: "assignment",
+                variableName: identifierIso.wrap("y"),
+                variableValue: {
+                  expressionKind: "binOp",
+                  binOp: "add",
+                  leftOperand: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("y"),
+                  },
+                  rightOperand: {
+                    expressionKind: "numberLit",
+                    value: 5,
+                  },
+                },
+              },
+              {
+                statementKind: "assignment",
+                variableName: identifierIso.wrap("x"),
+                variableValue: {
+                  expressionKind: "binOp",
+                  binOp: "add",
+                  leftOperand: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("x"),
+                  },
+                  rightOperand: {
+                    expressionKind: "numberLit",
+                    value: 1,
+                  },
+                },
+              },
+            ],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("y"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          console.error(evalResult.left.runtimeErrorKind);
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(10);
+      });
+    });
 
     // TODO recursive functions
 
