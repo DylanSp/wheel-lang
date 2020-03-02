@@ -1403,6 +1403,67 @@ describe("Evaluator", () => {
 
         expect(evalResult.right.value).toBe(2);
       });
+
+      it("Evaluates { x = 0; if (true) { x = x + 1; } else { } return x; } to 1 (evaluating side-effecting if statements", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "numberLit",
+              value: 0,
+            },
+          },
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "booleanLit",
+              isTrue: true,
+            },
+            trueBody: [
+              {
+                statementKind: "assignment",
+                variableName: identifierIso.wrap("x"),
+                variableValue: {
+                  expressionKind: "binOp",
+                  binOp: "add",
+                  leftOperand: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("x"),
+                  },
+                  rightOperand: {
+                    expressionKind: "numberLit",
+                    value: 1,
+                  },
+                },
+              },
+            ],
+            falseBody: [],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("x"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(1);
+      });
     });
 
     describe("Programs with while statements", () => {

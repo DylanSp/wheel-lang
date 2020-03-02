@@ -308,9 +308,19 @@ export const evaluate: Evaluate = (program) => {
           }
 
           if (condition.isTrue) {
-            return evaluateBlock(env, statement.trueBody); // TODO do I need to make a copy of blockEnv here?
+            const blockResult = evaluateBlock(env, statement.trueBody); // TODO do I need to make a copy of blockEnv here?
+            if (isSome(blockResult)) {
+              return blockResult;
+            }
+
+            break;
           } else {
-            return evaluateBlock(env, statement.falseBody);
+            const blockResult = evaluateBlock(env, statement.falseBody);
+            if (isSome(blockResult)) {
+              return blockResult;
+            }
+
+            break;
           }
         }
         case "while": {
