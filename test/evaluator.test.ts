@@ -454,6 +454,8 @@ describe("Evaluator", () => {
         expect(evalResult.right.isTrue).toBe(true);
       });
 
+      // TODO logical not
+
       it("Evaluates { return true | true & false } to true (evaluating logical expressions with correct precedence)", () => {
         // Arrange
         const ast: Program = [
