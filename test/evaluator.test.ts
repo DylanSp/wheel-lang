@@ -1405,6 +1405,11 @@ describe("Evaluator", () => {
       });
     });
 
+    // TODO while statements
+    // TODO assignment to previously defined variables, e.g. x = x + 1; does that work?
+
+    // TODO recursive functions
+
     describe("Other complex programs", () => {
       it("Evaluates { x = 1; function f() { x = 2; return x; } return x + f(); } to 3 (checking that local variables shadow variables in outer scopes)", () => {
         // Arrange
@@ -1898,5 +1903,11 @@ describe("Evaluator", () => {
       expect(evalResult.left.expectedNumArgs).toBe(0);
       expect(evalResult.left.actualNumArgs).toBe(1);
     });
+
+    // TODO type mismatch for non-booleans in if/while conditions
+
+    // TODO type mismatch for non-booleans in logical operations
+
+    // TODO type mismatch for non-numbers in relational operations
   });
 });
