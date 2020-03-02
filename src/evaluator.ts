@@ -276,8 +276,9 @@ export const evaluate: Evaluate = (program) => {
     return result.value;
   };
 
+  // returns None if the block has no return statement; lack of returns are caught by apply() for function bodies, main driver for main block
+  // if there is a return, returns Some
   const evaluateBlock = (env: Environment, block: Block): Option<Value> => {
-    // const blockEnv = new Map(env);
     for (const statement of block) {
       switch (statement.statementKind) {
         case "return": {
