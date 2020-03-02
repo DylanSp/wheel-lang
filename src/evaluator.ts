@@ -290,6 +290,10 @@ export const evaluate: Evaluate = (program) => {
           blockEnv.set(statement.functionName, closureValue);
           break;
         }
+        case "if":
+          throw new Error("Evaluating if statements not yet implemented!");
+        case "while":
+          throw new Error("Evaluating while statements not yet implemented!");
       }
     }
 
