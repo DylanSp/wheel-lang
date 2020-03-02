@@ -310,14 +310,14 @@ export const evaluate: Evaluate = (program) => {
           }
 
           if (condition.isTrue) {
-            const blockResult = evaluateBlock(env, statement.trueBody); // TODO do I need to make a copy of blockEnv here?
+            const blockResult = evaluateBlock(env, statement.trueBody); // use same environment so block can cause side effects
             if (isSome(blockResult)) {
               return blockResult;
             }
 
             break;
           } else {
-            const blockResult = evaluateBlock(env, statement.falseBody);
+            const blockResult = evaluateBlock(env, statement.falseBody); // use same environment so block can cause side effects
             if (isSome(blockResult)) {
               return blockResult;
             }
