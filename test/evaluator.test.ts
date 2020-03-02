@@ -1770,6 +1770,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(3);
       });
 
+      // TODO this may be wrong; decide whether variables captured by a closure should be mutable
       it("Evaluates { x = 1; function returnX() { return x; } y = x; x = 2; return y + returnX(); } to 2 (not 3) (checking that closures capture environment at time of definition)", () => {
         // Arrange
         const ast: Program = [
