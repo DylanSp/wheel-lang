@@ -236,8 +236,17 @@ export const evaluate: Evaluate = (program) => {
         const args = expr.args.map((arg) => evaluateExpr(env, arg));
         return apply(func, args);
       }
-      case "unaryOp":
-        throw new Error("Evaluating unary operations not yet implemented!");
+      case "unaryOp": {
+        const operandValue = evaluateExpr(env, expr.operand);
+        if (operandValue.valueKind !== "boolean") {
+          throw new RuntimeError("Attempting to apply logical not to non-boolean", {
+            runtimeErrorKind: "typeMismatch",
+            expectedType: "boolean",
+            actualType: operandValue.valueKind,
+          });
+        }
+        return makeBooleanValue(!operandValue.isTrue);
+      }
     }
   };
 

@@ -454,7 +454,36 @@ describe("Evaluator", () => {
         expect(evalResult.right.isTrue).toBe(true);
       });
 
-      // TODO logical not
+      it("Evaluates { return !true; } to false (evaluating logical not)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "unaryOp",
+              unaryOp: "not",
+              operand: {
+                expressionKind: "booleanLit",
+                isTrue: true,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+      });
 
       it("Evaluates { return true | true & false } to true (evaluating logical expressions with correct precedence)", () => {
         // Arrange
@@ -2230,6 +2259,37 @@ describe("Evaluator", () => {
             rightOperand: {
               expressionKind: "numberLit",
               value: 2,
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+      }
+
+      expect(evalResult.left.expectedType).toBe("boolean");
+    });
+
+    it("Recognizes a TypeMismatch error for { return !3; } (non-boolean in logical not)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "unaryOp",
+            unaryOp: "not",
+            operand: {
+              expressionKind: "numberLit",
+              value: 3,
             },
           },
         },
