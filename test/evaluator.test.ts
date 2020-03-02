@@ -1313,6 +1313,98 @@ describe("Evaluator", () => {
       });
     });
 
+    describe("Programs with if statements", () => {
+      it("Evaluates { if (true) { return 1; } else { return 2; } } to 1 (evaluating true block of if statements)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "booleanLit",
+              isTrue: true,
+            },
+            trueBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 1,
+                },
+              },
+            ],
+            falseBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 2,
+                },
+              },
+            ],
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(1);
+      });
+
+      it("Evaluates { if (false) { return 1; } else { return 2; } } to 2 (evaluating false block of if statements)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "booleanLit",
+              isTrue: false,
+            },
+            trueBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 1,
+                },
+              },
+            ],
+            falseBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 2,
+                },
+              },
+            ],
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(2);
+      });
+    });
+
     describe("Other complex programs", () => {
       it("Evaluates { x = 1; function f() { x = 2; return x; } return x + f(); } to 3 (checking that local variables shadow variables in outer scopes)", () => {
         // Arrange

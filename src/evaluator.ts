@@ -291,7 +291,19 @@ export const evaluate: Evaluate = (program) => {
           break;
         }
         case "if":
-          throw new Error("Evaluating if statements not yet implemented!");
+          const condition = evaluateExpr(blockEnv, statement.condition);
+          if (condition.valueKind !== "boolean") {
+            throw new RuntimeError("Condition of if-statement evaluated to non-boolean value", {
+              runtimeErrorKind: "typeMismatch",
+              expectedType: "boolean",
+              actualType: condition.valueKind,
+            });
+          }
+          if (condition.isTrue) {
+            return evaluateBlock(blockEnv, statement.trueBody); // TODO do I need to make a copy of blockEnv here?
+          } else {
+            return evaluateBlock(blockEnv, statement.falseBody);
+          }
         case "while":
           throw new Error("Evaluating while statements not yet implemented!");
       }
