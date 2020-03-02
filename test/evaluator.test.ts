@@ -2080,6 +2080,67 @@ describe("Evaluator", () => {
       expect(evalResult.left.actualType).toBe("closure");
     });
 
+    it("Recognizes a TypeMismatch error for { if(1) {} else {} } (non-boolean in if statement's condition", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "if",
+          condition: {
+            expressionKind: "numberLit",
+            value: 1,
+          },
+          trueBody: [],
+          falseBody: [],
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+      }
+
+      expect(evalResult.left.expectedType).toBe("boolean");
+    });
+
+    it("Recognizes a TypeMismatch error for { while(2) {} } (non-boolean in while statement's condition", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "while",
+          condition: {
+            expressionKind: "numberLit",
+            value: 2,
+          },
+          body: [],
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+      }
+
+      expect(evalResult.left.expectedType).toBe("boolean");
+    });
+
+    // TODO type mismatch for non-booleans in logical operations
+
+    // TODO type mismatch for non-numbers in relational operations
+
     it("Recognizes a NoReturn error for {}", () => {
       // Arrange
       const ast: Program = [];
@@ -2193,11 +2254,5 @@ describe("Evaluator", () => {
       expect(evalResult.left.expectedNumArgs).toBe(0);
       expect(evalResult.left.actualNumArgs).toBe(1);
     });
-
-    // TODO type mismatch for non-booleans in if/while conditions
-
-    // TODO type mismatch for non-booleans in logical operations
-
-    // TODO type mismatch for non-numbers in relational operations
   });
 });
