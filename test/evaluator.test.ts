@@ -1467,7 +1467,43 @@ describe("Evaluator", () => {
     });
 
     describe("Programs with while statements", () => {
-      it("Evaluates {x = 0; y = 0; while (x < 2) { y = y + 5; x = x + 1; } return y; } to 10 (evaluating while statement)", () => {
+      it("Evaluates { while (true) { return 1; } } to 1 (evaluating while statement with return)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "while",
+            condition: {
+              expressionKind: "booleanLit",
+              isTrue: true,
+            },
+            body: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 1,
+                },
+              },
+            ],
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(1);
+      });
+
+      it("Evaluates { x = 0; y = 0; while (x < 2) { y = y + 5; x = x + 1; } return y; } to 10 (evaluating side-effecting while statements)", () => {
         // Arrange
         const ast: Program = [
           {
