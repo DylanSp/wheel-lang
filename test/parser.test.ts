@@ -4310,5 +4310,181 @@ describe("Parser", () => {
     });
 
     // TODO tests related to logical/relational ops, if/while statements (e.g. needing braces, expecting "else")
+
+    it('Expects a left parenthesis after "if"', () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "if",
+        },
+        {
+          tokenKind: "rightParen",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected \(/);
+    });
+
+    it("Expects a right parenthesis following the expression in an if statement's condition", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "if",
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "boolean",
+          isTrue: true,
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected \)/);
+    });
+
+    it("Expects a block to start with a left brace after the condition in an if statement", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "if",
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "boolean",
+          isTrue: true,
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("x"),
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected {/);
+    });
+
+    it('Expects an "else" after the first block in an if statement', () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "if",
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "boolean",
+          isTrue: true,
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected "else"/);
+    });
+
+    it('Expects a block to start with a left brace after the "else" in an if statement', () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "if",
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "boolean",
+          isTrue: true,
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+        {
+          tokenKind: "else",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("x"),
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected {/);
+    });
   });
 });
