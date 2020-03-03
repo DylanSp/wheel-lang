@@ -4309,8 +4309,6 @@ describe("Parser", () => {
       expect(parseResult.left.message).toMatch(/Expected identifier/);
     });
 
-    // TODO tests related to logical/relational ops, if/while statements (e.g. needing braces, expecting "else")
-
     it('Expects a left parenthesis after "if"', () => {
       // Arrange
       const tokens: Array<Token> = [
