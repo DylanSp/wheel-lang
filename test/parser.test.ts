@@ -4486,5 +4486,95 @@ describe("Parser", () => {
 
       expect(parseResult.left.message).toMatch(/Expected {/);
     });
+
+    it('Expects a left parenthesis after "while"', () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "while",
+        },
+        {
+          tokenKind: "rightParen",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected \(/);
+    });
+
+    it("Expects a right parenthesis following the expression in a while statement's condition", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "while",
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "boolean",
+          isTrue: true,
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected \)/);
+    });
+
+    it("Expects a block to start with a left brace after the condition in a while statement", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "while",
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "boolean",
+          isTrue: true,
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("x"),
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected {/);
+    });
   });
 });
