@@ -257,9 +257,6 @@ export const parse: Parse = (input) => {
           });
           break;
         }
-        default: {
-          break;
-        }
       }
     }
 
