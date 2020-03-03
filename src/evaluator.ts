@@ -22,7 +22,7 @@ interface NotFunctionError {
 
 interface TypeMismatchError {
   runtimeErrorKind: "typeMismatch";
-  expectedType: string;
+  expectedTypes: Array<string>;
   actualType: string;
 }
 
@@ -114,7 +114,7 @@ export const evaluate: Evaluate = (program) => {
             if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
               throw new RuntimeError("Trying to perform binOp on non-numeric values", {
                 runtimeErrorKind: "typeMismatch",
-                expectedType: "number",
+                expectedTypes: ["number"],
                 actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
               });
             }
@@ -123,7 +123,7 @@ export const evaluate: Evaluate = (program) => {
             if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
               throw new RuntimeError("Trying to perform binOp on non-numeric values", {
                 runtimeErrorKind: "typeMismatch",
-                expectedType: "number",
+                expectedTypes: ["number"],
                 actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
               });
             }
@@ -132,7 +132,7 @@ export const evaluate: Evaluate = (program) => {
             if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
               throw new RuntimeError("Trying to perform binOp on non-numeric values", {
                 runtimeErrorKind: "typeMismatch",
-                expectedType: "number",
+                expectedTypes: ["number"],
                 actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
               });
             }
@@ -141,7 +141,7 @@ export const evaluate: Evaluate = (program) => {
             if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
               throw new RuntimeError("Trying to perform binOp on non-numeric values", {
                 runtimeErrorKind: "typeMismatch",
-                expectedType: "number",
+                expectedTypes: ["number"],
                 actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
               });
             }
@@ -150,7 +150,7 @@ export const evaluate: Evaluate = (program) => {
             if (lhsValue.valueKind !== "boolean" || rhsValue.valueKind !== "boolean") {
               throw new RuntimeError("Trying to perform logical operation on non-boolean values", {
                 runtimeErrorKind: "typeMismatch",
-                expectedType: "boolean",
+                expectedTypes: ["boolean"],
                 actualType: lhsValue.valueKind !== "boolean" ? lhsValue.valueKind : rhsValue.valueKind,
               });
             }
@@ -159,7 +159,7 @@ export const evaluate: Evaluate = (program) => {
             if (lhsValue.valueKind !== "boolean" || rhsValue.valueKind !== "boolean") {
               throw new RuntimeError("Trying to perform logical operation on non-boolean values", {
                 runtimeErrorKind: "typeMismatch",
-                expectedType: "boolean",
+                expectedTypes: ["boolean"],
                 actualType: lhsValue.valueKind !== "boolean" ? lhsValue.valueKind : rhsValue.valueKind,
               });
             }
@@ -168,7 +168,7 @@ export const evaluate: Evaluate = (program) => {
             if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
               throw new RuntimeError("Trying to compare non-numeric values", {
                 runtimeErrorKind: "typeMismatch",
-                expectedType: "number",
+                expectedTypes: ["number"],
                 actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
               });
             }
@@ -177,7 +177,7 @@ export const evaluate: Evaluate = (program) => {
             if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
               throw new RuntimeError("Trying to compare non-numeric values", {
                 runtimeErrorKind: "typeMismatch",
-                expectedType: "number",
+                expectedTypes: ["number"],
                 actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
               });
             }
@@ -186,7 +186,7 @@ export const evaluate: Evaluate = (program) => {
             if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
               throw new RuntimeError("Trying to compare non-numeric values", {
                 runtimeErrorKind: "typeMismatch",
-                expectedType: "number",
+                expectedTypes: ["number"],
                 actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
               });
             }
@@ -195,7 +195,7 @@ export const evaluate: Evaluate = (program) => {
             if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
               throw new RuntimeError("Trying to compare non-numeric values", {
                 runtimeErrorKind: "typeMismatch",
-                expectedType: "number",
+                expectedTypes: ["number"],
                 actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
               });
             }
@@ -204,7 +204,7 @@ export const evaluate: Evaluate = (program) => {
             if (lhsValue.valueKind === "closure") {
               throw new RuntimeError("Trying to compare closure value", {
                 runtimeErrorKind: "typeMismatch",
-                expectedType: "number or boolean", // TODO how to denote this in a machine-parseable way? could check rhsValue.valueKind, but what if that's "closure" as well? maybe make expectedType an array?
+                expectedTypes: ["number", "boolean"], // not really scalable (would have to contain every type that supports equality), but allowable since this project doesn't allow custom types
                 actualType: "closure",
               });
             }
@@ -212,7 +212,7 @@ export const evaluate: Evaluate = (program) => {
             if (rhsValue.valueKind === "closure") {
               throw new RuntimeError("Trying to compare closure value", {
                 runtimeErrorKind: "typeMismatch",
-                expectedType: "number or boolean", // TODO how to denote this in a machine-parseable way? could check rhsValue.valueKind, but what if that's "closure" as well?
+                expectedTypes: ["number", "boolean"], // not really scalable (would have to contain every type that supports inequality), but allowable since this project doesn't allow custom types
                 actualType: "closure",
               });
             }
@@ -224,7 +224,7 @@ export const evaluate: Evaluate = (program) => {
             } else {
               throw new RuntimeError("Trying to compare values of different types", {
                 runtimeErrorKind: "typeMismatch",
-                expectedType: lhsValue.valueKind,
+                expectedTypes: [lhsValue.valueKind],
                 actualType: rhsValue.valueKind,
               });
             }
@@ -232,7 +232,7 @@ export const evaluate: Evaluate = (program) => {
             if (lhsValue.valueKind === "closure") {
               throw new RuntimeError("Trying to compare closure value", {
                 runtimeErrorKind: "typeMismatch",
-                expectedType: "number or boolean", // TODO how to denote this in a machine-parseable way? could check rhsValue.valueKind, but what if that's "closure" as well?
+                expectedTypes: ["number", "boolean"],
                 actualType: "closure",
               });
             }
@@ -240,7 +240,7 @@ export const evaluate: Evaluate = (program) => {
             if (rhsValue.valueKind === "closure") {
               throw new RuntimeError("Trying to compare closure value", {
                 runtimeErrorKind: "typeMismatch",
-                expectedType: "number or boolean", // TODO how to denote this in a machine-parseable way? could check rhsValue.valueKind, but what if that's "closure" as well?
+                expectedTypes: ["number", "boolean"],
                 actualType: "closure",
               });
             }
@@ -252,7 +252,7 @@ export const evaluate: Evaluate = (program) => {
             } else {
               throw new RuntimeError("Trying to compare values of different types", {
                 runtimeErrorKind: "typeMismatch",
-                expectedType: lhsValue.valueKind,
+                expectedTypes: [lhsValue.valueKind],
                 actualType: rhsValue.valueKind,
               });
             }
@@ -279,7 +279,7 @@ export const evaluate: Evaluate = (program) => {
         if (operandValue.valueKind !== "boolean") {
           throw new RuntimeError("Attempting to apply logical not to non-boolean", {
             runtimeErrorKind: "typeMismatch",
-            expectedType: "boolean",
+            expectedTypes: ["boolean"],
             actualType: operandValue.valueKind,
           });
         }
@@ -336,7 +336,7 @@ export const evaluate: Evaluate = (program) => {
           break;
         }
         case "funcDecl": {
-          const closureValue = makeClosureValue(statement.functionName, statement.argNames, statement.body, env);
+          const closureValue = makeClosureValue(statement.functionName, statement.argNames, statement.body, env); // use same environment to capture references to mutable variables
           closureValue.env.set(statement.functionName, closureValue);
           env.set(statement.functionName, closureValue);
           break;
@@ -346,7 +346,7 @@ export const evaluate: Evaluate = (program) => {
           if (condition.valueKind !== "boolean") {
             throw new RuntimeError("Condition of if-statement evaluated to non-boolean value", {
               runtimeErrorKind: "typeMismatch",
-              expectedType: "boolean",
+              expectedTypes: ["boolean"],
               actualType: condition.valueKind,
             });
           }
@@ -373,7 +373,7 @@ export const evaluate: Evaluate = (program) => {
             if (condition.valueKind !== "boolean") {
               throw new RuntimeError("Condition of while statement evaluated to non-boolean value", {
                 runtimeErrorKind: "typeMismatch",
-                expectedType: "boolean",
+                expectedTypes: ["boolean"],
                 actualType: condition.valueKind,
               });
             }

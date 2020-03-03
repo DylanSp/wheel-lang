@@ -2119,7 +2119,7 @@ describe("Evaluator", () => {
         throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
       }
 
-      expect(evalResult.left.expectedType).toBe("number");
+      expect(evalResult.left.expectedTypes).toEqual(["number"]);
       expect(evalResult.left.actualType).toBe("closure");
     });
 
@@ -2161,7 +2161,7 @@ describe("Evaluator", () => {
         throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
       }
 
-      expect(evalResult.left.expectedType).toBe("number");
+      expect(evalResult.left.expectedTypes).toEqual(["number"]);
       expect(evalResult.left.actualType).toBe("closure");
     });
 
@@ -2191,7 +2191,7 @@ describe("Evaluator", () => {
         throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
       }
 
-      expect(evalResult.left.expectedType).toBe("boolean");
+      expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
     });
 
     it("Recognizes a TypeMismatch error for { while(2) {} } (non-boolean in while statement's condition", () => {
@@ -2219,7 +2219,7 @@ describe("Evaluator", () => {
         throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
       }
 
-      expect(evalResult.left.expectedType).toBe("boolean");
+      expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
     });
 
     test.each([
@@ -2259,7 +2259,7 @@ describe("Evaluator", () => {
         throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
       }
 
-      expect(evalResult.left.expectedType).toBe("number");
+      expect(evalResult.left.expectedTypes).toEqual(["number"]);
     });
 
     it("Recognizes a TypeMismatch error for { return true & 1; } (non-boolean in logical and)", () => {
@@ -2294,7 +2294,7 @@ describe("Evaluator", () => {
         throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
       }
 
-      expect(evalResult.left.expectedType).toBe("boolean");
+      expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
     });
 
     it("Recognizes a TypeMismatch error for { return false | 2; } (non-boolean in logical or)", () => {
@@ -2329,7 +2329,7 @@ describe("Evaluator", () => {
         throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
       }
 
-      expect(evalResult.left.expectedType).toBe("boolean");
+      expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
     });
 
     it("Recognizes a TypeMismatch error for { return !3; } (non-boolean in logical not)", () => {
@@ -2360,7 +2360,7 @@ describe("Evaluator", () => {
         throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
       }
 
-      expect(evalResult.left.expectedType).toBe("boolean");
+      expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
     });
 
     it("Recognizes a TypeMismatch error for { return 1 == true; } (mismatched types in equals expression)", () => {
@@ -2395,7 +2395,7 @@ describe("Evaluator", () => {
         throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
       }
 
-      expect(evalResult.left.expectedType).toBe("number");
+      expect(evalResult.left.expectedTypes).toEqual(["number"]);
     });
 
     it("Recognizes a TypeMismatch error for { return true == 1; } (mismatched types in equals expression)", () => {
@@ -2430,7 +2430,7 @@ describe("Evaluator", () => {
         throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
       }
 
-      expect(evalResult.left.expectedType).toBe("boolean");
+      expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
     });
 
     it("Recognizes a TypeMismatch error for { return 1 /= true; } (mismatched types in not-equal expression)", () => {
@@ -2465,7 +2465,7 @@ describe("Evaluator", () => {
         throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
       }
 
-      expect(evalResult.left.expectedType).toBe("number");
+      expect(evalResult.left.expectedTypes).toEqual(["number"]);
     });
 
     it("Recognizes a TypeMismatch error for { return true /= 1; } (mismatched types in not-equal expression)", () => {
@@ -2500,7 +2500,7 @@ describe("Evaluator", () => {
         throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
       }
 
-      expect(evalResult.left.expectedType).toBe("boolean");
+      expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
     });
 
     // TODO type mismatch with closures in equals/not equals relations
