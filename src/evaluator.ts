@@ -204,7 +204,7 @@ export const evaluate: Evaluate = (program) => {
             if (lhsValue.valueKind === "closure") {
               throw new RuntimeError("Trying to compare closure value", {
                 runtimeErrorKind: "typeMismatch",
-                expectedType: "number or boolean", // TODO how to denote this in a machine-parseable way? could check rhsValue.valueKind, but what if that's "closure" as well?
+                expectedType: "number or boolean", // TODO how to denote this in a machine-parseable way? could check rhsValue.valueKind, but what if that's "closure" as well? maybe make expectedType an array?
                 actualType: "closure",
               });
             }
@@ -224,8 +224,8 @@ export const evaluate: Evaluate = (program) => {
             } else {
               throw new RuntimeError("Trying to compare values of different types", {
                 runtimeErrorKind: "typeMismatch",
-                expectedType: "number",
-                actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
+                expectedType: lhsValue.valueKind,
+                actualType: rhsValue.valueKind,
               });
             }
           case "notEqual":
@@ -252,8 +252,8 @@ export const evaluate: Evaluate = (program) => {
             } else {
               throw new RuntimeError("Trying to compare values of different types", {
                 runtimeErrorKind: "typeMismatch",
-                expectedType: "number",
-                actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
+                expectedType: lhsValue.valueKind,
+                actualType: rhsValue.valueKind,
               });
             }
         }
