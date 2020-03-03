@@ -2681,7 +2681,7 @@ describe("Evaluator", () => {
       expect(evalResult.left.actualType).toBe("closure");
     });
 
-    it("Recognizes a NoReturn error for {}", () => {
+    it("Recognizes a NoReturn error for {} (no return at top level)", () => {
       // Arrange
       const ast: Program = [];
 
@@ -2693,9 +2693,40 @@ describe("Evaluator", () => {
         throw new Error("Evaluation succeeded, should have failed");
       }
 
-      if (evalResult.left.runtimeErrorKind !== "noReturn") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NoReturn error`);
+      expect(evalResult.left.runtimeErrorKind).toBe("noReturn");
+    });
+
+    it("Recognizes a NoReturn error for { function f() {} return f(); } (no return in function declaration)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "funcDecl",
+          functionName: identifierIso.wrap("f"),
+          argNames: [],
+          body: [],
+        },
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "funcCall",
+            callee: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("f"),
+            },
+            args: [],
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
       }
+
+      expect(evalResult.left.runtimeErrorKind).toBe("noReturn");
     });
 
     it("Recognizes an arity mismatch (too few arguments) for { function f(x) { return x; } return f(); }", () => {
