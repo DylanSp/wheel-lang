@@ -3,5 +3,5 @@
     return x + y;
   }
 
-  return 1 + 2;
+  return f(1, 2);
 }
