@@ -668,7 +668,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.isTrue).toBe(true);
       });
 
-      it("Evaluates { return 7 == 8; } to false (evaluating equals operator)", () => {
+      it("Evaluates { return 7 == 8; } to false (evaluating equals operator with numbers)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -703,7 +703,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.isTrue).toBe(false);
       });
 
-      it("Evaluates { return 9 /= 10; } to true (evaluating not-equals operator)", () => {
+      it("Evaluates { return 9 /= 10; } to true (evaluating not-equals operator with numbers)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -718,6 +718,76 @@ describe("Evaluator", () => {
               rightOperand: {
                 expressionKind: "numberLit",
                 value: 10,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(true);
+      });
+
+      it("Evaluates { return true == true; } to true (evaluating equals operator with booleans)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "booleanLit",
+                isTrue: true,
+              },
+              rightOperand: {
+                expressionKind: "booleanLit",
+                isTrue: true,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(true);
+      });
+
+      it("Evaluates { return false /= true; } to true (evaluating not-equals operator with booleans)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "notEqual",
+              leftOperand: {
+                expressionKind: "booleanLit",
+                isTrue: false,
+              },
+              rightOperand: {
+                expressionKind: "booleanLit",
+                isTrue: true,
               },
             },
           },
@@ -2311,6 +2381,8 @@ describe("Evaluator", () => {
     });
 
     // TODO type mismatch in equals/not equals relations
+
+    // TODO type mismatch with closures in equals/not equals relations
 
     it("Recognizes a NoReturn error for {}", () => {
       // Arrange

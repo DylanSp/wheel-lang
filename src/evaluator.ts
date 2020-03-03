@@ -201,23 +201,61 @@ export const evaluate: Evaluate = (program) => {
             }
             return makeBooleanValue(lhsValue.value >= rhsValue.value);
           case "equals":
-            if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
-              throw new RuntimeError("Trying to compare non-numeric values", {
+            if (lhsValue.valueKind === "closure") {
+              throw new RuntimeError("Trying to compare closure value", {
+                runtimeErrorKind: "typeMismatch",
+                expectedType: "number or boolean", // TODO how to denote this in a machine-parseable way? could check rhsValue.valueKind, but what if that's "closure" as well?
+                actualType: "closure",
+              });
+            }
+
+            if (rhsValue.valueKind === "closure") {
+              throw new RuntimeError("Trying to compare closure value", {
+                runtimeErrorKind: "typeMismatch",
+                expectedType: "number or boolean", // TODO how to denote this in a machine-parseable way? could check rhsValue.valueKind, but what if that's "closure" as well?
+                actualType: "closure",
+              });
+            }
+
+            if (lhsValue.valueKind === "number" && rhsValue.valueKind === "number") {
+              return makeBooleanValue(lhsValue.value === rhsValue.value);
+            } else if (lhsValue.valueKind === "boolean" && rhsValue.valueKind === "boolean") {
+              return makeBooleanValue(lhsValue.isTrue === rhsValue.isTrue);
+            } else {
+              throw new RuntimeError("Trying to compare values of different types", {
                 runtimeErrorKind: "typeMismatch",
                 expectedType: "number",
                 actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
               });
             }
-            return makeBooleanValue(lhsValue.value === rhsValue.value);
           case "notEqual":
-            if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
-              throw new RuntimeError("Trying to compare non-numeric values", {
+            if (lhsValue.valueKind === "closure") {
+              throw new RuntimeError("Trying to compare closure value", {
+                runtimeErrorKind: "typeMismatch",
+                expectedType: "number or boolean", // TODO how to denote this in a machine-parseable way? could check rhsValue.valueKind, but what if that's "closure" as well?
+                actualType: "closure",
+              });
+            }
+
+            if (rhsValue.valueKind === "closure") {
+              throw new RuntimeError("Trying to compare closure value", {
+                runtimeErrorKind: "typeMismatch",
+                expectedType: "number or boolean", // TODO how to denote this in a machine-parseable way? could check rhsValue.valueKind, but what if that's "closure" as well?
+                actualType: "closure",
+              });
+            }
+
+            if (lhsValue.valueKind === "number" && rhsValue.valueKind === "number") {
+              return makeBooleanValue(lhsValue.value !== rhsValue.value);
+            } else if (lhsValue.valueKind === "boolean" && rhsValue.valueKind === "boolean") {
+              return makeBooleanValue(lhsValue.isTrue !== rhsValue.isTrue);
+            } else {
+              throw new RuntimeError("Trying to compare values of different types", {
                 runtimeErrorKind: "typeMismatch",
                 expectedType: "number",
                 actualType: lhsValue.valueKind !== "number" ? lhsValue.valueKind : rhsValue.valueKind,
               });
             }
-            return makeBooleanValue(lhsValue.value !== rhsValue.value);
         }
       }
       case "variableRef": {
