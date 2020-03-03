@@ -1505,7 +1505,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(2);
       });
 
-      it("Evaluates { x = 0; if (true) { x = x + 1; } else { } return x; } to 1 (evaluating side-effecting if statements", () => {
+      it("Evaluates { x = 0; if (true) { x = x + 1; } else { } return x; } to 1 (evaluating if statements with side effects in true block", () => {
         // Arrange
         const ast: Program = [
           {
@@ -1564,6 +1564,84 @@ describe("Evaluator", () => {
         }
 
         expect(evalResult.right.value).toBe(1);
+      });
+
+      it("Evaluates { x = 0; if (false) { x = x + 1; } else { x = x + 2; } return x; } to 2 (evaluating if statements with side effects in else block", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "numberLit",
+              value: 0,
+            },
+          },
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "booleanLit",
+              isTrue: false,
+            },
+            trueBody: [
+              {
+                statementKind: "assignment",
+                variableName: identifierIso.wrap("x"),
+                variableValue: {
+                  expressionKind: "binOp",
+                  binOp: "add",
+                  leftOperand: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("x"),
+                  },
+                  rightOperand: {
+                    expressionKind: "numberLit",
+                    value: 1,
+                  },
+                },
+              },
+            ],
+            falseBody: [
+              {
+                statementKind: "assignment",
+                variableName: identifierIso.wrap("x"),
+                variableValue: {
+                  expressionKind: "binOp",
+                  binOp: "add",
+                  leftOperand: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("x"),
+                  },
+                  rightOperand: {
+                    expressionKind: "numberLit",
+                    value: 2,
+                  },
+                },
+              },
+            ],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("x"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(2);
       });
     });
 
