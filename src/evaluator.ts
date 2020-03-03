@@ -336,12 +336,7 @@ export const evaluate: Evaluate = (program) => {
           break;
         }
         case "funcDecl": {
-          const closureValue = makeClosureValue(
-            statement.functionName,
-            statement.argNames,
-            statement.body,
-            new Map(env), // make copy of blockEnv so later changes to blockEnv don't affect the environment captured by the closure
-          );
+          const closureValue = makeClosureValue(statement.functionName, statement.argNames, statement.body, env);
           closureValue.env.set(statement.functionName, closureValue);
           env.set(statement.functionName, closureValue);
           break;

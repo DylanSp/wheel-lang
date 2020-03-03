@@ -1871,8 +1871,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(3);
       });
 
-      // TODO this may be wrong; decide whether variables captured by a closure should be mutable
-      it("Evaluates { x = 1; function returnX() { return x; } y = x; x = 2; return y + returnX(); } to 2 (not 3) (checking that closures capture environment at time of definition)", () => {
+      it("Evaluates { x = 1; function returnX() { return x; } x = 2; return returnX(); } to 2 (not 1) (checking that closures capture reference to mutable variables)", () => {
         // Arrange
         const ast: Program = [
           {
@@ -1899,14 +1898,6 @@ describe("Evaluator", () => {
           },
           {
             statementKind: "assignment",
-            variableName: identifierIso.wrap("y"),
-            variableValue: {
-              expressionKind: "variableRef",
-              variableName: identifierIso.wrap("x"),
-            },
-          },
-          {
-            statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
             variableValue: {
               expressionKind: "numberLit",
@@ -1916,19 +1907,11 @@ describe("Evaluator", () => {
           {
             statementKind: "return",
             returnedValue: {
-              expressionKind: "binOp",
-              binOp: "add",
-              leftOperand: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
                 expressionKind: "variableRef",
-                variableName: identifierIso.wrap("y"),
-              },
-              rightOperand: {
-                expressionKind: "funcCall",
-                args: [],
-                callee: {
-                  expressionKind: "variableRef",
-                  variableName: identifierIso.wrap("returnX"),
-                },
+                variableName: identifierIso.wrap("returnX"),
               },
             },
           },
