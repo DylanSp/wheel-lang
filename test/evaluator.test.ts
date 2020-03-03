@@ -2503,7 +2503,177 @@ describe("Evaluator", () => {
       expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
     });
 
-    // TODO type mismatch with closures in equals/not equals relations
+    it("Recognizes a TypeMismatch error for { function f() {} return f == 1; } (closure on LHS of equals expression)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "funcDecl",
+          functionName: identifierIso.wrap("f"),
+          argNames: [],
+          body: [],
+        },
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "binOp",
+            binOp: "equals",
+            leftOperand: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("f"),
+            },
+            rightOperand: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+      }
+
+      expect(evalResult.left.expectedTypes).toContain("boolean");
+      expect(evalResult.left.expectedTypes).toContain("number");
+      expect(evalResult.left.actualType).toBe("closure");
+    });
+
+    it("Recognizes a TypeMismatch error for { function f() {} return 1 == f; } (closure on RHS of equals expression)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "funcDecl",
+          functionName: identifierIso.wrap("f"),
+          argNames: [],
+          body: [],
+        },
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "binOp",
+            binOp: "equals",
+            leftOperand: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+            rightOperand: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("f"),
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+      }
+
+      expect(evalResult.left.expectedTypes).toContain("boolean");
+      expect(evalResult.left.expectedTypes).toContain("number");
+      expect(evalResult.left.actualType).toBe("closure");
+    });
+
+    it("Recognizes a TypeMismatch error for { function f() {} return f /= 1; } (closure on LHS of not-equal expression)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "funcDecl",
+          functionName: identifierIso.wrap("f"),
+          argNames: [],
+          body: [],
+        },
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "binOp",
+            binOp: "notEqual",
+            leftOperand: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("f"),
+            },
+            rightOperand: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+      }
+
+      expect(evalResult.left.expectedTypes).toContain("boolean");
+      expect(evalResult.left.expectedTypes).toContain("number");
+      expect(evalResult.left.actualType).toBe("closure");
+    });
+
+    it("Recognizes a TypeMismatch error for { function f() {} return 1 /= f; } (closure on RHS of not-equal expression)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "funcDecl",
+          functionName: identifierIso.wrap("f"),
+          argNames: [],
+          body: [],
+        },
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "binOp",
+            binOp: "notEqual",
+            leftOperand: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+            rightOperand: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("f"),
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+      }
+
+      expect(evalResult.left.expectedTypes).toContain("boolean");
+      expect(evalResult.left.expectedTypes).toContain("number");
+      expect(evalResult.left.actualType).toBe("closure");
+    });
 
     it("Recognizes a NoReturn error for {}", () => {
       // Arrange
