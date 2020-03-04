@@ -810,9 +810,13 @@ describe("Evaluator", () => {
     });
 
     describe("Programs with simple variable use", () => {
-      it("Evaluates { x = 1; return x; } to 1 (assigning numeric literal expression to a variable)", () => {
+      it("Evaluates { let x; x = 1; return x; } to 1 (assigning numeric literal expression to a variable)", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -845,9 +849,13 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(1);
       });
 
-      it("Evaluates { x = 2; return x; } to 2 (assigning numeric literal expression to a variable)", () => {
+      it("Evaluates { let x; x = 2; return x; } to 2 (assigning numeric literal expression to a variable)", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -880,9 +888,13 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(2);
       });
 
-      it("Evaluates { x = 1; y = 2; return x; } to 1 (checking that the correct variable's value is used)", () => {
+      it("Evaluates { let x; x = 1; let y; y = 2; return x; } to 1 (checking that the correct variable's value is used)", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -890,6 +902,10 @@ describe("Evaluator", () => {
               expressionKind: "numberLit",
               value: 1,
             },
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("y"),
           },
           {
             statementKind: "assignment",
@@ -923,9 +939,13 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(1);
       });
 
-      it("Evaluates { x = 1; y = 2; return y; } to 2 (checking that the correct variable's value is used)", () => {
+      it("Evaluates { let x; x = 1; let y; y = 2; return y; } to 2 (checking that the correct variable's value is used)", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -933,6 +953,10 @@ describe("Evaluator", () => {
               expressionKind: "numberLit",
               value: 1,
             },
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("y"),
           },
           {
             statementKind: "assignment",
@@ -966,9 +990,13 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(2);
       });
 
-      it("Evaluates { x = 1; y = 2; return x + y; } to 3 (checking operations with variables)", () => {
+      it("Evaluates { let x; x = 1; let y; y = 2; return x + y; } to 3 (checking operations with variables)", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -976,6 +1004,10 @@ describe("Evaluator", () => {
               expressionKind: "numberLit",
               value: 1,
             },
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("y"),
           },
           {
             statementKind: "assignment",
@@ -1135,9 +1167,13 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(3);
       });
 
-      it("Evaluates { x = 1; function f(y) { return y; } return f(x); } to 1 (checking function called with a variable as argument)", () => {
+      it("Evaluates { let x; x = 1; function f(y) { return y; } return f(x); } to 1 (checking function called with a variable as argument)", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1193,9 +1229,13 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(1);
       });
 
-      it("Evaluates { x = 1; function f(y) { return x + y; } return f(2); } to 3 (checking calling function which uses an operation)", () => {
+      it("Evaluates { let x; x = 1; function f(y) { return x + y; } return f(2); } to 3 (checking calling function which uses an operation)", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1505,9 +1545,13 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(2);
       });
 
-      it("Evaluates { x = 0; if (true) { x = x + 1; } else { } return x; } to 1 (evaluating if statements with side effects in true block", () => {
+      it("Evaluates { let x; x = 0; if (true) { x = x + 1; } else { } return x; } to 1 (evaluating if statements with side effects in true block", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1566,9 +1610,13 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(1);
       });
 
-      it("Evaluates { x = 0; if (false) { x = x + 1; } else { x = x + 2; } return x; } to 2 (evaluating if statements with side effects in else block", () => {
+      it("Evaluates { let x; x = 0; if (false) { x = x + 1; } else { x = x + 2; } return x; } to 2 (evaluating if statements with side effects in else block", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1682,9 +1730,13 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(1);
       });
 
-      it("Evaluates { x = 0; y = 0; while (x < 2) { y = y + 5; x = x + 1; } return y; } to 10 (evaluating side-effecting while statements)", () => {
+      it("Evaluates { let x; x = 0; let y; y = 0; while (x < 2) { y = y + 5; x = x + 1; } return y; } to 10 (evaluating side-effecting while statements)", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1692,6 +1744,10 @@ describe("Evaluator", () => {
               expressionKind: "numberLit",
               value: 0,
             },
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("y"),
           },
           {
             statementKind: "assignment",
@@ -1880,9 +1936,13 @@ describe("Evaluator", () => {
     });
 
     describe("Other complex programs", () => {
-      it("Evaluates { x = 1; function f() { x = 2; return x; } return x + f(); } to 3 (checking that local variables shadow variables in outer scopes)", () => {
+      it("Evaluates { let x; x = 1; function f() { let x; x = 2; return x; } return x + f(); } to 3 (checking that local variables shadow variables in outer scopes)", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1896,6 +1956,10 @@ describe("Evaluator", () => {
             functionName: identifierIso.wrap("f"),
             argNames: [],
             body: [
+              {
+                statementKind: "varDecl",
+                variableName: identifierIso.wrap("x"),
+              },
               {
                 statementKind: "assignment",
                 variableName: identifierIso.wrap("x"),
@@ -1949,9 +2013,13 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(3);
       });
 
-      it("Evaluates { x = 1; function returnX() { return x; } x = 2; return returnX(); } to 2 (not 1) (checking that closures capture reference to mutable variables)", () => {
+      it("Evaluates { let x; x = 1; function returnX() { return x; } x = 2; return returnX(); } to 2 (not 1) (checking that closures capture reference to mutable variables)", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
