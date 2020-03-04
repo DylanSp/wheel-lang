@@ -2120,6 +2120,63 @@ describe("Evaluator", () => {
 
         expect(evalResult.right.value).toBe(1);
       });
+
+      it("Evaluates { let x; x = 1; if (true) { x = 2; } else {} return x; } to 2 (changes to non-shadowed variables propagate to outer scopes)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+          },
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "booleanLit",
+              isTrue: true,
+            },
+            trueBody: [
+              {
+                statementKind: "assignment",
+                variableName: identifierIso.wrap("x"),
+                variableValue: {
+                  expressionKind: "numberLit",
+                  value: 2,
+                },
+              },
+            ],
+            falseBody: [],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("x"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(2);
+      });
     });
   });
 
