@@ -1,0 +1,16 @@
+{
+  input = 10;
+
+  function factorial(n)
+  {
+    total = 1;
+    while (n > 1)
+    {
+      total = total * n;
+      n = n - 1;
+    }
+    return total;
+  }
+
+  return factorial(input);
+}
