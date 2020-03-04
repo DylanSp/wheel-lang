@@ -2181,6 +2181,55 @@ describe("Evaluator", () => {
 
         expect(evalResult.right.value).toBe(2);
       });
+
+      it("Evaluates { let x; if (true) { x = 1; } else { } return x; } to 1 (variables can be declared in an outer scope and assigned in an inner scope) ", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "booleanLit",
+              isTrue: true,
+            },
+            trueBody: [
+              {
+                statementKind: "assignment",
+                variableName: identifierIso.wrap("x"),
+                variableValue: {
+                  expressionKind: "numberLit",
+                  value: 1,
+                },
+              },
+            ],
+            falseBody: [],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("x"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(1);
+      });
     });
   });
 
