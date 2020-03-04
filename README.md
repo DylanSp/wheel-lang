@@ -90,6 +90,24 @@ Generally, Wheel behaves like you'd expect it to. The only types are numbers, bo
 
 Wheel has no `print`/`log`/`console` statements (currently; follow [issue #18](https://github.com/DylanSp/extended-four-function-console/issues/18) for work on this); the only way to get a value out of a program is by returning it from the program's top level. The driver in `src/main.ts` handles this; it scans, parses, and evaluates a program, printing the returned result if all steps are successful (and the error(s), if not).
 
-## Implementation Notes
+## Implementation/Architecture Notes
 
-TODO
+The Wheel interpreter is built as a composition of three modules: scanning/lexing, parsing, and evaluation. [`full_pipeline`](src/full_pipeline.ts) feeds a string input through the three modules, aborting at the first error. [`main`](src/main.ts) acts as the top-level driver, reading a program file into memory, running the pipeline, and reporting the result/errors.
+
+Each of the modules is built around a single central pure function, which either reports an error or produces a type to be consumed by the next module. This design allows for a small API surface, with each function having a single responsibility, no external dependencies, and no side effects. This allows for extensive unit testing; for examples of how each module is used, consult the `test` directory.
+
+In addition to the central functions, each module also exports the types required to consume its output. [`types`](src/types.ts) contains types used by multiple modules.
+
+### Scanning
+
+The scanner is relatively straightforward; it uses regexes and string equality checks to work through the input string, emitting an array of tokens (or invalid characters). These tokens denote various syntactic elements, such as operators, keywords, and literal number/boolean values.
+
+### Parsing
+
+The parser is built as an [LL(1)](https://en.wikipedia.org/wiki/LL_parser) [recursive descent parser](https://en.wikipedia.org/wiki/Recursive_descent_parser), consuming the token stream from the scanner and producing an [abstract syntax tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree) representing the program. The central `parse()` method contains several local methods such as `parseBlock()`, `parseLogicalExpr()`, `parseFactor()`, etc., each of which use the closed-over `position` variable to advance through the `Array<Token>` given as input. These local methods are mutually recursive; to allow for easy detection of failure, when a parse error is detected, a custom `ParseError` object is thrown. This is caught at the top level of `parse()` and converted into a `ParseFailure` object, fitting the return type of `Either<ParseFailure, Program>`. The parser doesn't currently attempt to recover from errors; only one is reported at a time.
+
+### Evaluation
+
+The evaluator iterates through the list of statements in the `Program` produced by the parser, evaluating one at a time. Expressions are trees of sub-expressions; the evaluator performs a post-order traversal of an expression tree to evaluate it.
+
+The one subtlety concerns how function declarations and calls are evaluated. When a function is declared, it's evaluated to a `ClosureValue`, capturing the current environment at the time of its declaration. The environment is represented as a `Map<Identifier, Value>` object, containing the values of all declared variables/functions present at a given time. Function calls are represented by `apply()`'ing a `ClosureValue` to an `Array<Value>`, where the array represents the arguments to the function call. This allows functions to be treated as first-class values which can be passed to and returned from other functions, as well as properly representing closures.
