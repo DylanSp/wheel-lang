@@ -6,6 +6,48 @@ import { identifierIso } from "../src/types";
 
 describe("Parser", () => {
   describe("Successful parses", () => {
+    describe("Simple variable declarations", () => {
+      it("Parses { let x; }", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "let",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          console.error(parseResult.left.message);
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+    });
+
     describe("Simple variable assignments", () => {
       it("Parses { x = 1 + 2; }", () => {
         // Arrange
@@ -3984,6 +4026,61 @@ describe("Parser", () => {
         {
           tokenKind: "number",
           value: 1,
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected ;/);
+    });
+
+    it('Expects an identifier after the "let" keyword', () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "let",
+        },
+        {
+          tokenKind: "number",
+          value: 1,
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected identifier/);
+    });
+
+    it("Expects a semicolon after variable declaration statements", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "let",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("x"),
         },
         {
           tokenKind: "rightBrace",
