@@ -8,7 +8,7 @@ import { isNone, Option, some, isSome, none } from "fp-ts/lib/Option";
  * TYPES
  */
 
-type Environment = Map<Identifier, Value>;
+type Environment = Map<Identifier, Option<Value>>; // value of None represents a declared but unassigned variable; value of Some represents the assigned value
 
 interface NotInScopeError {
   runtimeErrorKind: "notInScope";
@@ -267,7 +267,11 @@ export const evaluate: Evaluate = (program) => {
           });
         }
 
-        return variableValue.value;
+        if (isNone(variableValue.value)) {
+          throw new Error("Proper error handling for unassigned variables needed");
+        }
+
+        return variableValue.value.value;
       }
       case "funcCall": {
         const func = evaluateExpr(env, expr.callee);
@@ -304,9 +308,9 @@ export const evaluate: Evaluate = (program) => {
       });
     }
 
-    const envWithArgs: Environment = new Map<Identifier, Value>();
+    const envWithArgs: Environment = new Map<Identifier, Option<Value>>();
     for (let i = 0; i < func.argNames.length; i++) {
-      envWithArgs.set(func.argNames[i], args[i]);
+      envWithArgs.set(func.argNames[i], some(args[i]));
     }
 
     for (const [ident, val] of func.env) {
@@ -331,14 +335,26 @@ export const evaluate: Evaluate = (program) => {
         case "return": {
           return some(evaluateExpr(env, statement.returnedValue));
         }
+        case "varDecl": {
+          env.set(statement.variableName, none); // indicate that variable's been declared, with no value yet assigned
+          break;
+        }
         case "assignment": {
-          env.set(statement.variableName, evaluateExpr(env, statement.variableValue));
+          const existingValue = lookup(eqIdentifier)(statement.variableName, env);
+          if (isNone(existingValue)) {
+            throw new RuntimeError(`Variable ${statement.variableName} not in scope`, {
+              runtimeErrorKind: "notInScope",
+              outOfScopeIdentifier: statement.variableName,
+            });
+          }
+
+          env.set(statement.variableName, some(evaluateExpr(env, statement.variableValue)));
           break;
         }
         case "funcDecl": {
           const closureValue = makeClosureValue(statement.functionName, statement.argNames, statement.body, env); // use same environment to capture references to mutable variables
-          closureValue.env.set(statement.functionName, closureValue);
-          env.set(statement.functionName, closureValue);
+          closureValue.env.set(statement.functionName, some(closureValue));
+          env.set(statement.functionName, some(closureValue));
           break;
         }
         case "if": {
@@ -396,7 +412,7 @@ export const evaluate: Evaluate = (program) => {
 
   // main driver
   try {
-    const evalResult = evaluateBlock(new Map<Identifier, Value>(), program);
+    const evalResult = evaluateBlock(new Map<Identifier, Option<Value>>(), program);
     if (isNone(evalResult)) {
       throw new RuntimeError("No return statement in main program", {
         runtimeErrorKind: "noReturn",

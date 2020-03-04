@@ -1364,7 +1364,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(1);
       });
 
-      it("Evaluates { function makeAdder(x) { function adder(y) { return x + y; } return adder; } addOne = makeAdder(1); return addOne(2); } to 3 (checking call of higher-order function over multiple statements", () => {
+      it("Evaluates { function makeAdder(x) { function adder(y) { return x + y; } return adder; } let addOne; addOne = makeAdder(1); return addOne(2); } to 3 (checking call of higher-order function over multiple statements", () => {
         // Arrange
         const ast: Program = [
           {
@@ -1402,6 +1402,10 @@ describe("Evaluator", () => {
                 },
               },
             ],
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("addOne"),
           },
           {
             statementKind: "assignment",
@@ -2189,6 +2193,34 @@ describe("Evaluator", () => {
           returnedValue: {
             expressionKind: "variableRef",
             variableName: identifierIso.wrap("x"),
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "notInScope") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
+      }
+
+      expect(evalResult.left.outOfScopeIdentifier).toBe("x");
+    });
+
+    it("Recognizes a NotInScope error for { x = 1; } (undeclared variable)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "assignment",
+          variableName: identifierIso.wrap("x"),
+          variableValue: {
+            expressionKind: "numberLit",
+            value: 1,
           },
         },
       ];
