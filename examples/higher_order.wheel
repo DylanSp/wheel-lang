@@ -1,0 +1,15 @@
+{
+  function makeAdder(x)
+  {
+    function adder(y)
+    {
+      return x + y;
+    }
+
+    return adder;
+  }
+
+  add3 = makeAdder(3);
+
+  return add3(2);
+}
