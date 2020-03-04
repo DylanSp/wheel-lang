@@ -49,6 +49,23 @@ else
 }
 ```
 
+Note that this means `if {} else if {} else{}` chains are not allowed; instead, they must be nested:
+
+```
+if (x == 0)
+{
+}
+else
+{
+  if (x == 1)
+  {
+  }
+  else
+  {
+  }
+}
+```
+
 5. While statements. Braces around the body are mandatory. Example:
 
 ```
