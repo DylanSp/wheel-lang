@@ -3060,5 +3060,36 @@ describe("Evaluator", () => {
       expect(evalResult.left.expectedNumArgs).toBe(0);
       expect(evalResult.left.actualNumArgs).toBe(1);
     });
+
+    it("Recognizes an UnassignedVariable error for { let x; return x; } (variable used before assigning it a value)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "varDecl",
+          variableName: identifierIso.wrap("x"),
+        },
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "variableRef",
+            variableName: identifierIso.wrap("x"),
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "unassignedVariable") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of ArityMismatch error`);
+      }
+
+      expect(evalResult.left.unassignedIdentifier).toBe("x");
+    });
   });
 });

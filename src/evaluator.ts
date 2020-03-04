@@ -36,6 +36,11 @@ interface ArityMismatchError {
   actualNumArgs: number;
 }
 
+interface UnassignedVariableError {
+  runtimeErrorKind: "unassignedVariable";
+  unassignedIdentifier: Identifier;
+}
+
 class RuntimeError extends Error {
   constructor(public readonly message: string, public readonly underlyingFailure: RuntimeFailure) {
     super(message);
@@ -47,7 +52,8 @@ export type RuntimeFailure =
   | NotFunctionError
   | TypeMismatchError
   | NoReturnError
-  | ArityMismatchError;
+  | ArityMismatchError
+  | UnassignedVariableError;
 
 interface NumberValue {
   valueKind: "number";
@@ -268,7 +274,10 @@ export const evaluate: Evaluate = (program) => {
         }
 
         if (isNone(variableValue.value)) {
-          throw new Error("Proper error handling for unassigned variables needed");
+          throw new RuntimeError(`Variable ${expr.variableName} has no assigned value`, {
+            runtimeErrorKind: "unassignedVariable",
+            unassignedIdentifier: expr.variableName,
+          });
         }
 
         return variableValue.value.value;
