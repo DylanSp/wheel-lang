@@ -23,9 +23,9 @@ describe("Full interpretation pipeline", () => {
       expect(runResult.right.value).toBe(1);
     });
 
-    it("Evaluates { x = 2; return x; } to 1", () => {
+    it("Evaluates { let x; x = 2; return x; } to 1", () => {
       // Arrange
-      const programText = "{ x = 2; return x; }";
+      const programText = "{ let x; x = 2; return x; }";
 
       // Act
       const runResult = runProgram(programText);
@@ -99,10 +99,10 @@ describe("Full interpretation pipeline", () => {
       expect(runResult.right.value).toBe(13);
     });
 
-    it("Evaluates { function makeAdder(x) { function adder(y) { return x + y; } return adder; } addOne = makeAdder(1); return addOne(2); } to 3", () => {
+    it("Evaluates { function makeAdder(x) { function adder(y) { return x + y; } return adder; } let addOne; addOne = makeAdder(1); return addOne(2); } to 3", () => {
       // Arrange
       const programText =
-        "{ function makeAdder(x) { function adder(y) { return x + y; } return adder; } addOne = makeAdder(1); return addOne(2); }";
+        "{ function makeAdder(x) { function adder(y) { return x + y; } return adder; } let addOne; addOne = makeAdder(1); return addOne(2); }";
 
       // Act
       const runResult = runProgram(programText);
