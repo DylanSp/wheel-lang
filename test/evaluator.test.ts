@@ -810,9 +810,13 @@ describe("Evaluator", () => {
     });
 
     describe("Programs with simple variable use", () => {
-      it("Evaluates { x = 1; return x; } to 1 (assigning numeric literal expression to a variable)", () => {
+      it("Evaluates { let x; x = 1; return x; } to 1 (assigning numeric literal expression to a variable)", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -845,9 +849,13 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(1);
       });
 
-      it("Evaluates { x = 2; return x; } to 2 (assigning numeric literal expression to a variable)", () => {
+      it("Evaluates { let x; x = 2; return x; } to 2 (assigning numeric literal expression to a variable)", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -880,9 +888,13 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(2);
       });
 
-      it("Evaluates { x = 1; y = 2; return x; } to 1 (checking that the correct variable's value is used)", () => {
+      it("Evaluates { let x; x = 1; let y; y = 2; return x; } to 1 (checking that the correct variable's value is used)", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -890,6 +902,10 @@ describe("Evaluator", () => {
               expressionKind: "numberLit",
               value: 1,
             },
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("y"),
           },
           {
             statementKind: "assignment",
@@ -923,9 +939,13 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(1);
       });
 
-      it("Evaluates { x = 1; y = 2; return y; } to 2 (checking that the correct variable's value is used)", () => {
+      it("Evaluates { let x; x = 1; let y; y = 2; return y; } to 2 (checking that the correct variable's value is used)", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -933,6 +953,10 @@ describe("Evaluator", () => {
               expressionKind: "numberLit",
               value: 1,
             },
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("y"),
           },
           {
             statementKind: "assignment",
@@ -966,9 +990,13 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(2);
       });
 
-      it("Evaluates { x = 1; y = 2; return x + y; } to 3 (checking operations with variables)", () => {
+      it("Evaluates { let x; x = 1; let y; y = 2; return x + y; } to 3 (checking operations with variables)", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -976,6 +1004,10 @@ describe("Evaluator", () => {
               expressionKind: "numberLit",
               value: 1,
             },
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("y"),
           },
           {
             statementKind: "assignment",
@@ -1135,9 +1167,13 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(3);
       });
 
-      it("Evaluates { x = 1; function f(y) { return y; } return f(x); } to 1 (checking function called with a variable as argument)", () => {
+      it("Evaluates { let x; x = 1; function f(y) { return y; } return f(x); } to 1 (checking function called with a variable as argument)", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1193,9 +1229,13 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(1);
       });
 
-      it("Evaluates { x = 1; function f(y) { return x + y; } return f(2); } to 3 (checking calling function which uses an operation)", () => {
+      it("Evaluates { let x; x = 1; function f(y) { return x + y; } return f(2); } to 3 (checking calling function which uses an operation)", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1324,7 +1364,7 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(1);
       });
 
-      it("Evaluates { function makeAdder(x) { function adder(y) { return x + y; } return adder; } addOne = makeAdder(1); return addOne(2); } to 3 (checking call of higher-order function over multiple statements", () => {
+      it("Evaluates { function makeAdder(x) { function adder(y) { return x + y; } return adder; } let addOne; addOne = makeAdder(1); return addOne(2); } to 3 (checking call of higher-order function over multiple statements", () => {
         // Arrange
         const ast: Program = [
           {
@@ -1362,6 +1402,10 @@ describe("Evaluator", () => {
                 },
               },
             ],
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("addOne"),
           },
           {
             statementKind: "assignment",
@@ -1505,9 +1549,13 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(2);
       });
 
-      it("Evaluates { x = 0; if (true) { x = x + 1; } else { } return x; } to 1 (evaluating if statements with side effects in true block", () => {
+      it("Evaluates { let x; x = 0; if (true) { x = x + 1; } else { } return x; } to 1 (evaluating if statements with side effects in true block", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1566,9 +1614,13 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(1);
       });
 
-      it("Evaluates { x = 0; if (false) { x = x + 1; } else { x = x + 2; } return x; } to 2 (evaluating if statements with side effects in else block", () => {
+      it("Evaluates { let x; x = 0; if (false) { x = x + 1; } else { x = x + 2; } return x; } to 2 (evaluating if statements with side effects in else block", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1682,9 +1734,13 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(1);
       });
 
-      it("Evaluates { x = 0; y = 0; while (x < 2) { y = y + 5; x = x + 1; } return y; } to 10 (evaluating side-effecting while statements)", () => {
+      it("Evaluates { let x; x = 0; let y; y = 0; while (x < 2) { y = y + 5; x = x + 1; } return y; } to 10 (evaluating side-effecting while statements)", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1692,6 +1748,10 @@ describe("Evaluator", () => {
               expressionKind: "numberLit",
               value: 0,
             },
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("y"),
           },
           {
             statementKind: "assignment",
@@ -1880,9 +1940,13 @@ describe("Evaluator", () => {
     });
 
     describe("Other complex programs", () => {
-      it("Evaluates { x = 1; function f() { x = 2; return x; } return x + f(); } to 3 (checking that local variables shadow variables in outer scopes)", () => {
+      it("Evaluates { let x; x = 1; function f() { let x; x = 2; return x; } return x + f(); } to 3 (checking that local variables shadow variables in outer scopes)", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1896,6 +1960,10 @@ describe("Evaluator", () => {
             functionName: identifierIso.wrap("f"),
             argNames: [],
             body: [
+              {
+                statementKind: "varDecl",
+                variableName: identifierIso.wrap("x"),
+              },
               {
                 statementKind: "assignment",
                 variableName: identifierIso.wrap("x"),
@@ -1949,9 +2017,13 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(3);
       });
 
-      it("Evaluates { x = 1; function returnX() { return x; } x = 2; return returnX(); } to 2 (not 1) (checking that closures capture reference to mutable variables)", () => {
+      it("Evaluates { let x; x = 1; function returnX() { return x; } x = 2; return returnX(); } to 2 (not 1) (checking that closures capture reference to mutable variables)", () => {
         // Arrange
         const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -2052,6 +2124,112 @@ describe("Evaluator", () => {
 
         expect(evalResult.right.value).toBe(1);
       });
+
+      it("Evaluates { let x; x = 1; if (true) { x = 2; } else {} return x; } to 2 (changes to non-shadowed variables propagate to outer scopes)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+          },
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "booleanLit",
+              isTrue: true,
+            },
+            trueBody: [
+              {
+                statementKind: "assignment",
+                variableName: identifierIso.wrap("x"),
+                variableValue: {
+                  expressionKind: "numberLit",
+                  value: 2,
+                },
+              },
+            ],
+            falseBody: [],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("x"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(2);
+      });
+
+      it("Evaluates { let x; if (true) { x = 1; } else { } return x; } to 1 (variables can be declared in an outer scope and assigned in an inner scope) ", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "booleanLit",
+              isTrue: true,
+            },
+            trueBody: [
+              {
+                statementKind: "assignment",
+                variableName: identifierIso.wrap("x"),
+                variableValue: {
+                  expressionKind: "numberLit",
+                  value: 1,
+                },
+              },
+            ],
+            falseBody: [],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("x"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(1);
+      });
     });
   });
 
@@ -2064,6 +2242,265 @@ describe("Evaluator", () => {
           returnedValue: {
             expressionKind: "variableRef",
             variableName: identifierIso.wrap("x"),
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "notInScope") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
+      }
+
+      expect(evalResult.left.outOfScopeIdentifier).toBe("x");
+    });
+
+    it("Recognizes a NotInScope error for { x = 1; } (undeclared variable)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "assignment",
+          variableName: identifierIso.wrap("x"),
+          variableValue: {
+            expressionKind: "numberLit",
+            value: 1,
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "notInScope") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
+      }
+
+      expect(evalResult.left.outOfScopeIdentifier).toBe("x");
+    });
+
+    it("Recognizes a NotInScope error for { if (true) { let x; x = 1; } else {} return x; } (variables declared in an if statement's true block's scope don't exist in outer scopes)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "if",
+          condition: {
+            expressionKind: "booleanLit",
+            isTrue: true,
+          },
+          trueBody: [
+            {
+              statementKind: "varDecl",
+              variableName: identifierIso.wrap("x"),
+            },
+            {
+              statementKind: "assignment",
+              variableName: identifierIso.wrap("x"),
+              variableValue: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+            },
+          ],
+          falseBody: [],
+        },
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "variableRef",
+            variableName: identifierIso.wrap("x"),
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "notInScope") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
+      }
+
+      expect(evalResult.left.outOfScopeIdentifier).toBe("x");
+    });
+
+    it("Recognizes a NotInScope error for { if (false) {} else { let x; x = 1; } return x; } (variables declared in an if statement's false block's scope don't exist in outer scopes)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "if",
+          condition: {
+            expressionKind: "booleanLit",
+            isTrue: false,
+          },
+          trueBody: [],
+          falseBody: [
+            {
+              statementKind: "varDecl",
+              variableName: identifierIso.wrap("x"),
+            },
+            {
+              statementKind: "assignment",
+              variableName: identifierIso.wrap("x"),
+              variableValue: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+            },
+          ],
+        },
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "variableRef",
+            variableName: identifierIso.wrap("x"),
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "notInScope") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
+      }
+
+      expect(evalResult.left.outOfScopeIdentifier).toBe("x");
+    });
+
+    it("Recognizes a NotInScope error for { let x; x = 0; while (x < 1) { let y; x = x + 1; } return y; } (variables declared in a while statement's block's scope don't exist in outer scopes)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "varDecl",
+          variableName: identifierIso.wrap("x"),
+        },
+        {
+          statementKind: "assignment",
+          variableName: identifierIso.wrap("x"),
+          variableValue: {
+            expressionKind: "numberLit",
+            value: 0,
+          },
+        },
+        {
+          statementKind: "while",
+          condition: {
+            expressionKind: "binOp",
+            binOp: "lessThan",
+            leftOperand: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("x"),
+            },
+            rightOperand: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+          },
+          body: [
+            {
+              statementKind: "varDecl",
+              variableName: identifierIso.wrap("y"),
+            },
+            {
+              statementKind: "assignment",
+              variableName: identifierIso.wrap("x"),
+              variableValue: {
+                expressionKind: "binOp",
+                binOp: "add",
+                leftOperand: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("x"),
+                },
+                rightOperand: {
+                  expressionKind: "numberLit",
+                  value: 1,
+                },
+              },
+            },
+          ],
+        },
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "variableRef",
+            variableName: identifierIso.wrap("y"),
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "notInScope") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
+      }
+
+      expect(evalResult.left.outOfScopeIdentifier).toBe("y");
+    });
+
+    it("Recognizes a NotInScope error for { function f() { let x; return 1; } return f() + x; } (variables declared local to a function don't exist in outer scopes)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "funcDecl",
+          functionName: identifierIso.wrap("f"),
+          argNames: [],
+          body: [
+            {
+              statementKind: "varDecl",
+              variableName: identifierIso.wrap("x"),
+            },
+            {
+              statementKind: "return",
+              returnedValue: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+            },
+          ],
+        },
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "binOp",
+            binOp: "add",
+            leftOperand: {
+              expressionKind: "funcCall",
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("f"),
+              },
+              args: [],
+            },
+            rightOperand: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("x"),
+            },
           },
         },
       ];
@@ -2902,6 +3339,37 @@ describe("Evaluator", () => {
 
       expect(evalResult.left.expectedNumArgs).toBe(0);
       expect(evalResult.left.actualNumArgs).toBe(1);
+    });
+
+    it("Recognizes an UnassignedVariable error for { let x; return x; } (variable used before assigning it a value)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "varDecl",
+          variableName: identifierIso.wrap("x"),
+        },
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "variableRef",
+            variableName: identifierIso.wrap("x"),
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "unassignedVariable") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of ArityMismatch error`);
+      }
+
+      expect(evalResult.left.unassignedIdentifier).toBe("x");
     });
   });
 });

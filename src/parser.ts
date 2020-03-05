@@ -22,7 +22,13 @@ export type Program = Block;
 
 export type Block = Array<Statement>;
 
-type Statement = FunctionDeclaration | ReturnStatement | VariableAssignment | IfStatement | WhileStatement;
+type Statement =
+  | FunctionDeclaration
+  | ReturnStatement
+  | VariableDeclaration
+  | VariableAssignment
+  | IfStatement
+  | WhileStatement;
 
 interface FunctionDeclaration {
   statementKind: "funcDecl";
@@ -34,6 +40,11 @@ interface FunctionDeclaration {
 interface ReturnStatement {
   statementKind: "return";
   returnedValue: Expression;
+}
+
+interface VariableDeclaration {
+  statementKind: "varDecl";
+  variableName: Identifier;
 }
 
 interface VariableAssignment {
@@ -121,6 +132,7 @@ export const parse: Parse = (input) => {
     const statements: Array<Statement> = [];
 
     while (
+      input[position]?.tokenKind === "let" ||
       input[position]?.tokenKind === "function" ||
       input[position]?.tokenKind === "return" ||
       input[position]?.tokenKind === "identifier" ||
@@ -128,9 +140,31 @@ export const parse: Parse = (input) => {
       input[position]?.tokenKind === "while"
     ) {
       switch (input[position].tokenKind) {
+        case "let": {
+          position += 1; // move past "let"
+
+          if (input[position]?.tokenKind !== "identifier") {
+            throw new ParseError("Expected identifier");
+          }
+          const ident = (input[position] as IdentifierToken).name; // cast should always succeed
+          position += 1; // move past identifier
+
+          if (input[position]?.tokenKind !== "semicolon") {
+            throw new ParseError("Expected ;");
+          }
+          position += 1; // move past semicolon
+
+          statements.push({
+            statementKind: "varDecl",
+            variableName: ident,
+          });
+
+          break;
+        }
         case "function": {
           position += 1; // move past "function"
 
+          // TODO check if it's an identifier; need a test for getting a proper parse error for "function function"
           const functionName = (input[position] as IdentifierToken).name;
           position += 1; // move past identifier
 

@@ -1,8 +1,10 @@
 {
+  let input;
   input = 10;
 
   function factorial(n)
   {
+    let total;
     total = 1;
     while (n > 1)
     {

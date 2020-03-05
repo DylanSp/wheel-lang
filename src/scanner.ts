@@ -11,6 +11,7 @@ export type Token =
   | LeftParen
   | RightParen
   | SingleEquals
+  | LetKeyword
   | FunctionKeyword
   | ReturnKeyword
   | IfKeyword
@@ -44,6 +45,10 @@ interface RightParen {
 
 interface SingleEquals {
   tokenKind: "singleEquals";
+}
+
+interface LetKeyword {
+  tokenKind: "let";
 }
 
 interface FunctionKeyword {
@@ -142,8 +147,13 @@ export const scan: Scan = (input: string) => {
     const char = input[position];
     const peekAhead = input[position + 1];
 
-    // TODO add general way of recognizing keywords? same logic for "function"/"return"/"if"/"else"/"while"
-    if (
+    // TODO add general way of recognizing keywords? same logic for "let"/"function"/"return"/"if"/"else"/"while"
+    if (/^let/.test(input.substring(position)) && !/^[a-zA-Z0-9]/.test(input.substring(position + "let".length))) {
+      tokens.push({
+        tokenKind: "let",
+      });
+      position += "let".length;
+    } else if (
       /^function/.test(input.substring(position)) &&
       !/^[a-zA-Z0-9]/.test(input.substring(position + "function".length))
     ) {

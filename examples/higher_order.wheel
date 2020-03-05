@@ -9,6 +9,7 @@
     return adder;
   }
 
+  let add3;
   add3 = makeAdder(3);
 
   return add3(2);

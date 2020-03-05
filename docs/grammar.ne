@@ -4,15 +4,18 @@ Block -> "{" Statement:* "}"
 
 Statement -> FunctionDeclaration
            | ReturnStatement
-		   | VariableAssignment
-		   | IfStatement
-		   | WhileStatement
+					 | VariableDeclaration
+		   		 | VariableAssignment
+		   		 | IfStatement
+		   		 | WhileStatement
 		 
 FunctionDeclaration -> "function" Identifier "(" ParameterDeclarationList ")" Block
 
 ParameterDeclarationList -> (Identifier ("," Identifier):*):?
 
 ReturnStatement -> "return" LogicalExpression ";"
+
+VariableDeclaration -> "let" Identifier ";"
 
 VariableAssignment -> Identifier "=" LogicalExpression ";"
 

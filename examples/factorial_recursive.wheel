@@ -1,4 +1,5 @@
 {
+  let input;
   input = 10;
 
   function factorial(n)

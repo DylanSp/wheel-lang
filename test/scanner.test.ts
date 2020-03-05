@@ -18,6 +18,7 @@ describe("Scanner", () => {
         ["if", "if"],
         ["else", "else"],
         ["while", "while"],
+        ["let", "let"],
       ])('Recognizes "%s"', (input, tokenKind) => {
         // Act
         const scanResult = scan(input);
@@ -169,6 +170,38 @@ describe("Scanner", () => {
           throw new Error(`${input} not recognized as identifier`);
         }
         expect(scanResult.right[0].name).toBe(input);
+      });
+
+      it('Recognizes a word with "let" in it as an identifier', () => {
+        // Arrange
+        const input = "sublet";
+
+        // Act
+        const scanResult = scan(input);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(1);
+        expect(scanResult.right[0].tokenKind).toBe("identifier");
+      });
+
+      it('Recognizes a word beginning with "let" as an identifier', () => {
+        // Arrange
+        const input = "letter";
+
+        // Act
+        const scanResult = scan(input);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(1);
+        expect(scanResult.right[0].tokenKind).toBe("identifier");
       });
 
       it('Recognizes a word with "function" in it as an identifier', () => {

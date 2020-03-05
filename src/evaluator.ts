@@ -1,6 +1,6 @@
 import { Program, Expression, Block } from "./parser";
 import { Either, right, left } from "fp-ts/lib/Either";
-import { lookup } from "fp-ts/lib/Map";
+import { lookup, member } from "fp-ts/lib/Map";
 import { Identifier, eqIdentifier } from "./types";
 import { isNone, Option, some, isSome, none } from "fp-ts/lib/Option";
 
@@ -8,7 +8,43 @@ import { isNone, Option, some, isSome, none } from "fp-ts/lib/Option";
  * TYPES
  */
 
-type Environment = Map<Identifier, Value>;
+// TODO make Environment a class with lookup(), define(), assign() methods?
+interface Environment {
+  values: Map<Identifier, Option<Value>>; // value of None represents a declared but unassigned variable; value of Some represents the assigned value
+  parentEnvironment?: Environment;
+}
+
+const lookupInEnvironment = (ident: Identifier, env: Environment): Option<Option<Value>> => {
+  const result = lookup(eqIdentifier)(ident, env.values);
+
+  if (isSome(result)) {
+    return result;
+  }
+
+  if (env.parentEnvironment !== undefined) {
+    return lookupInEnvironment(ident, env.parentEnvironment);
+  }
+
+  return none;
+};
+
+const defineInEnvironment = (ident: Identifier, env: Environment): void => {
+  env.values.set(ident, none);
+};
+
+// set a variable's value in the innermost environment in which it's found; return true iff variable was found
+const assignInEnvironment = (ident: Identifier, value: Value, env: Environment): boolean => {
+  if (member(eqIdentifier)(ident, env.values)) {
+    env.values.set(ident, some(value));
+    return true;
+  }
+
+  if (env.parentEnvironment !== undefined) {
+    return assignInEnvironment(ident, value, env.parentEnvironment);
+  }
+
+  return false;
+};
 
 interface NotInScopeError {
   runtimeErrorKind: "notInScope";
@@ -36,6 +72,11 @@ interface ArityMismatchError {
   actualNumArgs: number;
 }
 
+interface UnassignedVariableError {
+  runtimeErrorKind: "unassignedVariable";
+  unassignedIdentifier: Identifier;
+}
+
 class RuntimeError extends Error {
   constructor(public readonly message: string, public readonly underlyingFailure: RuntimeFailure) {
     super(message);
@@ -47,7 +88,8 @@ export type RuntimeFailure =
   | NotFunctionError
   | TypeMismatchError
   | NoReturnError
-  | ArityMismatchError;
+  | ArityMismatchError
+  | UnassignedVariableError;
 
 interface NumberValue {
   valueKind: "number";
@@ -259,7 +301,8 @@ export const evaluate: Evaluate = (program) => {
         }
       }
       case "variableRef": {
-        const variableValue = lookup(eqIdentifier)(expr.variableName, env);
+        const variableValue = lookupInEnvironment(expr.variableName, env);
+
         if (isNone(variableValue)) {
           throw new RuntimeError(`Variable ${expr.variableName} not in scope`, {
             runtimeErrorKind: "notInScope",
@@ -267,7 +310,14 @@ export const evaluate: Evaluate = (program) => {
           });
         }
 
-        return variableValue.value;
+        if (isNone(variableValue.value)) {
+          throw new RuntimeError(`Variable ${expr.variableName} has no assigned value`, {
+            runtimeErrorKind: "unassignedVariable",
+            unassignedIdentifier: expr.variableName,
+          });
+        }
+
+        return variableValue.value.value;
       }
       case "funcCall": {
         const func = evaluateExpr(env, expr.callee);
@@ -304,16 +354,16 @@ export const evaluate: Evaluate = (program) => {
       });
     }
 
-    const envWithArgs: Environment = new Map<Identifier, Value>();
+    const functionLocalEnv: Environment = {
+      values: new Map<Identifier, Option<Value>>(),
+      parentEnvironment: func.env,
+    };
     for (let i = 0; i < func.argNames.length; i++) {
-      envWithArgs.set(func.argNames[i], args[i]);
+      defineInEnvironment(func.argNames[i], functionLocalEnv);
+      assignInEnvironment(func.argNames[i], args[i], functionLocalEnv);
     }
 
-    for (const [ident, val] of func.env) {
-      envWithArgs.set(ident, val);
-    }
-
-    const result = evaluateBlock(envWithArgs, func.body);
+    const result = evaluateBlock(functionLocalEnv, func.body);
     if (isNone(result)) {
       throw new RuntimeError("No return statement in block", {
         runtimeErrorKind: "noReturn",
@@ -331,14 +381,37 @@ export const evaluate: Evaluate = (program) => {
         case "return": {
           return some(evaluateExpr(env, statement.returnedValue));
         }
+        case "varDecl": {
+          defineInEnvironment(statement.variableName, env);
+          break;
+        }
         case "assignment": {
-          env.set(statement.variableName, evaluateExpr(env, statement.variableValue));
+          const successfullyAssigned = assignInEnvironment(
+            statement.variableName,
+            evaluateExpr(env, statement.variableValue),
+            env,
+          );
+          if (!successfullyAssigned) {
+            throw new RuntimeError(`Variable ${statement.variableName} not in scope`, {
+              runtimeErrorKind: "notInScope",
+              outOfScopeIdentifier: statement.variableName,
+            });
+          }
+
           break;
         }
         case "funcDecl": {
-          const closureValue = makeClosureValue(statement.functionName, statement.argNames, statement.body, env); // use same environment to capture references to mutable variables
-          closureValue.env.set(statement.functionName, closureValue);
-          env.set(statement.functionName, closureValue);
+          const closureEnv: Environment = {
+            values: new Map<Identifier, Option<Value>>(),
+            parentEnvironment: env,
+          };
+          const closureValue = makeClosureValue(statement.functionName, statement.argNames, statement.body, closureEnv);
+
+          defineInEnvironment(statement.functionName, closureEnv);
+          assignInEnvironment(statement.functionName, closureValue, closureEnv);
+
+          defineInEnvironment(statement.functionName, env);
+          assignInEnvironment(statement.functionName, closureValue, env);
           break;
         }
         case "if": {
@@ -351,15 +424,20 @@ export const evaluate: Evaluate = (program) => {
             });
           }
 
+          const blockEnv: Environment = {
+            values: new Map<Identifier, Option<Value>>(),
+            parentEnvironment: env,
+          };
+
           if (condition.isTrue) {
-            const blockResult = evaluateBlock(env, statement.trueBody); // use same environment so block can cause side effects
+            const blockResult = evaluateBlock(blockEnv, statement.trueBody);
             if (isSome(blockResult)) {
               return blockResult;
             }
 
             break;
           } else {
-            const blockResult = evaluateBlock(env, statement.falseBody); // use same environment so block can cause side effects
+            const blockResult = evaluateBlock(blockEnv, statement.falseBody);
             if (isSome(blockResult)) {
               return blockResult;
             }
@@ -379,7 +457,11 @@ export const evaluate: Evaluate = (program) => {
             }
 
             if (condition.isTrue) {
-              const blockResult = evaluateBlock(env, statement.body);
+              const blockEnv: Environment = {
+                values: new Map<Identifier, Option<Value>>(),
+                parentEnvironment: env,
+              };
+              const blockResult = evaluateBlock(blockEnv, statement.body);
               if (isSome(blockResult)) {
                 return blockResult;
               }
@@ -396,7 +478,12 @@ export const evaluate: Evaluate = (program) => {
 
   // main driver
   try {
-    const evalResult = evaluateBlock(new Map<Identifier, Value>(), program);
+    const evalResult = evaluateBlock(
+      {
+        values: new Map<Identifier, Option<Value>>(),
+      },
+      program,
+    );
     if (isNone(evalResult)) {
       throw new RuntimeError("No return statement in main program", {
         runtimeErrorKind: "noReturn",

@@ -17,7 +17,7 @@ The only external dependencies for building and using this language are `node` a
 
 ### Syntax
 
-Programs in Wheel are composed of a block of statements, following a JavaScript-esque syntax. The top-level block must have braces surrounding it. There are five types of statements:
+Programs in Wheel are composed of a block of statements, following a JavaScript-esque syntax. The top-level block must have braces surrounding it. There are six types of statements:
 
 1. Function declarations, following Javascript function declaration syntax. Example:
 
@@ -34,9 +34,19 @@ function f(x)
 return 1;
 ```
 
-3. Variable assignments: (May be changed; see [issue #15.](https://github.com/DylanSp/extended-four-function-console/issues/15))
+3. Variable declarations, using the keyword `let`. This declares a variable for use in this scope; it doesn't initialize it, and the variable must be assigned a value before use in an expression. Example:
 
-4. If statements. Braces around the body are mandatory, as is an `else` block. Example:
+```
+let x;
+```
+
+4. Variable assignments. The variable must be declared beforehand. Variables are mutable, and can have different values assigned to them. Example:
+
+```
+x = x + 1;
+```
+
+5. If statements. Braces around the body are mandatory, as is an `else` block. Example:
 
 ```
 if (x == 1)
@@ -66,7 +76,7 @@ else
 }
 ```
 
-5. While statements. Braces around the body are mandatory. Example:
+6. While statements. Braces around the body are mandatory. Example:
 
 ```
 while (x < 2)
@@ -86,6 +96,7 @@ Operator precedence is documented in [`docs/precedence.md`](docs/precedence.md).
 
 Reserved keywords:
 
+- `let`
 - `function`
 - `return`
 - `if`
