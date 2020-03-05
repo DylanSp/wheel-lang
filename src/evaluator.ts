@@ -405,7 +405,7 @@ export const evaluate: Evaluate = (program) => {
             values: new Map<Identifier, Option<Value>>(),
             parentEnvironment: env,
           };
-          const closureValue = makeClosureValue(statement.functionName, statement.argNames, statement.body, closureEnv); // use same environment to capture references to mutable variables
+          const closureValue = makeClosureValue(statement.functionName, statement.argNames, statement.body, closureEnv);
 
           defineInEnvironment(statement.functionName, closureEnv);
           assignInEnvironment(statement.functionName, closureValue, closureEnv);
