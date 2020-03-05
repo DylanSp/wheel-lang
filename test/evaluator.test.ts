@@ -2289,7 +2289,7 @@ describe("Evaluator", () => {
       expect(evalResult.left.outOfScopeIdentifier).toBe("x");
     });
 
-    it("Recognizes a NotInScope error for { if (true) { let x; x = 1; } else {} return x; } (variables declared in an inner scope don't exist in outer scopes", () => {
+    it("Recognizes a NotInScope error for { if (true) { let x; x = 1; } else {} return x; } (variables declared in an inner scope don't exist in outer scopes)", () => {
       // Arrange
       const ast: Program = [
         {
