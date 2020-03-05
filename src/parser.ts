@@ -164,7 +164,10 @@ export const parse: Parse = (input) => {
         case "function": {
           position += 1; // move past "function"
 
-          // TODO check if it's an identifier; need a test for getting a proper parse error for "function function"
+          if (input[position]?.tokenKind !== "identifier") {
+            throw new ParseError("Expected identifier");
+          }
+
           const functionName = (input[position] as IdentifierToken).name;
           position += 1; // move past identifier
 

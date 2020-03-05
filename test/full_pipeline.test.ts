@@ -178,7 +178,7 @@ describe("Full interpretation pipeline", () => {
         throw new Error(`${runResult.left.pipelineErrorKind} error reported instead of parse error`);
       }
 
-      expect(runResult.left.parseError.message).toMatch(/Expected \(/);
+      expect(runResult.left.parseError.message).toMatch(/Expected identifier/);
     });
   });
 
