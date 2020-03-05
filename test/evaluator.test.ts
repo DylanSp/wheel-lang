@@ -2463,6 +2463,63 @@ describe("Evaluator", () => {
       expect(evalResult.left.outOfScopeIdentifier).toBe("y");
     });
 
+    it("Recognizes a NotInScope error for { function f() { let x; return 1; } return f() + x; } (variables declared local to a function don't exist in outer scopes)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "funcDecl",
+          functionName: identifierIso.wrap("f"),
+          argNames: [],
+          body: [
+            {
+              statementKind: "varDecl",
+              variableName: identifierIso.wrap("x"),
+            },
+            {
+              statementKind: "return",
+              returnedValue: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+            },
+          ],
+        },
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "binOp",
+            binOp: "add",
+            leftOperand: {
+              expressionKind: "funcCall",
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("f"),
+              },
+              args: [],
+            },
+            rightOperand: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("x"),
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "notInScope") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
+      }
+
+      expect(evalResult.left.outOfScopeIdentifier).toBe("x");
+    });
+
     it("Recognizes a NotInScope error for { function f() { return x; } return f(); }", () => {
       // Arrange
       const ast: Program = [
