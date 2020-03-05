@@ -2289,7 +2289,7 @@ describe("Evaluator", () => {
       expect(evalResult.left.outOfScopeIdentifier).toBe("x");
     });
 
-    it("Recognizes a NotInScope error for { if (true) { let x; x = 1; } else {} return x; } (variables declared in an inner scope don't exist in outer scopes)", () => {
+    it("Recognizes a NotInScope error for { if (true) { let x; x = 1; } else {} return x; } (variables declared in an if statement's true block's scope don't exist in outer scopes)", () => {
       // Arrange
       const ast: Program = [
         {
@@ -2313,6 +2313,55 @@ describe("Evaluator", () => {
             },
           ],
           falseBody: [],
+        },
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "variableRef",
+            variableName: identifierIso.wrap("x"),
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "notInScope") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
+      }
+
+      expect(evalResult.left.outOfScopeIdentifier).toBe("x");
+    });
+
+    it("Recognizes a NotInScope error for { if (false) {} else { let x; x = 1; } return x; } (variables declared in an if statement's false block's scope don't exist in outer scopes)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "if",
+          condition: {
+            expressionKind: "booleanLit",
+            isTrue: false,
+          },
+          trueBody: [],
+          falseBody: [
+            {
+              statementKind: "varDecl",
+              variableName: identifierIso.wrap("x"),
+            },
+            {
+              statementKind: "assignment",
+              variableName: identifierIso.wrap("x"),
+              variableValue: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+            },
+          ],
         },
         {
           statementKind: "return",
