@@ -2387,6 +2387,82 @@ describe("Evaluator", () => {
       expect(evalResult.left.outOfScopeIdentifier).toBe("x");
     });
 
+    it("Recognizes a NotInScope error for { let x; x = 0; while (x < 1) { let y; x = x + 1; } return y; } (variables declared in a while statement's block's scope don't exist in outer scopes)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "varDecl",
+          variableName: identifierIso.wrap("x"),
+        },
+        {
+          statementKind: "assignment",
+          variableName: identifierIso.wrap("x"),
+          variableValue: {
+            expressionKind: "numberLit",
+            value: 0,
+          },
+        },
+        {
+          statementKind: "while",
+          condition: {
+            expressionKind: "binOp",
+            binOp: "lessThan",
+            leftOperand: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("x"),
+            },
+            rightOperand: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+          },
+          body: [
+            {
+              statementKind: "varDecl",
+              variableName: identifierIso.wrap("y"),
+            },
+            {
+              statementKind: "assignment",
+              variableName: identifierIso.wrap("x"),
+              variableValue: {
+                expressionKind: "binOp",
+                binOp: "add",
+                leftOperand: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("x"),
+                },
+                rightOperand: {
+                  expressionKind: "numberLit",
+                  value: 1,
+                },
+              },
+            },
+          ],
+        },
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "variableRef",
+            variableName: identifierIso.wrap("y"),
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "notInScope") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
+      }
+
+      expect(evalResult.left.outOfScopeIdentifier).toBe("y");
+    });
+
     it("Recognizes a NotInScope error for { function f() { return x; } return f(); }", () => {
       // Arrange
       const ast: Program = [

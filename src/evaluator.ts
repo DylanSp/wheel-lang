@@ -457,7 +457,11 @@ export const evaluate: Evaluate = (program) => {
             }
 
             if (condition.isTrue) {
-              const blockResult = evaluateBlock(env, statement.body);
+              const blockEnv: Environment = {
+                values: new Map<Identifier, Option<Value>>(),
+                parentEnvironment: env,
+              };
+              const blockResult = evaluateBlock(blockEnv, statement.body);
               if (isSome(blockResult)) {
                 return blockResult;
               }
