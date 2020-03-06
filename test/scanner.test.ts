@@ -13,6 +13,19 @@ describe("Scanner", () => {
         ["=", "singleEquals"],
         [",", "comma"],
         [";", "semicolon"],
+        ["+", "plus"],
+        ["-", "minus"],
+        ["*", "asterisk"],
+        ["/", "forwardSlash"],
+        ["!", "exclamationPoint"],
+        ["==", "doubleEquals"],
+        ["/=", "notEqual"],
+        ["&", "ampersand"],
+        ["|", "verticalBar"],
+        ["<", "lessThan"],
+        ["<=", "lessThanEquals"],
+        [">", "greaterThan"],
+        [">=", "greaterThanEquals"],
         ["function", "function"],
         ["return", "return"],
         ["if", "if"],
@@ -30,104 +43,6 @@ describe("Scanner", () => {
 
         expect(scanResult.right).toHaveLength(1);
         expect(scanResult.right[0].tokenKind).toBe(tokenKind);
-      });
-    });
-
-    describe("Arithmetic binary operations", () => {
-      test.each([
-        ["+", "add"],
-        ["-", "subtract"],
-        ["*", "multiply"],
-        ["/", "divide"],
-      ])('Recognizes "%s"', (input, operationKind) => {
-        // Act
-        const scanResult = scan(input);
-
-        // Assert
-        if (!isRight(scanResult)) {
-          throw new Error("Scan failed, should have succeeded");
-        }
-
-        expect(scanResult.right).toHaveLength(1);
-
-        if (scanResult.right[0].tokenKind !== "arithBinaryOp") {
-          throw new Error(`Scan produced ${scanResult.right[0].tokenKind} instead of arithmetic binary operation`);
-        }
-
-        expect(scanResult.right[0].arithBinaryOp).toBe(operationKind);
-      });
-    });
-
-    describe("Logical binary operations", () => {
-      test.each([
-        ["&", "and"],
-        ["|", "or"],
-      ])('Recognizes "%s"', (input, operationKind) => {
-        // Act
-        const scanResult = scan(input);
-
-        // Assert
-        if (!isRight(scanResult)) {
-          throw new Error("Scan failed, should have succeeded");
-        }
-
-        expect(scanResult.right).toHaveLength(1);
-
-        if (scanResult.right[0].tokenKind !== "logicalBinaryOp") {
-          throw new Error(`Scan produced ${scanResult.right[0].tokenKind} instead of logical binary operation`);
-        }
-
-        expect(scanResult.right[0].logicalBinaryOp).toBe(operationKind);
-      });
-    });
-
-    describe("Logical unary operations", () => {
-      it("Recognizes !", () => {
-        // Arrange
-        const input = "!";
-
-        // Act
-        const scanResult = scan(input);
-
-        // Assert
-        if (!isRight(scanResult)) {
-          throw new Error("Scan failed, should have succeeded");
-        }
-
-        expect(scanResult.right).toHaveLength(1);
-
-        if (scanResult.right[0].tokenKind !== "logicalUnaryOp") {
-          throw new Error(`Scan produced ${scanResult.right[0].tokenKind} instead of logical unary operation`);
-        }
-
-        expect(scanResult.right[0].logicalUnaryOp).toBe("not");
-      });
-    });
-
-    describe("Relational operations", () => {
-      test.each([
-        ["<", "lessThan"],
-        [">", "greaterThan"],
-        ["<=", "lessThanEquals"],
-        [">=", "greaterThanEquals"],
-        ["==", "equals"],
-        ["/=", "notEqual"],
-      ])('Recognizes "%s"', (input, operationKind) => {
-        // Act
-        const scanResult = scan(input);
-
-        // Assert
-        if (!isRight(scanResult)) {
-          throw new Error("Scan failed, should have succeeded");
-        }
-
-        expect(scanResult.right).toHaveLength(1);
-
-        if (scanResult.right[0].tokenKind !== "relationalOp") {
-          throw new Error(`Scan produced ${scanResult.right[0].tokenKind} instead of relational operation`);
-        }
-
-        expect(scanResult.right[0].relationalOp).toBe(operationKind);
       });
     });
 

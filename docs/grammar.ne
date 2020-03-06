@@ -48,7 +48,7 @@ MulOp -> "*" | "/"
 
 FactorWithUnary -> UnaryOp:? Factor
 
-UnaryOp -> "!"
+UnaryOp -> "!" | "-"
 
 Factor -> "(" LogicalExpression ")"
         | PossibleCall

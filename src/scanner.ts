@@ -19,12 +19,21 @@ export type Token =
   | WhileKeyword
   | Semicolon
   | Comma
+  | PlusToken
+  | MinusToken
+  | Asterisk
+  | ForwardSlash
+  | ExclamationPoint
+  | DoubleEquals
+  | NotEqualsToken
+  | Ampersand
+  | VerticalBar
+  | LessThanToken
+  | LessThanEqualsToken
+  | GreaterThanToken
+  | GreaterThanEqualsToken
   | NumberToken
   | BooleanToken
-  | ArithmeticBinaryOperationToken
-  | LogicalBinaryOperationToken
-  | LogicalUnaryOperationToken
-  | RelationalOperationToken
   | IdentifierToken;
 
 interface LeftBrace {
@@ -79,6 +88,58 @@ interface Comma {
   tokenKind: "comma";
 }
 
+interface PlusToken {
+  tokenKind: "plus";
+}
+
+interface MinusToken {
+  tokenKind: "minus";
+}
+
+interface Asterisk {
+  tokenKind: "asterisk";
+}
+
+interface ForwardSlash {
+  tokenKind: "forwardSlash";
+}
+
+interface ExclamationPoint {
+  tokenKind: "exclamationPoint";
+}
+
+interface DoubleEquals {
+  tokenKind: "doubleEquals";
+}
+
+interface NotEqualsToken {
+  tokenKind: "notEqual";
+}
+
+interface Ampersand {
+  tokenKind: "ampersand";
+}
+
+interface VerticalBar {
+  tokenKind: "verticalBar";
+}
+
+interface LessThanToken {
+  tokenKind: "lessThan";
+}
+
+interface LessThanEqualsToken {
+  tokenKind: "lessThanEquals";
+}
+
+interface GreaterThanToken {
+  tokenKind: "greaterThan";
+}
+
+interface GreaterThanEqualsToken {
+  tokenKind: "greaterThanEquals";
+}
+
 export interface NumberToken {
   tokenKind: "number";
   value: number;
@@ -87,40 +148,6 @@ export interface NumberToken {
 export interface BooleanToken {
   tokenKind: "boolean";
   isTrue: boolean;
-}
-
-export type ArithmeticBinaryOperation = "add" | "subtract" | "multiply" | "divide";
-
-export interface ArithmeticBinaryOperationToken {
-  tokenKind: "arithBinaryOp";
-  arithBinaryOp: ArithmeticBinaryOperation;
-}
-
-export type LogicalBinaryOperation = "and" | "or";
-
-export interface LogicalBinaryOperationToken {
-  tokenKind: "logicalBinaryOp";
-  logicalBinaryOp: LogicalBinaryOperation;
-}
-
-export type LogicalUnaryOperation = "not";
-
-export interface LogicalUnaryOperationToken {
-  tokenKind: "logicalUnaryOp";
-  logicalUnaryOp: LogicalUnaryOperation;
-}
-
-export type RelationalOperation =
-  | "lessThan"
-  | "greaterThan"
-  | "lessThanEquals"
-  | "greaterThanEquals"
-  | "equals"
-  | "notEqual";
-
-export interface RelationalOperationToken {
-  tokenKind: "relationalOp";
-  relationalOp: RelationalOperation;
 }
 
 export interface IdentifierToken {
@@ -248,8 +275,7 @@ export const scan: Scan = (input: string) => {
         case "=":
           if (peekAhead === "=") {
             tokens.push({
-              tokenKind: "relationalOp",
-              relationalOp: "equals",
+              tokenKind: "doubleEquals",
             });
             position += 2;
           } else {
@@ -262,14 +288,12 @@ export const scan: Scan = (input: string) => {
         case "<":
           if (peekAhead === "=") {
             tokens.push({
-              tokenKind: "relationalOp",
-              relationalOp: "lessThanEquals",
+              tokenKind: "lessThanEquals",
             });
             position += 2;
           } else {
             tokens.push({
-              tokenKind: "relationalOp",
-              relationalOp: "lessThan",
+              tokenKind: "lessThan",
             });
             position += 1;
           }
@@ -277,14 +301,12 @@ export const scan: Scan = (input: string) => {
         case ">":
           if (peekAhead === "=") {
             tokens.push({
-              tokenKind: "relationalOp",
-              relationalOp: "greaterThanEquals",
+              tokenKind: "greaterThanEquals",
             });
             position += 2;
           } else {
             tokens.push({
-              tokenKind: "relationalOp",
-              relationalOp: "greaterThan",
+              tokenKind: "greaterThan",
             });
             position += 1;
           }
@@ -303,58 +325,50 @@ export const scan: Scan = (input: string) => {
           break;
         case "+":
           tokens.push({
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "add",
+            tokenKind: "plus",
           });
           position += 1;
           break;
         case "-":
           tokens.push({
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "subtract",
+            tokenKind: "minus",
           });
           position += 1;
           break;
         case "*":
           tokens.push({
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "multiply",
+            tokenKind: "asterisk",
           });
           position += 1;
           break;
         case "/":
           if (peekAhead === "=") {
             tokens.push({
-              tokenKind: "relationalOp",
-              relationalOp: "notEqual",
+              tokenKind: "notEqual",
             });
             position += 2;
           } else {
             tokens.push({
-              tokenKind: "arithBinaryOp",
-              arithBinaryOp: "divide",
+              tokenKind: "forwardSlash",
             });
             position += 1;
           }
           break;
         case "&":
           tokens.push({
-            tokenKind: "logicalBinaryOp",
-            logicalBinaryOp: "and",
+            tokenKind: "ampersand",
           });
           position += 1;
           break;
         case "|":
           tokens.push({
-            tokenKind: "logicalBinaryOp",
-            logicalBinaryOp: "or",
+            tokenKind: "verticalBar",
           });
           position += 1;
           break;
         case "!":
           tokens.push({
-            tokenKind: "logicalUnaryOp",
-            logicalUnaryOp: "not",
+            tokenKind: "exclamationPoint",
           });
           position += 1;
           break;

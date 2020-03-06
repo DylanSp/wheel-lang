@@ -326,14 +326,30 @@ export const evaluate: Evaluate = (program) => {
       }
       case "unaryOp": {
         const operandValue = evaluateExpr(env, expr.operand);
-        if (operandValue.valueKind !== "boolean") {
-          throw new RuntimeError("Attempting to apply logical not to non-boolean", {
-            runtimeErrorKind: "typeMismatch",
-            expectedTypes: ["boolean"],
-            actualType: operandValue.valueKind,
-          });
+
+        if (expr.unaryOp === "not") {
+          if (operandValue.valueKind !== "boolean") {
+            throw new RuntimeError("Attempting to apply logical not to non-boolean", {
+              runtimeErrorKind: "typeMismatch",
+              expectedTypes: ["boolean"],
+              actualType: operandValue.valueKind,
+            });
+          }
+          return makeBooleanValue(!operandValue.isTrue);
+        } else if (expr.unaryOp === "negative") {
+          if (operandValue.valueKind !== "number") {
+            throw new RuntimeError("Attempting to apply unary minus to non-number", {
+              runtimeErrorKind: "typeMismatch",
+              expectedTypes: ["number"],
+              actualType: operandValue.valueKind,
+            });
+          }
+          return makeNumberValue(0 - operandValue.value);
+        } else {
+          throw new Error(
+            `Programming error; tried to evaluate unaryOp of kind ${expr.unaryOp}, only supported unary ops are "not" and "negative"`,
+          );
         }
-        return makeBooleanValue(!operandValue.isTrue);
       }
     }
   };
