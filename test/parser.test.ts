@@ -67,8 +67,7 @@ describe("Parser", () => {
             value: 1,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "add",
+            tokenKind: "plus",
           },
           {
             tokenKind: "number",
@@ -131,16 +130,14 @@ describe("Parser", () => {
             value: 1,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "add",
+            tokenKind: "plus",
           },
           {
             tokenKind: "number",
             value: 2,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "add",
+            tokenKind: "plus",
           },
           {
             tokenKind: "number",
@@ -211,8 +208,7 @@ describe("Parser", () => {
             value: 1,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "multiply",
+            tokenKind: "asterisk",
           },
           {
             tokenKind: "number",
@@ -275,16 +271,14 @@ describe("Parser", () => {
             value: 1,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "multiply",
+            tokenKind: "asterisk",
           },
           {
             tokenKind: "number",
             value: 2,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "subtract",
+            tokenKind: "minus",
           },
           {
             tokenKind: "number",
@@ -355,16 +349,14 @@ describe("Parser", () => {
             value: 4,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "add",
+            tokenKind: "plus",
           },
           {
             tokenKind: "number",
             value: 5,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "divide",
+            tokenKind: "forwardSlash",
           },
           {
             tokenKind: "number",
@@ -438,8 +430,7 @@ describe("Parser", () => {
             value: 7,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "add",
+            tokenKind: "plus",
           },
           {
             tokenKind: "number",
@@ -449,8 +440,7 @@ describe("Parser", () => {
             tokenKind: "rightParen",
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "divide",
+            tokenKind: "forwardSlash",
           },
           {
             tokenKind: "number",
@@ -727,8 +717,7 @@ describe("Parser", () => {
             tokenKind: "rightParen",
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "add",
+            tokenKind: "plus",
           },
           {
             tokenKind: "number",
@@ -794,8 +783,7 @@ describe("Parser", () => {
             value: 2,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "multiply",
+            tokenKind: "asterisk",
           },
           {
             tokenKind: "identifier",
@@ -982,8 +970,7 @@ describe("Parser", () => {
             isTrue: true,
           },
           {
-            tokenKind: "logicalBinaryOp",
-            logicalBinaryOp: "and",
+            tokenKind: "ampersand",
           },
           {
             tokenKind: "boolean",
@@ -1045,8 +1032,7 @@ describe("Parser", () => {
             isTrue: false,
           },
           {
-            tokenKind: "logicalBinaryOp",
-            logicalBinaryOp: "or",
+            tokenKind: "verticalBar",
           },
           {
             tokenKind: "boolean",
@@ -1108,8 +1094,7 @@ describe("Parser", () => {
             value: 1,
           },
           {
-            tokenKind: "relationalOp",
-            relationalOp: "lessThan",
+            tokenKind: "lessThan",
           },
           {
             tokenKind: "number",
@@ -1171,8 +1156,7 @@ describe("Parser", () => {
             value: 3,
           },
           {
-            tokenKind: "relationalOp",
-            relationalOp: "greaterThan",
+            tokenKind: "greaterThan",
           },
           {
             tokenKind: "number",
@@ -1234,8 +1218,7 @@ describe("Parser", () => {
             value: 5,
           },
           {
-            tokenKind: "relationalOp",
-            relationalOp: "lessThanEquals",
+            tokenKind: "lessThanEquals",
           },
           {
             tokenKind: "number",
@@ -1297,8 +1280,7 @@ describe("Parser", () => {
             value: 7,
           },
           {
-            tokenKind: "relationalOp",
-            relationalOp: "greaterThanEquals",
+            tokenKind: "greaterThanEquals",
           },
           {
             tokenKind: "number",
@@ -1360,8 +1342,7 @@ describe("Parser", () => {
             isTrue: true,
           },
           {
-            tokenKind: "relationalOp",
-            relationalOp: "equals",
+            tokenKind: "doubleEquals",
           },
           {
             tokenKind: "number",
@@ -1423,8 +1404,7 @@ describe("Parser", () => {
             isTrue: false,
           },
           {
-            tokenKind: "relationalOp",
-            relationalOp: "notEqual",
+            tokenKind: "notEqual",
           },
           {
             tokenKind: "number",
@@ -1482,8 +1462,7 @@ describe("Parser", () => {
             tokenKind: "singleEquals",
           },
           {
-            tokenKind: "logicalUnaryOp",
-            logicalUnaryOp: "not",
+            tokenKind: "exclamationPoint",
           },
           {
             tokenKind: "boolean",
@@ -1537,8 +1516,7 @@ describe("Parser", () => {
             tokenKind: "singleEquals",
           },
           {
-            tokenKind: "logicalUnaryOp",
-            logicalUnaryOp: "not",
+            tokenKind: "exclamationPoint",
           },
           {
             tokenKind: "identifier",
@@ -1606,8 +1584,7 @@ describe("Parser", () => {
             value: 2,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "multiply",
+            tokenKind: "asterisk",
           },
           {
             tokenKind: "identifier",
@@ -1679,8 +1656,7 @@ describe("Parser", () => {
             value: 1,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "add",
+            tokenKind: "plus",
           },
           {
             tokenKind: "identifier",
@@ -1752,8 +1728,7 @@ describe("Parser", () => {
             value: 3,
           },
           {
-            tokenKind: "relationalOp",
-            relationalOp: "lessThan",
+            tokenKind: "lessThan",
           },
           {
             tokenKind: "identifier",
@@ -1825,8 +1800,7 @@ describe("Parser", () => {
             isTrue: true,
           },
           {
-            tokenKind: "logicalBinaryOp",
-            logicalBinaryOp: "and",
+            tokenKind: "ampersand",
           },
           {
             tokenKind: "identifier",
@@ -1898,8 +1872,7 @@ describe("Parser", () => {
             isTrue: false,
           },
           {
-            tokenKind: "logicalBinaryOp",
-            logicalBinaryOp: "or",
+            tokenKind: "verticalBar",
           },
           {
             tokenKind: "identifier",
@@ -1971,12 +1944,10 @@ describe("Parser", () => {
             value: 4,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "divide",
+            tokenKind: "forwardSlash",
           },
           {
-            tokenKind: "logicalUnaryOp",
-            logicalUnaryOp: "not",
+            tokenKind: "exclamationPoint",
           },
           {
             tokenKind: "boolean",
@@ -2042,12 +2013,10 @@ describe("Parser", () => {
             value: 5,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "subtract",
+            tokenKind: "minus",
           },
           {
-            tokenKind: "logicalUnaryOp",
-            logicalUnaryOp: "not",
+            tokenKind: "exclamationPoint",
           },
           {
             tokenKind: "number",
@@ -2113,12 +2082,10 @@ describe("Parser", () => {
             value: 7,
           },
           {
-            tokenKind: "relationalOp",
-            relationalOp: "lessThan",
+            tokenKind: "lessThan",
           },
           {
-            tokenKind: "logicalUnaryOp",
-            logicalUnaryOp: "not",
+            tokenKind: "exclamationPoint",
           },
           {
             tokenKind: "number",
@@ -2184,12 +2151,10 @@ describe("Parser", () => {
             isTrue: false,
           },
           {
-            tokenKind: "logicalBinaryOp",
-            logicalBinaryOp: "and",
+            tokenKind: "ampersand",
           },
           {
-            tokenKind: "logicalUnaryOp",
-            logicalUnaryOp: "not",
+            tokenKind: "exclamationPoint",
           },
           {
             tokenKind: "boolean",
@@ -2255,12 +2220,10 @@ describe("Parser", () => {
             isTrue: true,
           },
           {
-            tokenKind: "logicalBinaryOp",
-            logicalBinaryOp: "or",
+            tokenKind: "verticalBar",
           },
           {
-            tokenKind: "logicalUnaryOp",
-            logicalUnaryOp: "not",
+            tokenKind: "exclamationPoint",
           },
           {
             tokenKind: "boolean",
@@ -2326,16 +2289,14 @@ describe("Parser", () => {
             value: 9,
           },
           {
-            tokenKind: "relationalOp",
-            relationalOp: "greaterThan",
+            tokenKind: "greaterThan",
           },
           {
             tokenKind: "number",
             value: 10,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "multiply",
+            tokenKind: "asterisk",
           },
           {
             tokenKind: "number",
@@ -2405,16 +2366,14 @@ describe("Parser", () => {
             isTrue: true,
           },
           {
-            tokenKind: "logicalBinaryOp",
-            logicalBinaryOp: "and",
+            tokenKind: "ampersand",
           },
           {
             tokenKind: "number",
             value: 12,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "multiply",
+            tokenKind: "asterisk",
           },
           {
             tokenKind: "number",
@@ -2484,16 +2443,14 @@ describe("Parser", () => {
             value: 14,
           },
           {
-            tokenKind: "logicalBinaryOp",
-            logicalBinaryOp: "or",
+            tokenKind: "verticalBar",
           },
           {
             tokenKind: "number",
             value: 15,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "divide",
+            tokenKind: "forwardSlash",
           },
           {
             tokenKind: "number",
@@ -2563,16 +2520,14 @@ describe("Parser", () => {
             value: 17,
           },
           {
-            tokenKind: "relationalOp",
-            relationalOp: "greaterThanEquals",
+            tokenKind: "greaterThanEquals",
           },
           {
             tokenKind: "number",
             value: 18,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "add",
+            tokenKind: "plus",
           },
           {
             tokenKind: "number",
@@ -2642,16 +2597,14 @@ describe("Parser", () => {
             isTrue: false,
           },
           {
-            tokenKind: "logicalBinaryOp",
-            logicalBinaryOp: "and",
+            tokenKind: "ampersand",
           },
           {
             tokenKind: "number",
             value: 20,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "subtract",
+            tokenKind: "minus",
           },
           {
             tokenKind: "number",
@@ -2721,16 +2674,14 @@ describe("Parser", () => {
             isTrue: true,
           },
           {
-            tokenKind: "logicalBinaryOp",
-            logicalBinaryOp: "or",
+            tokenKind: "verticalBar",
           },
           {
             tokenKind: "number",
             value: 22,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "add",
+            tokenKind: "plus",
           },
           {
             tokenKind: "number",
@@ -2800,16 +2751,14 @@ describe("Parser", () => {
             isTrue: true,
           },
           {
-            tokenKind: "logicalBinaryOp",
-            logicalBinaryOp: "and",
+            tokenKind: "ampersand",
           },
           {
             tokenKind: "number",
             value: 24,
           },
           {
-            tokenKind: "relationalOp",
-            relationalOp: "greaterThanEquals",
+            tokenKind: "greaterThanEquals",
           },
           {
             tokenKind: "number",
@@ -2879,16 +2828,14 @@ describe("Parser", () => {
             isTrue: false,
           },
           {
-            tokenKind: "logicalBinaryOp",
-            logicalBinaryOp: "or",
+            tokenKind: "verticalBar",
           },
           {
             tokenKind: "number",
             value: 26,
           },
           {
-            tokenKind: "relationalOp",
-            relationalOp: "lessThanEquals",
+            tokenKind: "lessThanEquals",
           },
           {
             tokenKind: "number",
@@ -2958,16 +2905,14 @@ describe("Parser", () => {
             isTrue: true,
           },
           {
-            tokenKind: "logicalBinaryOp",
-            logicalBinaryOp: "and",
+            tokenKind: "ampersand",
           },
           {
             tokenKind: "boolean",
             isTrue: true,
           },
           {
-            tokenKind: "logicalBinaryOp",
-            logicalBinaryOp: "or",
+            tokenKind: "verticalBar",
           },
           {
             tokenKind: "boolean",
@@ -3037,68 +2982,59 @@ describe("Parser", () => {
             value: 1,
           },
           {
-            tokenKind: "relationalOp",
-            relationalOp: "lessThan",
+            tokenKind: "lessThan",
           },
           {
             tokenKind: "number",
             value: 2,
           },
           {
-            tokenKind: "logicalBinaryOp",
-            logicalBinaryOp: "and",
+            tokenKind: "ampersand",
           },
           {
             tokenKind: "number",
             value: 3,
           },
           {
-            tokenKind: "relationalOp",
-            relationalOp: "greaterThan",
+            tokenKind: "greaterThan",
           },
           {
             tokenKind: "number",
             value: 4,
           },
           {
-            tokenKind: "logicalBinaryOp",
-            logicalBinaryOp: "or",
+            tokenKind: "verticalBar",
           },
           {
             tokenKind: "number",
             value: 5,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "add",
+            tokenKind: "plus",
           },
           {
             tokenKind: "number",
             value: 6,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "multiply",
+            tokenKind: "asterisk",
           },
           {
             tokenKind: "number",
             value: 7,
           },
           {
-            tokenKind: "relationalOp",
-            relationalOp: "notEqual",
+            tokenKind: "notEqual",
           },
           {
             tokenKind: "number",
             value: 8,
           },
           {
-            tokenKind: "logicalBinaryOp",
-            logicalBinaryOp: "and",
+            tokenKind: "ampersand",
           },
           {
-            tokenKind: "logicalUnaryOp",
-            logicalUnaryOp: "not",
+            tokenKind: "exclamationPoint",
           },
           {
             tokenKind: "identifier",
@@ -3228,8 +3164,7 @@ describe("Parser", () => {
             value: 1,
           },
           {
-            tokenKind: "arithBinaryOp",
-            arithBinaryOp: "add",
+            tokenKind: "plus",
           },
           {
             tokenKind: "number",
@@ -3839,8 +3774,7 @@ describe("Parser", () => {
             value: 1,
           },
           {
-            tokenKind: "relationalOp",
-            relationalOp: "lessThan",
+            tokenKind: "lessThan",
           },
           {
             tokenKind: "number",

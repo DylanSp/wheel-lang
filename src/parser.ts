@@ -1,18 +1,7 @@
-import {
-  ArithmeticBinaryOperation,
-  IdentifierToken,
-  Token,
-  ArithmeticBinaryOperationToken,
-  NumberToken,
-  LogicalBinaryOperation,
-  RelationalOperation,
-  LogicalUnaryOperation,
-  LogicalBinaryOperationToken,
-  RelationalOperationToken,
-  BooleanToken,
-} from "./scanner";
+import { IdentifierToken, Token, NumberToken, BooleanToken } from "./scanner";
 import { Either, right, left } from "fp-ts/lib/Either";
 import { Identifier } from "./types";
+import { none, Option, some, isSome } from "fp-ts/lib/Option";
 
 /**
  * TYPES
@@ -70,16 +59,26 @@ export type Expression = BinaryOperation | UnaryOperation | NumberLiteral | Bool
 
 interface BinaryOperation {
   expressionKind: "binOp";
-  binOp: ArithmeticBinaryOperation | LogicalBinaryOperation | RelationalOperation;
+  binOp: BinaryOperationKind;
   leftOperand: Expression;
   rightOperand: Expression;
 }
+
+type BinaryOperationKind = ArithmeticBinaryOperation | LogicalBinaryOperation | RelationalOperation;
+
+type ArithmeticBinaryOperation = "add" | "subtract" | "multiply" | "divide";
+
+type LogicalBinaryOperation = "and" | "or";
+
+type RelationalOperation = "lessThan" | "greaterThan" | "lessThanEquals" | "greaterThanEquals" | "equals" | "notEqual";
 
 interface UnaryOperation {
   expressionKind: "unaryOp";
   unaryOp: LogicalUnaryOperation;
   operand: Expression;
 }
+
+export type LogicalUnaryOperation = "not";
 
 interface NumberLiteral {
   expressionKind: "numberLit";
@@ -308,10 +307,7 @@ export const parse: Parse = (input) => {
   /** Expression parsing */
   const parseLogicalExpr = (): Expression => {
     let logicalExpr: Expression = parseLogicalTerm();
-    while (
-      input[position]?.tokenKind === "logicalBinaryOp" &&
-      (input[position] as LogicalBinaryOperationToken).logicalBinaryOp === "or"
-    ) {
+    while (input[position]?.tokenKind === "verticalBar") {
       position += 1;
       const rightSide = parseLogicalTerm();
       logicalExpr = {
@@ -327,10 +323,7 @@ export const parse: Parse = (input) => {
 
   const parseLogicalTerm = (): Expression => {
     let logicalTerm: Expression = parseRelation();
-    while (
-      input[position]?.tokenKind === "logicalBinaryOp" &&
-      (input[position] as LogicalBinaryOperationToken).logicalBinaryOp === "and"
-    ) {
+    while (input[position]?.tokenKind === "ampersand") {
       position += 1;
       const rightSide = parseRelation();
       logicalTerm = {
@@ -346,13 +339,37 @@ export const parse: Parse = (input) => {
 
   const parseRelation = (): Expression => {
     let relation = parseExpr();
-    if (input[position]?.tokenKind === "relationalOp") {
-      const relOp = (input[position] as RelationalOperationToken).relationalOp;
+
+    let relOp: Option<BinaryOperationKind>;
+    switch (input[position]?.tokenKind) {
+      case "lessThan":
+        relOp = some("lessThan");
+        break;
+      case "lessThanEquals":
+        relOp = some("lessThanEquals");
+        break;
+      case "greaterThan":
+        relOp = some("greaterThan");
+        break;
+      case "greaterThanEquals":
+        relOp = some("greaterThanEquals");
+        break;
+      case "doubleEquals":
+        relOp = some("equals");
+        break;
+      case "notEqual":
+        relOp = some("notEqual");
+        break;
+      default:
+        relOp = none;
+    }
+
+    if (isSome(relOp)) {
       position += 1;
       const rightSide = parseExpr();
       relation = {
         expressionKind: "binOp",
-        binOp: relOp,
+        binOp: relOp.value,
         leftOperand: relation,
         rightOperand: rightSide,
       };
@@ -363,20 +380,13 @@ export const parse: Parse = (input) => {
 
   const parseExpr = (): Expression => {
     let expr: Expression = parseTerm();
-    while (input[position]?.tokenKind === "arithBinaryOp") {
-      // need the conditional access to .tokenKind in case this.position goes past input.length
-      const opToken = input[position] as ArithmeticBinaryOperationToken; // cast should always succeed
-
-      // this condition should never be true; parseTerm() should consume all *'s and /'s, right now that leaves only + and -
-      if (opToken.arithBinaryOp !== "add" && opToken.arithBinaryOp !== "subtract") {
-        throw new Error("Programming error when trying to parse an expression; detected an anomalous operation token");
-      }
-
+    while (input[position]?.tokenKind === "plus" || input[position]?.tokenKind === "minus") {
+      const opTokenKind = input[position]?.tokenKind;
       position += 1;
       const rightSide = parseTerm();
       expr = {
         expressionKind: "binOp",
-        binOp: opToken.arithBinaryOp,
+        binOp: opTokenKind === "plus" ? "add" : "subtract",
         leftOperand: expr,
         rightOperand: rightSide,
       };
@@ -387,18 +397,13 @@ export const parse: Parse = (input) => {
 
   const parseTerm = (): Expression => {
     let term: Expression = parseUnaryFactor();
-    while (input[position]?.tokenKind === "arithBinaryOp") {
-      // need the conditional access to .tokenKind in case this.position goes past input.length
-      const opToken = input[position] as ArithmeticBinaryOperationToken; // cast should always succeed
-      if (opToken.arithBinaryOp !== "multiply" && opToken.arithBinaryOp !== "divide") {
-        break;
-      }
-
+    while (input[position]?.tokenKind === "asterisk" || input[position]?.tokenKind === "forwardSlash") {
+      const opTokenKind = input[position]?.tokenKind;
       position += 1;
       const rightSide = parseUnaryFactor();
       term = {
         expressionKind: "binOp",
-        binOp: opToken.arithBinaryOp,
+        binOp: opTokenKind === "asterisk" ? "multiply" : "divide",
         leftOperand: term,
         rightOperand: rightSide,
       };
@@ -408,7 +413,7 @@ export const parse: Parse = (input) => {
   };
 
   const parseUnaryFactor = (): Expression => {
-    if (input[position]?.tokenKind === "logicalUnaryOp") {
+    if (input[position]?.tokenKind === "exclamationPoint") {
       position += 1;
       const factor = parseFactor();
       return {
