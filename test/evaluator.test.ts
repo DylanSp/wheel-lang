@@ -2954,6 +2954,37 @@ describe("Evaluator", () => {
       expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
     });
 
+    it("Recognizes a TypeMismatch error for { return -true; } (non-number in unary negation)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "unaryOp",
+            unaryOp: "negative",
+            operand: {
+              expressionKind: "booleanLit",
+              isTrue: true,
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+      }
+
+      expect(evalResult.left.expectedTypes).toEqual(["number"]);
+    });
+
     it("Recognizes a TypeMismatch error for { return 1 == true; } (mismatched types in equals expression)", () => {
       // Arrange
       const ast: Program = [
