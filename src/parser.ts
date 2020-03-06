@@ -74,11 +74,13 @@ type RelationalOperation = "lessThan" | "greaterThan" | "lessThanEquals" | "grea
 
 interface UnaryOperation {
   expressionKind: "unaryOp";
-  unaryOp: LogicalUnaryOperation;
+  unaryOp: LogicalUnaryOperation | ArithmeticUnaryOperation;
   operand: Expression;
 }
 
 export type LogicalUnaryOperation = "not";
+
+type ArithmeticUnaryOperation = "negative";
 
 interface NumberLiteral {
   expressionKind: "numberLit";
@@ -419,6 +421,14 @@ export const parse: Parse = (input) => {
       return {
         expressionKind: "unaryOp",
         unaryOp: "not",
+        operand: factor,
+      };
+    } else if (input[position]?.tokenKind === "minus") {
+      position += 1;
+      const factor = parseFactor();
+      return {
+        expressionKind: "unaryOp",
+        unaryOp: "negative",
         operand: factor,
       };
     }

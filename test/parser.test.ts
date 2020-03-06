@@ -48,7 +48,7 @@ describe("Parser", () => {
       });
     });
 
-    describe("Simple variable assignments", () => {
+    describe("Simple variable assignments (expression parsing)", () => {
       it("Parses { x = 1 + 2; }", () => {
         // Arrange
         const tokens: Array<Token> = [
@@ -485,6 +485,131 @@ describe("Parser", () => {
               rightOperand: {
                 expressionKind: "numberLit",
                 value: 9,
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = -1; }", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "minus",
+          },
+          {
+            tokenKind: "number",
+            value: 1,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          console.error(parseResult.left.message);
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "unaryOp",
+              unaryOp: "negative",
+              operand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x = 2 - -3; }", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 2,
+          },
+          {
+            tokenKind: "minus",
+          },
+          {
+            tokenKind: "minus",
+          },
+          {
+            tokenKind: "number",
+            value: 3,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          console.error(parseResult.left.message);
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "binOp",
+              binOp: "subtract",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 2,
+              },
+              rightOperand: {
+                expressionKind: "unaryOp",
+                unaryOp: "negative",
+                operand: {
+                  expressionKind: "numberLit",
+                  value: 3,
+                },
               },
             },
           },
