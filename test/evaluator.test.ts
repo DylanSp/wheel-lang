@@ -255,6 +255,76 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(4);
       });
 
+      it("Evaluates { return -1; } to -1 (evaluating unary negation)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "unaryOp",
+              unaryOp: "negative",
+              operand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(-1);
+      });
+
+      it("Evaluates { return 2 - -3; } to 5 (evaluating unary negation as part of a larger expression)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "subtract",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 2,
+              },
+              rightOperand: {
+                expressionKind: "unaryOp",
+                unaryOp: "negative",
+                operand: {
+                  expressionKind: "numberLit",
+                  value: 3,
+                },
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(5);
+      });
+
       it("Evaluates { return 1 + 2 + 3; } to 6 (evaluating multiple additions in one expression)", () => {
         // Arrange
         const ast: Program = [
