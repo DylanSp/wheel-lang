@@ -32,7 +32,6 @@ export type Token =
   | LessThanEqualsToken
   | GreaterThanToken
   | GreaterThanEqualsToken
-  | Arg0Token
   | NumberToken
   | BooleanToken
   | IdentifierToken;
@@ -141,10 +140,6 @@ interface GreaterThanEqualsToken {
   tokenKind: "greaterThanEquals";
 }
 
-interface Arg0Token {
-  tokenKind: "arg0";
-}
-
 export interface NumberToken {
   tokenKind: "number";
   value: number;
@@ -240,14 +235,6 @@ export const scan: Scan = (input: string) => {
         isTrue: false,
       });
       position += "false".length;
-    } else if (
-      /^arg0/.test(input.substring(position)) &&
-      !/^[a-zA-Z0-9]/.test(input.substring(position + "arg0".length))
-    ) {
-      tokens.push({
-        tokenKind: "arg0",
-      });
-      position += "arg0".length;
     } else if (/\d{1}/.test(char)) {
       const numberMatches = input.substring(position).match(/^[\d]+([.][\d]+)?/);
       if (numberMatches === null) {
