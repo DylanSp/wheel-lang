@@ -11,7 +11,7 @@ The only external dependencies for building and using this language are `node` a
 1. Clone the repo.
 1. Install dependencies with `yarn install`/`npm install`.
 1. Build the interpreter with `yarn build`/`npm run build`.
-1. Run a program with `node dist/main.js [path/to/program]`; for example, to run the example of an addition function, use `node dist/main.js examples/adder.program`.
+1. Run a program with `node dist/main.js [path/to/program]`; for example, to run the example of an addition function, use `node dist/main.js examples/adder.wheel`.
 
 If you open this project in VS Code, make sure to use the local project's version of TypeScript, until VS Code updates to use TypeScript version >= 3.8.1. Otherwise, [this TypeScript bug](https://github.com/microsoft/TypeScript/issues/35970) will cause VS Code to show errors for correct code.
 
