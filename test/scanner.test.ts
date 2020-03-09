@@ -32,6 +32,7 @@ describe("Scanner", () => {
         ["else", "else"],
         ["while", "while"],
         ["let", "let"],
+        ["arg0", "arg0"],
       ])('Recognizes "%s"', (input, tokenKind) => {
         // Act
         const scanResult = scan(input);
@@ -266,6 +267,38 @@ describe("Scanner", () => {
       it('Recognizes a word beginning with "while" as an identifier', () => {
         // Arrange
         const input = "whiled";
+
+        // Act
+        const scanResult = scan(input);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(1);
+        expect(scanResult.right[0].tokenKind).toBe("identifier");
+      });
+
+      it('Recognizes a word with "arg0" in it as an identifier', () => {
+        // Arrange
+        const input = "larg0";
+
+        // Act
+        const scanResult = scan(input);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(1);
+        expect(scanResult.right[0].tokenKind).toBe("identifier");
+      });
+
+      it('Recognizes a word beginning with "arg0" as an identifier', () => {
+        // Arrange
+        const input = "arg0to10";
 
         // Act
         const scanResult = scan(input);
