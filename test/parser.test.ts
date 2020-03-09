@@ -7,9 +7,23 @@ import { identifierIso } from "../src/types";
 describe("Parser", () => {
   describe("Successful parses", () => {
     describe("Simple variable declarations", () => {
-      it("Parses { let x; }", () => {
+      it("Parses main (arg0) { let x; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -49,9 +63,23 @@ describe("Parser", () => {
     });
 
     describe("Simple variable assignments (expression parsing)", () => {
-      it("Parses { x = 1 + 2; }", () => {
+      it("Parses main (arg0) { x = 1 + 2; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -112,9 +140,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 1 + 2 + 3; } with proper associativity", () => {
+      it("Parses main (arg0) { x = 1 + 2 + 3; } with proper associativity", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -190,9 +232,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 1 * 2; }", () => {
+      it("Parses main (arg0) { x = 1 * 2; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -253,9 +309,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 1 * 2 - 3; } with proper precedence", () => {
+      it("Parses main (arg0) { x = 1 * 2 - 3; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -331,9 +401,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 4 + 5 / 6; } with proper precedence", () => {
+      it("Parses main (arg0) { x = 4 + 5 / 6; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -409,9 +493,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = (7 + 8) / 9; } with proper precedence", () => {
+      it("Parses main (arg0) { x = (7 + 8) / 9; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -493,9 +591,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = -1; }", () => {
+      it("Parses main (arg0) { x = -1; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -548,9 +660,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 2 - -3; }", () => {
+      it("Parses main (arg0) { x = 2 - -3; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -618,9 +744,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = f(); } (function call with no arguments)", () => {
+      it("Parses main (arg0) { x = f(); } (function call with no arguments)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -675,9 +815,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { y = g(1); } (function call with one argument)", () => {
+      it("Parses main (arg0) { y = g(1); } (function call with one argument)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -741,9 +895,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { z = h(2, 3); } (function call with >1 argument)", () => {
+      it("Parses main (arg0) { z = h(2, 3); } (function call with >1 argument)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -818,9 +986,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { i = f() + 1; } (function call with operation after it)", () => {
+      it("Parses main (arg0) { i = f() + 1; } (function call with operation after it)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -890,9 +1072,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { j = 2 * f(); } (function call with operation before it)", () => {
+      it("Parses main (arg0) { j = 2 * f(); } (function call with operation before it)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -962,9 +1158,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { higherOrderResult = higher()(); } (higher-order function call)", () => {
+      it("Parses main (arg0) { higherOrderResult = higher()(); } (higher-order function call)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1030,9 +1240,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = true; }", () => {
+      it("Parses main (arg0) { x = true; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1077,9 +1301,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = true & false; }", () => {
+      it("Parses main (arg0) { x = true & false; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1139,9 +1377,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = false | true; }", () => {
+      it("Parses main (arg0) { x = false | true; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1201,9 +1453,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 1 < 2; }", () => {
+      it("Parses main (arg0) { x = 1 < 2; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1263,9 +1529,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 3 > 4; }", () => {
+      it("Parses main (arg0) { x = 3 > 4; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1325,9 +1605,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 5 <= 6; }", () => {
+      it("Parses main (arg0) { x = 5 <= 6; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1387,9 +1681,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 7 >= 8; }", () => {
+      it("Parses main (arg0) { x = 7 >= 8; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1449,9 +1757,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = true == 9; }", () => {
+      it("Parses main (arg0) { x = true == 9; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1511,9 +1833,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = false /= 10; }", () => {
+      it("Parses main (arg0) { x = false /= 10; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1573,9 +1909,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = !true; }", () => {
+      it("Parses main (arg0) { x = !true; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1627,9 +1977,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = !f(); } with proper precedence", () => {
+      it("Parses main (arg0) { x = !f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1691,9 +2055,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 2 * f(); } with proper precedence", () => {
+      it("Parses main (arg0) { x = 2 * f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1763,9 +2141,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 1 + f(); } with proper precedence", () => {
+      it("Parses main (arg0) { x = 1 + f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1835,9 +2227,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 3 < f(); } with proper precedence", () => {
+      it("Parses main (arg0) { x = 3 < f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1907,9 +2313,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = true & f(); } with proper precedence", () => {
+      it("Parses main (arg0) { x = true & f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1979,9 +2399,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = false | f(); } with proper precedence", () => {
+      it("Parses main (arg0) { x = false | f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2051,9 +2485,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 4 / !true; } with proper precedence", () => {
+      it("Parses main (arg0) { x = 4 / !true; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2120,9 +2568,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 5 - !6; } with proper precedence", () => {
+      it("Parses main (arg0) { x = 5 - !6; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2189,9 +2651,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 7 < !8; } with proper precedence", () => {
+      it("Parses main (arg0) { x = 7 < !8; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2258,9 +2734,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = false & !true; } with proper precedence", () => {
+      it("Parses main (arg0) { x = false & !true; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2327,9 +2817,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = true | !false; } with proper precedence", () => {
+      it("Parses main (arg0) { x = true | !false; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2396,9 +2900,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 9 > 10 * 11; } with proper precedence", () => {
+      it("Parses main (arg0) { x = 9 > 10 * 11; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2473,9 +2991,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = true & 12 * 13; } with proper precedence", () => {
+      it("Parses main (arg0) { x = true & 12 * 13; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2550,9 +3082,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 14 | 15 / 16; } with proper precedence", () => {
+      it("Parses main (arg0) { x = 14 | 15 / 16; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2627,9 +3173,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 17 >= 18 + 19; } with proper precedence", () => {
+      it("Parses main (arg0) { x = 17 >= 18 + 19; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2704,9 +3264,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = false & 20 - 21; } with proper precedence", () => {
+      it("Parses main (arg0) { x = false & 20 - 21; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2781,9 +3355,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = true | 22 + 23; } with proper precedence", () => {
+      it("Parses main (arg0) { x = true | 22 + 23; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2858,9 +3446,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = true & 24 >= 25; } with proper precedence", () => {
+      it("Parses main (arg0) { x = true & 24 >= 25; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2935,9 +3537,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = false | 26 <= 27; } with proper precedence", () => {
+      it("Parses main (arg0) { x = false | 26 <= 27; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3012,9 +3628,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = true & true | false; } with proper precedence", () => {
+      it("Parses main (arg0) { x = true & true | false; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3089,9 +3719,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { x = 1 < 2 & 3 > 4 | 5 + 6 * 7 /= 8 & !f(); } with proper precedence", () => {
+      it("Parses main (arg0) { x = 1 < 2 & 3 > 4 | 5 + 6 * 7 /= 8 & !f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3275,9 +3919,23 @@ describe("Parser", () => {
     });
 
     describe("Simple return statements", () => {
-      it("Parses { return 1 + 2; } (return of operation)", () => {
+      it("Parses main (arg0) { return 1 + 2; } (return of operation)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3334,9 +3992,23 @@ describe("Parser", () => {
     });
 
     describe("Simple function declarations", () => {
-      it("Parses { function f() {} } (function with no parameters or body)", () => {
+      it("Parses main (arg0) { function f() {} } (function with no parameters or body)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3384,9 +4056,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { function g(x) {} } (function with one parameter, no body)", () => {
+      it("Parses main (arg0) { function g(x) {} } (function with one parameter, no body)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3438,9 +4124,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { function h(x, y) {} } (function with multiple parameters, no body)", () => {
+      it("Parses main (arg0) { function h(x, y) {} } (function with multiple parameters, no body)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3499,9 +4199,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { function foo() { return 1; } } (function with no parameters, one statement in body)", () => {
+      it("Parses main (arg0) { function foo() { return 1; } } (function with no parameters, one statement in body)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3567,9 +4281,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { function bar() { x = 1; return x; } } (function with no parameters, multiple statements in body)", () => {
+      it("Parses main (arg0) { function bar() { x = 1; return x; } } (function with no parameters, multiple statements in body)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3659,9 +4387,23 @@ describe("Parser", () => {
     });
 
     describe("Multi-statement programs", () => {
-      it("Parses { x = 1; return x; } (program with multiple simple statements)", () => {
+      it("Parses main (arg0) { x = 1; return x; } (program with multiple simple statements)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3722,9 +4464,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { if (true) { return 1; } else {} } (program with if statement, empty else block)", () => {
+      it("Parses main (arg0) { if (true) { return 1; } else {} } (program with if statement, empty else block)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3802,9 +4558,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { if (false) {} else { return 2; } } (program with if statement, empty then block", () => {
+      it("Parses main (arg0) { if (false) {} else { return 2; } } (program with if statement, empty then block", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3882,9 +4652,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { if (1 < 2) { return 3; } else { return 4; } } (program with if statement, statements in both blocks", () => {
+      it("Parses main (arg0) { if (1 < 2) { return 3; } else { return 4; } } (program with if statement, statements in both blocks", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3995,9 +4779,23 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
-      it("Parses { while (true) { x = 1; } } (program with while statement)", () => {
+      it("Parses main (arg0) { while (true) { x = 1; } } (program with while statement)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("main"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg0"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -4077,6 +4875,20 @@ describe("Parser", () => {
       // Arrange
       const tokens: Array<Token> = [
         {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
           tokenKind: "leftBrace",
         },
         {
@@ -4106,6 +4918,20 @@ describe("Parser", () => {
       // Arrange
       const tokens: Array<Token> = [
         {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
           tokenKind: "leftBrace",
         },
         {
@@ -4131,6 +4957,20 @@ describe("Parser", () => {
     it("Expects a semicolon after variable declaration statements", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -4160,6 +5000,20 @@ describe("Parser", () => {
     it("Expects a semicolon after assignment statements", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -4194,6 +5048,20 @@ describe("Parser", () => {
       // Arrange
       const tokens: Array<Token> = [
         {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
           tokenKind: "leftBrace",
         },
         {
@@ -4225,7 +5093,22 @@ describe("Parser", () => {
 
     it("Expects a left brace at the beginning of a block", () => {
       // Arrange
-      const tokens: Array<Token> = [];
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
+      ];
 
       // Act
       const parseResult = parse(tokens);
@@ -4241,6 +5124,20 @@ describe("Parser", () => {
     it("Expects a right brace at the end of a block", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -4270,6 +5167,20 @@ describe("Parser", () => {
     it("Expects a right parenthesis matching a left paren", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -4305,6 +5216,20 @@ describe("Parser", () => {
     it("Expects parsing to consume all input", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -4354,6 +5279,20 @@ describe("Parser", () => {
       // Arrange
       const tokens: Array<Token> = [
         {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
           tokenKind: "leftBrace",
         },
         {
@@ -4395,6 +5334,20 @@ describe("Parser", () => {
     it("Expects a right parenthesis after the list of arguments in a function declaration", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -4438,6 +5391,20 @@ describe("Parser", () => {
       // Arrange
       const tokens: Array<Token> = [
         {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
           tokenKind: "leftBrace",
         },
         {
@@ -4469,6 +5436,20 @@ describe("Parser", () => {
       // Arrange
       const tokens: Array<Token> = [
         {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
           tokenKind: "leftBrace",
         },
         {
@@ -4493,6 +5474,20 @@ describe("Parser", () => {
     it("Expects a right parenthesis following the expression in an if statement's condition", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -4522,6 +5517,20 @@ describe("Parser", () => {
     it("Expects a block to start with a left brace after the condition in an if statement", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -4558,6 +5567,20 @@ describe("Parser", () => {
     it('Expects an "else" after the first block in an if statement', () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -4599,6 +5622,20 @@ describe("Parser", () => {
     it('Expects a block to start with a left brace after the "else" in an if statement', () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -4645,6 +5682,20 @@ describe("Parser", () => {
       // Arrange
       const tokens: Array<Token> = [
         {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
           tokenKind: "leftBrace",
         },
         {
@@ -4669,6 +5720,20 @@ describe("Parser", () => {
     it("Expects a right parenthesis following the expression in a while statement's condition", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -4698,6 +5763,20 @@ describe("Parser", () => {
     it("Expects a block to start with a left brace after the condition in a while statement", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -4735,6 +5814,20 @@ describe("Parser", () => {
       // Arrange
       const tokens: Array<Token> = [
         {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
           tokenKind: "leftBrace",
         },
         {
@@ -4754,6 +5847,136 @@ describe("Parser", () => {
       }
 
       expect(parseResult.left.message).toMatch(/Expected identifier/);
+    });
+
+    it('Expects a program to start with "main"', () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected "main"/);
+    });
+
+    it('Expects a program to have a left paren after "main"', () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected \(/);
+    });
+
+    it('Expects a program to have "arg0" as its only argument for main', () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected "arg0"/);
+    });
+
+    it('Expects a program to have a right paren after "arg0"', () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("main"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg0"),
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected \)/);
     });
   });
 });

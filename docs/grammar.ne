@@ -1,6 +1,6 @@
 Program -> Block
 
-Block -> "{" Statement:* "}"
+Block -> "main" "(" "arg0" ")" "{" Statement:* "}"
 
 Statement -> FunctionDeclaration
            | ReturnStatement

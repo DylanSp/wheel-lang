@@ -1,6 +1,6 @@
 import { IdentifierToken, Token, NumberToken, BooleanToken } from "./scanner";
 import { Either, right, left } from "fp-ts/lib/Either";
-import { Identifier } from "./types";
+import { Identifier, identifierIso } from "./types";
 import { none, Option, some, isSome } from "fp-ts/lib/Option";
 
 /**
@@ -120,6 +120,34 @@ export const parse: Parse = (input) => {
 
   /** Grammar entrypoint */
   const parseProgram = (): Program => {
+    if (input[position]?.tokenKind !== "identifier") {
+      throw new ParseError('Expected "main"');
+    }
+    const programName = (input[position] as IdentifierToken).name;
+    if (identifierIso.unwrap(programName) !== "main") {
+      throw new ParseError('Expected "main"');
+    }
+    position += 1; // move past "main"
+
+    if (input[position]?.tokenKind !== "leftParen") {
+      throw new ParseError("Expected (");
+    }
+    position += 1; // move past left paren
+
+    if (input[position]?.tokenKind !== "identifier") {
+      throw new ParseError('Expected "arg0"');
+    }
+    const argumentName = (input[position] as IdentifierToken).name;
+    if (identifierIso.unwrap(argumentName) !== "arg0") {
+      throw new ParseError('Expected "arg0"');
+    }
+    position += 1; // move past arg0
+
+    if (input[position]?.tokenKind !== "rightParen") {
+      throw new ParseError("Expected )");
+    }
+    position += 1; // move past right paren
+
     return parseBlock();
   };
 
