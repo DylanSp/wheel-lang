@@ -141,11 +141,12 @@ const makeClosureValue = (
 interface NativeFunctionValue {
   valueKind: "nativeFunc";
   funcName: Identifier;
-  argCount: number;
+  argTypes: Array<ValueKind>;
   body: Function;
-  returnType: Value["valueKind"];
+  returnType: ValueKind;
 }
 
+type ValueKind = Value["valueKind"];
 export type Value = NumberValue | BooleanValue | ClosureValue | NativeFunctionValue;
 
 type Evaluate = (program: Program) => Either<RuntimeFailure, Value>;
@@ -403,10 +404,10 @@ export const evaluate: Evaluate = (program) => {
 
       return result.value;
     } else {
-      if (func.argCount !== args.length) {
+      if (func.argTypes.length !== args.length) {
         throw new RuntimeError("Wrong number of arguments when applying function", {
           runtimeErrorKind: "arityMismatch",
-          expectedNumArgs: func.argCount,
+          expectedNumArgs: func.argTypes.length,
           actualNumArgs: args.length,
         });
       }
@@ -535,7 +536,7 @@ export const evaluate: Evaluate = (program) => {
 
     const clockFunc: NativeFunctionValue = {
       valueKind: "nativeFunc",
-      argCount: 0,
+      argTypes: [],
       funcName: identifierIso.wrap("clock"),
       returnType: "number",
       body: () => Date.now(),
