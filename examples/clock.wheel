@@ -1,0 +1,4 @@
+main (arg0)
+{
+  return clock();
+}

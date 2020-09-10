@@ -1,7 +1,7 @@
 import { Program, Expression, Block } from "./parser";
 import { Either, right, left } from "fp-ts/lib/Either";
 import { lookup, member } from "fp-ts/lib/Map";
-import { Identifier, eqIdentifier } from "./types";
+import { Identifier, eqIdentifier, identifierIso } from "./types";
 import { isNone, Option, some, isSome, none } from "fp-ts/lib/Option";
 
 /**
@@ -77,6 +77,11 @@ interface UnassignedVariableError {
   unassignedIdentifier: Identifier;
 }
 
+interface NativeFunctionReturnedFunctionError {
+  runtimeErrorKind: "nativeFunctionReturnFunc";
+  nativeFunctionName: Identifier;
+}
+
 class RuntimeError extends Error {
   constructor(public readonly message: string, public readonly underlyingFailure: RuntimeFailure) {
     super(message);
@@ -89,7 +94,8 @@ export type RuntimeFailure =
   | TypeMismatchError
   | NoReturnError
   | ArityMismatchError
-  | UnassignedVariableError;
+  | UnassignedVariableError
+  | NativeFunctionReturnedFunctionError;
 
 interface NumberValue {
   valueKind: "number";
@@ -132,7 +138,15 @@ const makeClosureValue = (
   env,
 });
 
-export type Value = NumberValue | BooleanValue | ClosureValue;
+interface NativeFunctionValue {
+  valueKind: "nativeFunc";
+  funcName: Identifier;
+  argCount: number;
+  body: Function;
+  returnType: Value["valueKind"];
+}
+
+export type Value = NumberValue | BooleanValue | ClosureValue | NativeFunctionValue;
 
 type Evaluate = (program: Program) => Either<RuntimeFailure, Value>;
 
@@ -355,38 +369,62 @@ export const evaluate: Evaluate = (program) => {
   };
 
   const apply = (func: Value, args: Array<Value>): Value => {
-    if (func.valueKind !== "closure") {
+    if (func.valueKind !== "closure" && func.valueKind !== "nativeFunc") {
       throw new RuntimeError("Attempting to apply non-closure", {
         runtimeErrorKind: "notFunction",
         nonFunctionType: func.valueKind,
       });
     }
 
-    if (func.argNames.length !== args.length) {
-      throw new RuntimeError("Wrong number of arguments when applying function", {
-        runtimeErrorKind: "arityMismatch",
-        expectedNumArgs: func.argNames.length,
-        actualNumArgs: args.length,
-      });
-    }
+    if (func.valueKind === "closure") {
+      if (func.argNames.length !== args.length) {
+        throw new RuntimeError("Wrong number of arguments when applying function", {
+          runtimeErrorKind: "arityMismatch",
+          expectedNumArgs: func.argNames.length,
+          actualNumArgs: args.length,
+        });
+      }
 
-    const functionLocalEnv: Environment = {
-      values: new Map<Identifier, Option<Value>>(),
-      parentEnvironment: func.env,
-    };
-    for (let i = 0; i < func.argNames.length; i++) {
-      defineInEnvironment(func.argNames[i], functionLocalEnv);
-      assignInEnvironment(func.argNames[i], args[i], functionLocalEnv);
-    }
+      const functionLocalEnv: Environment = {
+        values: new Map<Identifier, Option<Value>>(),
+        parentEnvironment: func.env,
+      };
+      for (let i = 0; i < func.argNames.length; i++) {
+        defineInEnvironment(func.argNames[i], functionLocalEnv);
+        assignInEnvironment(func.argNames[i], args[i], functionLocalEnv);
+      }
 
-    const result = evaluateBlock(functionLocalEnv, func.body);
-    if (isNone(result)) {
-      throw new RuntimeError("No return statement in block", {
-        runtimeErrorKind: "noReturn",
-      });
-    }
+      const result = evaluateBlock(functionLocalEnv, func.body);
+      if (isNone(result)) {
+        throw new RuntimeError("No return statement in block", {
+          runtimeErrorKind: "noReturn",
+        });
+      }
 
-    return result.value;
+      return result.value;
+    } else {
+      if (func.argCount !== args.length) {
+        throw new RuntimeError("Wrong number of arguments when applying function", {
+          runtimeErrorKind: "arityMismatch",
+          expectedNumArgs: func.argCount,
+          actualNumArgs: args.length,
+        });
+      }
+
+      const possibleResult = func.body(...args);
+      switch (func.returnType) {
+        case "number":
+          return makeNumberValue(possibleResult as number);
+        case "boolean":
+          return makeBooleanValue(possibleResult as boolean);
+        case "closure":
+        case "nativeFunc":
+          throw new RuntimeError("Native function returned a closure/nativeFunc", {
+            runtimeErrorKind: "nativeFunctionReturnFunc",
+            nativeFunctionName: func.funcName,
+          });
+      }
+    }
   };
 
   // returns None if the block has no return statement; lack of returns are caught by apply() for function bodies, main driver for main block
@@ -492,14 +530,31 @@ export const evaluate: Evaluate = (program) => {
     return none;
   };
 
+  const defineNativeFunctions = (env: Environment): void => {
+    const nativeFuncs: Array<NativeFunctionValue> = [];
+
+    const clockFunc: NativeFunctionValue = {
+      valueKind: "nativeFunc",
+      argCount: 0,
+      funcName: identifierIso.wrap("clock"),
+      returnType: "number",
+      body: () => Date.now(),
+    };
+    nativeFuncs.push(clockFunc);
+
+    nativeFuncs.forEach((nativeFunc) => {
+      defineInEnvironment(nativeFunc.funcName, env);
+      assignInEnvironment(nativeFunc.funcName, nativeFunc, env);
+    });
+  };
+
   // main driver
   try {
-    const evalResult = evaluateBlock(
-      {
-        values: new Map<Identifier, Option<Value>>(),
-      },
-      program,
-    );
+    const topLevelEnv = {
+      values: new Map<Identifier, Option<Value>>(),
+    };
+    defineNativeFunctions(topLevelEnv);
+    const evalResult = evaluateBlock(topLevelEnv, program);
     if (isNone(evalResult)) {
       throw new RuntimeError("No return statement in main program", {
         runtimeErrorKind: "noReturn",
