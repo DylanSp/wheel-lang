@@ -1,4 +1,3 @@
-main (arg0)
 {
   return printBool(true);
 }
