@@ -146,8 +146,16 @@ interface NativeFunctionValue {
   returnType: ValueKind;
 }
 
+interface VoidValue {
+  valueKind: "void";
+}
+
+const makeVoidValue = (): VoidValue => ({
+  valueKind: "void",
+});
+
 type ValueKind = Value["valueKind"];
-export type Value = NumberValue | BooleanValue | ClosureValue | NativeFunctionValue;
+export type Value = NumberValue | BooleanValue | ClosureValue | NativeFunctionValue | VoidValue;
 
 type Evaluate = (program: Program) => Either<RuntimeFailure, Value>;
 
@@ -424,6 +432,8 @@ export const evaluate: Evaluate = (program) => {
             runtimeErrorKind: "nativeFunctionReturnFunc",
             nativeFunctionName: func.funcName,
           });
+        case "void":
+          return makeVoidValue();
       }
     }
   };
@@ -532,16 +542,22 @@ export const evaluate: Evaluate = (program) => {
   };
 
   const defineNativeFunctions = (env: Environment): void => {
-    const nativeFuncs: Array<NativeFunctionValue> = [];
-
-    const clockFunc: NativeFunctionValue = {
-      valueKind: "nativeFunc",
-      argTypes: [],
-      funcName: identifierIso.wrap("clock"),
-      returnType: "number",
-      body: () => Date.now(),
-    };
-    nativeFuncs.push(clockFunc);
+    const nativeFuncs: Array<NativeFunctionValue> = [
+      {
+        funcName: identifierIso.wrap("clock"),
+        valueKind: "nativeFunc",
+        argTypes: [],
+        returnType: "number",
+        body: (): number => Date.now(),
+      },
+      {
+        funcName: identifierIso.wrap("printNum"),
+        valueKind: "nativeFunc",
+        argTypes: ["number"],
+        returnType: "void",
+        body: (num: number): void => console.log(num),
+      },
+    ];
 
     nativeFuncs.forEach((nativeFunc) => {
       defineInEnvironment(nativeFunc.funcName, env);
