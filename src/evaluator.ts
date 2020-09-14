@@ -555,7 +555,7 @@ export const evaluate: Evaluate = (program) => {
         valueKind: "nativeFunc",
         argTypes: ["number"],
         returnType: "void",
-        body: (num: number): void => console.log(num),
+        body: (numVal: NumberValue): void => console.log(numVal.value),
       },
     ];
 
