@@ -4,9 +4,9 @@ import { isRight, isLeft } from "fp-ts/lib/Either";
 
 describe("Full interpretation pipeline", () => {
   describe("Correct programs", () => {
-    it("Evaluates main (arg0) { return 1; } to 1", () => {
+    it("Evaluates { return 1; } to 1", () => {
       // Arrange
-      const programText = "main (arg0) { return 1; }";
+      const programText = "{ return 1; }";
 
       // Act
       const runResult = runProgram(programText);
@@ -23,9 +23,9 @@ describe("Full interpretation pipeline", () => {
       expect(runResult.right.value).toBe(1);
     });
 
-    it("Evaluates main (arg0) { let x; x = 2; return x; } to 1", () => {
+    it("Evaluates { let x; x = 2; return x; } to 1", () => {
       // Arrange
-      const programText = "main (arg0) { let x; x = 2; return x; }";
+      const programText = "{ let x; x = 2; return x; }";
 
       // Act
       const runResult = runProgram(programText);
@@ -42,9 +42,9 @@ describe("Full interpretation pipeline", () => {
       expect(runResult.right.value).toBe(2);
     });
 
-    it("Evaluates main (arg0) { function f() { return 3; } return f(); } to 3", () => {
+    it("Evaluates { function f() { return 3; } return f(); } to 3", () => {
       // Arrange
-      const programText = "main (arg0) { function f() { return 3; } return f(); } ";
+      const programText = "{ function f() { return 3; } return f(); } ";
 
       // Act
       const runResult = runProgram(programText);
@@ -61,9 +61,9 @@ describe("Full interpretation pipeline", () => {
       expect(runResult.right.value).toBe(3);
     });
 
-    it("Evaluates main (arg0) { function f(x) { return x + 1; } return f(4); } to 5", () => {
+    it("Evaluates { function f(x) { return x + 1; } return f(4); } to 5", () => {
       // Arrange
-      const programText = "main (arg0) { function f(x) { return x + 1; } return f(4); }";
+      const programText = "{ function f(x) { return x + 1; } return f(4); }";
 
       // Act
       const runResult = runProgram(programText);
@@ -80,9 +80,9 @@ describe("Full interpretation pipeline", () => {
       expect(runResult.right.value).toBe(5);
     });
 
-    it("Evaluates main (arg0) { return 6 + 7; } to 13", () => {
+    it("Evaluates { return 6 + 7; } to 13", () => {
       // Arrange
-      const programText = "main (arg0) { return 6 + 7; }";
+      const programText = "{ return 6 + 7; }";
 
       // Act
       const runResult = runProgram(programText);
@@ -99,10 +99,10 @@ describe("Full interpretation pipeline", () => {
       expect(runResult.right.value).toBe(13);
     });
 
-    it("Evaluates main (arg0) { function makeAdder(x) { function adder(y) { return x + y; } return adder; } let addOne; addOne = makeAdder(1); return addOne(2); } to 3", () => {
+    it("Evaluates { function makeAdder(x) { function adder(y) { return x + y; } return adder; } let addOne; addOne = makeAdder(1); return addOne(2); } to 3", () => {
       // Arrange
       const programText =
-        "main (arg0) { function makeAdder(x) { function adder(y) { return x + y; } return adder; } let addOne; addOne = makeAdder(1); return addOne(2); }";
+        "{ function makeAdder(x) { function adder(y) { return x + y; } return adder; } let addOne; addOne = makeAdder(1); return addOne(2); }";
 
       // Act
       const runResult = runProgram(programText);
@@ -162,9 +162,9 @@ describe("Full interpretation pipeline", () => {
   });
 
   describe("Parse errors", () => {
-    it("Reports a parse error on main (arg0) { function; }", () => {
+    it("Reports a parse error on { function; }", () => {
       // Arrange
-      const programText = "main (arg0) { function; }";
+      const programText = "{ function; }";
 
       // Act
       const runResult = runProgram(programText);
@@ -183,9 +183,9 @@ describe("Full interpretation pipeline", () => {
   });
 
   describe("Evaluation errors", () => {
-    it("Reports a NotInScope error for main (arg0) { return x; }", () => {
+    it("Reports a NotInScope error for { return x; }", () => {
       // Arrange
-      const programText = "main (arg0) { return x; }";
+      const programText = "{ return x; }";
 
       // Act
       const runResult = runProgram(programText);
