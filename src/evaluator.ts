@@ -557,6 +557,13 @@ export const evaluate: Evaluate = (program) => {
         returnType: "void",
         body: (numVal: NumberValue): void => console.log(numVal.value),
       },
+      {
+        funcName: identifierIso.wrap("printBool"),
+        valueKind: "nativeFunc",
+        argTypes: ["boolean"],
+        returnType: "void",
+        body: (boolVal: BooleanValue): void => console.log(boolVal.isTrue),
+      },
     ];
 
     nativeFuncs.forEach((nativeFunc) => {
