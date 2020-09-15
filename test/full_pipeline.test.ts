@@ -23,9 +23,28 @@ describe("Full interpretation pipeline", () => {
       expect(runResult.right.value).toBe(1);
     });
 
-    it("Evaluates { let x; x = 2; return x; } to 1", () => {
+    it("Evaluates { let x; x = 2; return x; } to 2", () => {
       // Arrange
       const programText = "{ let x; x = 2; return x; }";
+
+      // Act
+      const runResult = runProgram(programText);
+
+      // Assert
+      if (!isRight(runResult)) {
+        throw new Error("Program failed, should have succeeded");
+      }
+
+      if (runResult.right.valueKind !== "number") {
+        throw new Error("Program did not return number");
+      }
+
+      expect(runResult.right.value).toBe(2);
+    });
+
+    it("Evaluates { let x = 2; return x; } to 2", () => {
+      // Arrange
+      const programText = "{ let x = 2; return x; }";
 
       // Act
       const runResult = runProgram(programText);

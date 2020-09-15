@@ -150,17 +150,29 @@ export const parse: Parse = (input) => {
           const ident = (input[position] as IdentifierToken).name; // cast should always succeed
           position += 1; // move past identifier
 
-          if (input[position]?.tokenKind !== "semicolon") {
-            throw new ParseError("Expected ;");
+          if (input[position]?.tokenKind === "semicolon") {
+            position += 1; // move past semicolon
+
+            statements.push({
+              statementKind: "varDecl",
+              variableName: ident,
+            });
+
+            break;
+          } else if (input[position]?.tokenKind === "singleEquals") {
+            position += 1; // move past "="
+
+            statements.push({
+              statementKind: "varDecl",
+              variableName: ident,
+            });
+
+            statements.push(parseAssignment(ident));
+
+            break;
+          } else {
+            throw new ParseError("Expected ; or =");
           }
-          position += 1; // move past semicolon
-
-          statements.push({
-            statementKind: "varDecl",
-            variableName: ident,
-          });
-
-          break;
         }
         case "function": {
           position += 1; // move past "function"
@@ -225,18 +237,8 @@ export const parse: Parse = (input) => {
           }
 
           position += 1; // move past "="
-          const expr = parseLogicalExpr();
+          statements.push(parseAssignment(ident));
 
-          if (input[position]?.tokenKind !== "semicolon") {
-            throw new ParseError("Expected ;");
-          }
-          position += 1; // move past semicolon
-
-          statements.push({
-            statementKind: "assignment",
-            variableName: ident,
-            variableValue: expr,
-          });
           break;
         }
         case "if": {
@@ -304,6 +306,21 @@ export const parse: Parse = (input) => {
 
     position += 1; // move past right brace
     return statements;
+  };
+
+  const parseAssignment = (ident: Identifier): Statement => {
+    const expr = parseLogicalExpr();
+
+    if (input[position]?.tokenKind !== "semicolon") {
+      throw new ParseError("Expected ;");
+    }
+    position += 1; // move past semicolon
+
+    return {
+      statementKind: "assignment",
+      variableName: ident,
+      variableValue: expr,
+    };
   };
 
   /** Expression parsing */
