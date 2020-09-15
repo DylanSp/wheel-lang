@@ -4052,6 +4052,154 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
+      it("Parses { if (false) { return 1; } else if (true) { return 2; } else { return 3; } } (program with if statement, else-if, else) ", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "if",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: false,
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "return",
+          },
+          {
+            tokenKind: "number",
+            value: 1,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "else",
+          },
+          {
+            tokenKind: "if",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: true,
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "return",
+          },
+          {
+            tokenKind: "number",
+            value: 2,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "else",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "return",
+          },
+          {
+            tokenKind: "number",
+            value: 3,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "booleanLit",
+              isTrue: false,
+            },
+            trueBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 1,
+                },
+              },
+            ],
+            falseBody: [
+              {
+                statementKind: "if",
+                condition: {
+                  expressionKind: "booleanLit",
+                  isTrue: true,
+                },
+                trueBody: [
+                  {
+                    statementKind: "return",
+                    returnedValue: {
+                      expressionKind: "numberLit",
+                      value: 2,
+                    },
+                  },
+                ],
+                falseBody: [
+                  {
+                    statementKind: "return",
+                    returnedValue: {
+                      expressionKind: "numberLit",
+                      value: 3,
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
       it("Parses { while (true) { x = 1; } } (program with while statement)", () => {
         // Arrange
         const tokens: Array<Token> = [
@@ -4653,7 +4801,7 @@ describe("Parser", () => {
       expect(parseResult.left.message).toMatch(/Expected "else"/);
     });
 
-    it('Expects a block to start with a left brace after the "else" in an if statement', () => {
+    it('Expects a block to start with a left brace after the "else" (with no if) in an if statement', () => {
       // Arrange
       const tokens: Array<Token> = [
         {

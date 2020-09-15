@@ -8,5 +8,5 @@ function fibonacci(n) {
   }
 }
 
-const input = 30;
+const input = 10;
 console.log(fibonacci(input));

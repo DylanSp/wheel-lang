@@ -20,6 +20,7 @@ VariableDeclaration -> "let" Identifier ";"
 VariableAssignment -> Identifier "=" LogicalExpression ";"
 
 IfStatement -> "if" "(" LogicalExpression ")" Block "else" Block
+					   | "if" "(" LogicalExpression ")" Block "else" IfStatement
 
 WhileStatement -> "while" "(" LogicalExpression ")" Block
 

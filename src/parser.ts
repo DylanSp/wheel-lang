@@ -242,35 +242,7 @@ export const parse: Parse = (input) => {
           break;
         }
         case "if": {
-          position += 1; // move past "if"
-
-          if (input[position]?.tokenKind !== "leftParen") {
-            throw new ParseError("Expected (");
-          }
-          position += 1; // move past left paren
-
-          const condition = parseLogicalExpr();
-
-          if (input[position]?.tokenKind !== "rightParen") {
-            throw new ParseError("Expected )");
-          }
-          position += 1; // move past right paren
-
-          const trueBody = parseBlock();
-
-          if (input[position]?.tokenKind !== "else") {
-            throw new ParseError('Expected "else"');
-          }
-          position += 1; // move past "else"
-
-          const falseBody = parseBlock();
-
-          statements.push({
-            statementKind: "if",
-            condition,
-            trueBody,
-            falseBody,
-          });
+          statements.push(parseIfStatement());
           break;
         }
         case "while": {
@@ -308,7 +280,7 @@ export const parse: Parse = (input) => {
     return statements;
   };
 
-  const parseAssignment = (ident: Identifier): Statement => {
+  const parseAssignment = (ident: Identifier): VariableAssignment => {
     const expr = parseLogicalExpr();
 
     if (input[position]?.tokenKind !== "semicolon") {
@@ -320,6 +292,43 @@ export const parse: Parse = (input) => {
       statementKind: "assignment",
       variableName: ident,
       variableValue: expr,
+    };
+  };
+
+  const parseIfStatement = (): IfStatement => {
+    position += 1; // move past "if"
+
+    if (input[position]?.tokenKind !== "leftParen") {
+      throw new ParseError("Expected (");
+    }
+    position += 1; // move past left paren
+
+    const condition = parseLogicalExpr();
+
+    if (input[position]?.tokenKind !== "rightParen") {
+      throw new ParseError("Expected )");
+    }
+    position += 1; // move past right paren
+
+    const trueBody = parseBlock();
+
+    if (input[position]?.tokenKind !== "else") {
+      throw new ParseError('Expected "else"');
+    }
+    position += 1; // move past "else"
+
+    let falseBody: Block;
+    if (input[position]?.tokenKind === "if") {
+      falseBody = [parseIfStatement()];
+    } else {
+      falseBody = parseBlock();
+    }
+
+    return {
+      statementKind: "if",
+      condition,
+      trueBody,
+      falseBody,
     };
   };
 
