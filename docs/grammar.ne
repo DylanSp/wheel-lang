@@ -17,7 +17,7 @@ ReturnStatement -> "return" LogicalExpression ";"
 
 VariableDeclaration -> "let" Identifier ";"
 
-VariableAssignment -> Identifier "=" LogicalExpression ";"
+VariableAssignment -> (PossibleCall "."):? Identifier "=" LogicalExpression ";"
 
 IfStatement -> "if" "(" LogicalExpression ")" Block "else" Block
 					   | "if" "(" LogicalExpression ")" Block "else" IfStatement
@@ -55,12 +55,18 @@ Factor -> "(" LogicalExpression ")"
         | PossibleCall
 		
 PossibleCall -> LiteralOrIdent ("(" ArgumentList ")"):*
+              | LiteralOrIdent ("." Identifier):*
 
 ArgumentList -> (LogicalExpression ("," LogicalExpression):*):?
 			
 LiteralOrIdent -> Number
 			    | Boolean
                 | Identifier
+					| ObjectLiteral
+
+ObjectLiteral -> "{" (ObjectField ("," ObjectField):*):? "}"
+
+ObjectField -> Identifier ":" LogicalExpression
 			   
 Number -> [0-9]:+ ("." [0-9]:+):?
 
