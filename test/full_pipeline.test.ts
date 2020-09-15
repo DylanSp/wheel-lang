@@ -137,6 +137,25 @@ describe("Full interpretation pipeline", () => {
 
       expect(runResult.right.value).toBe(3);
     });
+
+    it("Evaluates { if (false) { return 1; } else if (true) { return 2; } else { return 3; } } to 2", () => {
+      // Arrange
+      const programText = "{ if (false) { return 1; } else if (true) { return 2; } else { return 3; } }";
+
+      // Act
+      const runResult = runProgram(programText);
+
+      // Assert
+      if (!isRight(runResult)) {
+        throw new Error("Program failed, should have succeeded");
+      }
+
+      if (runResult.right.valueKind !== "number") {
+        throw new Error("Program did not return number");
+      }
+
+      expect(runResult.right.value).toBe(2);
+    });
   });
 
   describe("Scan errors", () => {
