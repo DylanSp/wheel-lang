@@ -4250,6 +4250,174 @@ describe("Parser", () => {
 
         expect(parseResult.right).toEqual(desiredResult);
       });
+
+      it("Parses { let y = x.f().a; } (chaining function call, then getter)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "let",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("y"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("f"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("a"),
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("y"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("y"),
+            variableValue: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "funcCall",
+                callee: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("f"),
+                },
+                args: [],
+              },
+              field: identifierIso.wrap("a"),
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { let y = x.a.f(); } (calling function after getter)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "let",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("y"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("a"),
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("f"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("y"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("y"),
+            variableValue: {
+              expressionKind: "funcCall",
+              callee: {
+                expressionKind: "get",
+                object: {
+                  expressionKind: "get",
+                  object: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("x"),
+                  },
+                  field: identifierIso.wrap("a"),
+                },
+                field: identifierIso.wrap("f"),
+              },
+              args: [],
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
     });
 
     describe("Multi-statement programs", () => {
