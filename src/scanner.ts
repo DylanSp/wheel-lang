@@ -20,6 +20,7 @@ export type Token =
   | Semicolon
   | Colon
   | Comma
+  | Period
   | PlusToken
   | MinusToken
   | Asterisk
@@ -91,6 +92,10 @@ interface Colon {
 
 interface Comma {
   tokenKind: "comma";
+}
+
+interface Period {
+  tokenKind: "period";
 }
 
 interface PlusToken {
@@ -331,6 +336,12 @@ export const scan: Scan = (input: string) => {
         case ":":
           tokens.push({
             tokenKind: "colon",
+          });
+          position += 1;
+          break;
+        case ".":
+          tokens.push({
+            tokenKind: "period",
           });
           position += 1;
           break;
