@@ -569,7 +569,15 @@ export const evaluate: Evaluate = (program) => {
           break;
         }
         case "set": {
-          throw new Error("Evaluating setters not yet implemented!");
+          const obj = evaluateExpr(env, statement.object);
+          if (obj.valueKind !== "object") {
+            throw new Error("Insert runtime error for running setter on non-object");
+          }
+
+          const value = evaluateExpr(env, statement.value);
+          obj.fields = insertAt(eqIdentifier)(statement.field, value)(obj.fields);
+
+          break;
         }
       }
     }
