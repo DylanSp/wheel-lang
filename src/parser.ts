@@ -199,7 +199,18 @@ export const parse: Parse = (input) => {
               variableName: ident,
             });
 
-            statements.push(parseAssignment(ident));
+            const expr = parseLogicalExpr();
+
+            if (input[position]?.tokenKind !== "semicolon") {
+              throw new ParseError("Expected ;");
+            }
+            position += 1; // move past semicolon
+
+            statements.push({
+              statementKind: "assignment",
+              variableName: ident,
+              variableValue: expr,
+            });
 
             break;
           } else {
@@ -261,15 +272,38 @@ export const parse: Parse = (input) => {
           break;
         }
         case "identifier": {
-          const ident = (input[position] as IdentifierToken).name;
-          position += 1; // move past identifier
+          const potentialObject = parsePotentialCall();
 
           if (input[position]?.tokenKind !== "singleEquals") {
             throw new ParseError("Expected =");
           }
 
           position += 1; // move past "="
-          statements.push(parseAssignment(ident));
+
+          const expr = parseLogicalExpr();
+
+          if (input[position]?.tokenKind !== "semicolon") {
+            throw new ParseError("Expected ;");
+          }
+          position += 1; // move past semicolon
+
+          if (potentialObject.expressionKind === "variableRef") {
+            statements.push({
+              statementKind: "assignment",
+              variableName: potentialObject.variableName,
+              variableValue: expr,
+            });
+          } else if (potentialObject.expressionKind === "get") {
+            // indicates we're parsing a setter statement
+            statements.push({
+              statementKind: "set",
+              object: potentialObject.object,
+              field: potentialObject.field,
+              value: expr,
+            });
+          } else {
+            throw new Error("Programming error - trying to parse setter, lhs was neither variableRef nor get");
+          }
 
           break;
         }
@@ -310,21 +344,6 @@ export const parse: Parse = (input) => {
 
     position += 1; // move past right brace
     return statements;
-  };
-
-  const parseAssignment = (ident: Identifier): VariableAssignment => {
-    const expr = parseLogicalExpr();
-
-    if (input[position]?.tokenKind !== "semicolon") {
-      throw new ParseError("Expected ;");
-    }
-    position += 1; // move past semicolon
-
-    return {
-      statementKind: "assignment",
-      variableName: ident,
-      variableValue: expr,
-    };
   };
 
   const parseIfStatement = (): IfStatement => {
@@ -514,26 +533,44 @@ export const parse: Parse = (input) => {
   const parsePotentialCall = (): Expression => {
     let callee = parseLiteralOrIdentifier();
 
-    while (input[position]?.tokenKind === "leftParen") {
-      position += 1;
+    while (input[position]?.tokenKind === "leftParen" || input[position]?.tokenKind === "period") {
+      if (input[position].tokenKind === "leftParen") {
+        position += 1; // move past left paren
 
-      const args: Array<Expression> = [];
-      while (input[position]?.tokenKind !== "rightParen") {
-        args.push(parseLogicalExpr());
+        const args: Array<Expression> = [];
+        while (input[position]?.tokenKind !== "rightParen") {
+          args.push(parseLogicalExpr());
 
-        if (input[position]?.tokenKind == "comma") {
-          position += 1; // move past comma
+          if (input[position]?.tokenKind == "comma") {
+            position += 1; // move past comma
+          }
         }
+
+        // we know from while loop condition that we're at a right paren, so just move past it
+        position += 1;
+
+        callee = {
+          expressionKind: "funcCall",
+          callee,
+          args,
+        };
+      } else {
+        position += 1; // move past period
+
+        if (input[position]?.tokenKind !== "identifier") {
+          throw new ParseError("Expected identifier");
+        }
+
+        const ident = (input[position] as IdentifierToken).name; // cast should always succeed
+
+        position += 1; // move past identifier
+
+        callee = {
+          expressionKind: "get",
+          object: callee,
+          field: ident,
+        };
       }
-
-      // we know from while loop condition that we're at a right paren, so just move past it
-      position += 1;
-
-      callee = {
-        expressionKind: "funcCall",
-        callee,
-        args,
-      };
     }
 
     return callee;
@@ -548,28 +585,59 @@ export const parse: Parse = (input) => {
         expressionKind: "numberLit",
         value: numToken.value,
       };
-    }
-
-    if (input[position]?.tokenKind === "boolean") {
+    } else if (input[position]?.tokenKind === "boolean") {
       const boolToken = input[position] as BooleanToken; // cast should always succeed
       position += 1;
       return {
         expressionKind: "booleanLit",
         isTrue: boolToken.isTrue,
       };
-    }
+    } else if (input[position]?.tokenKind === "leftBrace") {
+      position += 1; // move past opening brace
+      const objectLit: ObjectLiteral = {
+        expressionKind: "objectLit",
+        fields: [],
+      };
 
-    if (input[position]?.tokenKind !== "identifier") {
+      while (input[position]?.tokenKind === "identifier") {
+        const fieldName = (input[position] as IdentifierToken).name; // cast should always succeed
+        position += 1;
+
+        if (input[position]?.tokenKind !== "colon") {
+          throw new ParseError("Expected :");
+        }
+        position += 1; // move past colon
+
+        const fieldValue = parseLogicalExpr();
+
+        objectLit.fields.push({
+          fieldName,
+          fieldValue,
+        });
+
+        if (input[position]?.tokenKind === "comma") {
+          position += 1; // move past comma
+        }
+      }
+
+      if (input[position]?.tokenKind !== "rightBrace") {
+        throw new ParseError("Expected }");
+      }
+
+      position += 1; // move past right brace
+
+      return objectLit;
+    } else if (input[position]?.tokenKind !== "identifier") {
       throw new ParseError("Expected identifier");
+    } else {
+      const ident = (input[position] as IdentifierToken).name;
+      position += 1;
+
+      return {
+        expressionKind: "variableRef",
+        variableName: ident,
+      };
     }
-
-    const ident = (input[position] as IdentifierToken).name;
-    position += 1;
-
-    return {
-      expressionKind: "variableRef",
-      variableName: ident,
-    };
   };
 
   /** Converting thrown parse errors to Left case of Either<ParseFailure, Program> */
