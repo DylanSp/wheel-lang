@@ -374,6 +374,10 @@ export const evaluate: Evaluate = (program) => {
           );
         }
       }
+      case "get":
+        throw new Error("Getters not currently handled!");
+      case "objectLit":
+        throw new Error("Object literals not currently handled!");
     }
   };
 
