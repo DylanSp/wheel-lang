@@ -8,6 +8,7 @@ Statement -> FunctionDeclaration
 		   		 | VariableAssignment
 		   		 | IfStatement
 		   		 | WhileStatement
+					 | ExprStatement;
 		 
 FunctionDeclaration -> "function" Identifier "(" ParameterDeclarationList ")" Block
 
@@ -24,7 +25,7 @@ IfStatement -> "if" "(" LogicalExpression ")" Block "else" Block
 
 WhileStatement -> "while" "(" LogicalExpression ")" Block
 
-
+ExprStatement -> LogicalExpression ";"
 
 
 LogicalExpression -> LogicalTerm (OrOp LogicalTerm):*
