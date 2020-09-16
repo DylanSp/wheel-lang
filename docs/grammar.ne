@@ -54,8 +54,10 @@ UnaryOp -> "!" | "-"
 Factor -> "(" LogicalExpression ")"
         | PossibleCall
 		
-PossibleCall -> LiteralOrIdent ("(" ArgumentList ")"):*
-              | LiteralOrIdent ("." Identifier):*
+PossibleCall -> LiteralOrIdent CallSuffix:*
+
+CallSuffix -> ("(" ArgumentList ")")
+						| ("." Identifier)
 
 ArgumentList -> (LogicalExpression ("," LogicalExpression):*):?
 			
