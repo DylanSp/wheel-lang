@@ -18,6 +18,7 @@ export type Token =
   | ElseKeyword
   | WhileKeyword
   | Semicolon
+  | Colon
   | Comma
   | PlusToken
   | MinusToken
@@ -82,6 +83,10 @@ interface WhileKeyword {
 
 interface Semicolon {
   tokenKind: "semicolon";
+}
+
+interface Colon {
+  tokenKind: "colon";
 }
 
 interface Comma {
@@ -320,6 +325,12 @@ export const scan: Scan = (input: string) => {
         case ";":
           tokens.push({
             tokenKind: "semicolon",
+          });
+          position += 1;
+          break;
+        case ":":
+          tokens.push({
+            tokenKind: "colon",
           });
           position += 1;
           break;

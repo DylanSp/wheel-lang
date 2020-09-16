@@ -13,6 +13,7 @@ describe("Scanner", () => {
         ["=", "singleEquals"],
         [",", "comma"],
         [";", "semicolon"],
+        [":", "colon"],
         ["+", "plus"],
         ["-", "minus"],
         ["*", "asterisk"],
