@@ -34,6 +34,7 @@ describe("Scanner", () => {
         ["else", "else"],
         ["while", "while"],
         ["let", "let"],
+        ["null", "null"],
       ])('Recognizes "%s"', (input, tokenKind) => {
         // Act
         const scanResult = scan(input);

@@ -17,6 +17,7 @@ export type Token =
   | IfKeyword
   | ElseKeyword
   | WhileKeyword
+  | NullKeyword
   | Semicolon
   | Colon
   | Comma
@@ -80,6 +81,10 @@ interface ElseKeyword {
 
 interface WhileKeyword {
   tokenKind: "while";
+}
+
+interface NullKeyword {
+  tokenKind: "null";
 }
 
 interface Semicolon {
@@ -245,6 +250,14 @@ export const scan: Scan = (input: string) => {
         isTrue: false,
       });
       position += "false".length;
+    } else if (
+      /^null/.test(input.substring(position)) &&
+      !/^[a-zA-Z0-9]/.test(input.substring(position + "null".length))
+    ) {
+      tokens.push({
+        tokenKind: "null",
+      });
+      position += "null".length;
     } else if (/\d{1}/.test(char)) {
       const numberMatches = input.substring(position).match(/^[\d]+([.][\d]+)?/);
       if (numberMatches === null) {
