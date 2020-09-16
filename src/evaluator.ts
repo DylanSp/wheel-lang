@@ -146,12 +146,12 @@ interface NativeFunctionValue {
   returnType: ValueKind;
 }
 
-interface VoidValue {
-  valueKind: "void";
+interface NullValue {
+  valueKind: "null";
 }
 
-const makeVoidValue = (): VoidValue => ({
-  valueKind: "void",
+const makeNullValue = (): NullValue => ({
+  valueKind: "null",
 });
 
 interface ObjectValue {
@@ -165,7 +165,7 @@ const makeObjectValue = (fields: Map<Identifier, Value>): ObjectValue => ({
 });
 
 type ValueKind = Value["valueKind"];
-export type Value = NumberValue | BooleanValue | ClosureValue | NativeFunctionValue | VoidValue | ObjectValue;
+export type Value = NumberValue | BooleanValue | ClosureValue | NativeFunctionValue | NullValue | ObjectValue;
 
 type Evaluate = (program: Program) => Either<RuntimeFailure, Value>;
 
@@ -462,8 +462,8 @@ export const evaluate: Evaluate = (program) => {
             runtimeErrorKind: "nativeFunctionReturnFunc",
             nativeFunctionName: func.funcName,
           });
-        case "void":
-          return makeVoidValue();
+        case "null":
+          return makeNullValue();
         case "object":
           throw new Error("Returning objects from native functions not yet supported!");
       }
@@ -598,14 +598,14 @@ export const evaluate: Evaluate = (program) => {
         funcName: identifierIso.wrap("printNum"),
         valueKind: "nativeFunc",
         argTypes: ["number"],
-        returnType: "void",
+        returnType: "null",
         body: (numVal: NumberValue): void => console.log(numVal.value),
       },
       {
         funcName: identifierIso.wrap("printBool"),
         valueKind: "nativeFunc",
         argTypes: ["boolean"],
-        returnType: "void",
+        returnType: "null",
         body: (boolVal: BooleanValue): void => console.log(boolVal.isTrue),
       },
     ];
