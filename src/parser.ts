@@ -17,7 +17,8 @@ type Statement =
   | VariableDeclaration
   | VariableAssignment
   | IfStatement
-  | WhileStatement;
+  | WhileStatement
+  | SetStatement;
 
 interface FunctionDeclaration {
   statementKind: "funcDecl";
@@ -55,7 +56,22 @@ interface WhileStatement {
   body: Block;
 }
 
-export type Expression = BinaryOperation | UnaryOperation | NumberLiteral | BooleanLiteral | FunctionCall | VariableRef;
+interface SetStatement {
+  statementKind: "set";
+  object: Expression;
+  field: Identifier;
+  value: Expression;
+}
+
+export type Expression =
+  | BinaryOperation
+  | UnaryOperation
+  | NumberLiteral
+  | BooleanLiteral
+  | ObjectLiteral
+  | FunctionCall
+  | VariableRef
+  | Getter;
 
 interface BinaryOperation {
   expressionKind: "binOp";
@@ -92,6 +108,16 @@ interface BooleanLiteral {
   isTrue: boolean;
 }
 
+interface ObjectLiteral {
+  expressionKind: "objectLit";
+  fields: Array<ObjectField>;
+}
+
+interface ObjectField {
+  fieldName: Identifier;
+  fieldValue: Expression;
+}
+
 interface FunctionCall {
   expressionKind: "funcCall";
   callee: Expression; // needs to be an expression to allow for multiple calls, i.e. f()()
@@ -101,6 +127,12 @@ interface FunctionCall {
 interface VariableRef {
   expressionKind: "variableRef";
   variableName: Identifier;
+}
+
+interface Getter {
+  expressionKind: "get";
+  object: Expression;
+  field: Identifier;
 }
 
 export interface ParseFailure {
