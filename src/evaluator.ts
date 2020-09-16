@@ -179,6 +179,9 @@ export const evaluate: Evaluate = (program) => {
       case "booleanLit": {
         return makeBooleanValue(expr.isTrue);
       }
+      case "nullLit": {
+        return makeNullValue();
+      }
       case "binOp": {
         const lhsValue = evaluateExpr(env, expr.leftOperand);
         const rhsValue = evaluateExpr(env, expr.rightOperand);

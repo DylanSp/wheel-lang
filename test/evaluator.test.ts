@@ -115,6 +115,28 @@ describe("Evaluator", () => {
         expect(evalResult.right.isTrue).toBe(false);
       });
 
+      it("Evaluates { return null; } to null (evaluating null literals)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "nullLit",
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(evalResult.right.valueKind).toBe("null");
+      });
+
       it("Evaluates { return 1 + 2; } to 3 (evaluating addition)", () => {
         // Arrange
         const ast: Program = [
@@ -2299,6 +2321,72 @@ describe("Evaluator", () => {
                 variableName: identifierIso.wrap("x"),
               },
               field: identifierIso.wrap("b"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(evalResult.right.valueKind).toBe("null");
+      });
+
+      it("Evaluates { let x = { a: { b: 1 } }; x.a = null; return x.a; } to null (assignment of null via setter)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "objectLit",
+              fields: [
+                {
+                  fieldName: identifierIso.wrap("a"),
+                  fieldValue: {
+                    expressionKind: "objectLit",
+                    fields: [
+                      {
+                        fieldName: identifierIso.wrap("b"),
+                        fieldValue: {
+                          expressionKind: "numberLit",
+                          value: 1,
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            statementKind: "set",
+            object: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("x"),
+            },
+            field: identifierIso.wrap("a"),
+            value: {
+              expressionKind: "nullLit",
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("x"),
+              },
+              field: identifierIso.wrap("a"),
             },
           },
         ];
