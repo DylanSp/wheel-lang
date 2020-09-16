@@ -2009,6 +2009,264 @@ describe("Evaluator", () => {
       });
     });
 
+    describe("Object usage", () => {
+      it("Evaluates { let x = { field: 1 }; return x.field; } to 1 (basic getter usage)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "objectLit",
+              fields: [
+                {
+                  fieldName: identifierIso.wrap("field"),
+                  fieldValue: {
+                    expressionKind: "numberLit",
+                    value: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("x"),
+              },
+              field: identifierIso.wrap("field"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(1);
+      });
+
+      it("Evaluates { let x = { field: 1 }; x.field = 2; return x.field; } to 2 (basic setter usage)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "objectLit",
+              fields: [
+                {
+                  fieldName: identifierIso.wrap("field"),
+                  fieldValue: {
+                    expressionKind: "numberLit",
+                    value: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            statementKind: "set",
+            object: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("x"),
+            },
+            field: identifierIso.wrap("field"),
+            value: {
+              expressionKind: "numberLit",
+              value: 2,
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("x"),
+              },
+              field: identifierIso.wrap("field"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(2);
+      });
+
+      it("Evaluates { let nested = { outer: { inner: 1 } }; return nested.outer.inner; } to 1 (chained getters)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("nested"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("nested"),
+            variableValue: {
+              expressionKind: "objectLit",
+              fields: [
+                {
+                  fieldName: identifierIso.wrap("outer"),
+                  fieldValue: {
+                    expressionKind: "objectLit",
+                    fields: [
+                      {
+                        fieldName: identifierIso.wrap("inner"),
+                        fieldValue: {
+                          expressionKind: "numberLit",
+                          value: 1,
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "get",
+                object: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("nested"),
+                },
+                field: identifierIso.wrap("outer"),
+              },
+              field: identifierIso.wrap("inner"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(1);
+      });
+
+      it("Evaluates { let nested = { outer: { inner: 1 } }; nested.outer.inner = 2; return nested.outer.inner; } to 2 (nested setter)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("nested"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "objectLit",
+              fields: [
+                {
+                  fieldName: identifierIso.wrap("outer"),
+                  fieldValue: {
+                    expressionKind: "objectLit",
+                    fields: [
+                      {
+                        fieldName: identifierIso.wrap("inner"),
+                        fieldValue: {
+                          expressionKind: "numberLit",
+                          value: 1,
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            statementKind: "set",
+            object: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("nested"),
+              },
+              field: identifierIso.wrap("outer"),
+            },
+            field: identifierIso.wrap("inner"),
+            value: {
+              expressionKind: "numberLit",
+              value: 2,
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "get",
+                object: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("nested"),
+                },
+                field: identifierIso.wrap("outer"),
+              },
+              field: identifierIso.wrap("inner"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(2);
+      });
+    });
+
     describe("Other complex programs", () => {
       it("Evaluates { let x; x = 1; function f() { let x; x = 2; return x; } return x + f(); } to 3 (checking that local variables shadow variables in outer scopes)", () => {
         // Arrange
