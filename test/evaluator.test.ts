@@ -2196,7 +2196,7 @@ describe("Evaluator", () => {
           },
           {
             statementKind: "assignment",
-            variableName: identifierIso.wrap("x"),
+            variableName: identifierIso.wrap("nested"),
             variableValue: {
               expressionKind: "objectLit",
               fields: [
