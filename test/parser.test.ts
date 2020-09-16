@@ -4320,8 +4320,12 @@ describe("Parser", () => {
               object: {
                 expressionKind: "funcCall",
                 callee: {
-                  expressionKind: "variableRef",
-                  variableName: identifierIso.wrap("f"),
+                  expressionKind: "get",
+                  object: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("x"),
+                  },
+                  field: identifierIso.wrap("f"),
                 },
                 args: [],
               },
