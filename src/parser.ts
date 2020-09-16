@@ -69,6 +69,7 @@ export type Expression =
   | NumberLiteral
   | BooleanLiteral
   | ObjectLiteral
+  | NullLiteral
   | FunctionCall
   | VariableRef
   | Getter;
@@ -116,6 +117,10 @@ interface ObjectLiteral {
 interface ObjectField {
   fieldName: Identifier;
   fieldValue: Expression;
+}
+
+interface NullLiteral {
+  expressionKind: "nullLit";
 }
 
 interface FunctionCall {
@@ -591,6 +596,11 @@ export const parse: Parse = (input) => {
       return {
         expressionKind: "booleanLit",
         isTrue: boolToken.isTrue,
+      };
+    } else if (input[position]?.tokenKind === "null") {
+      position += 1;
+      return {
+        expressionKind: "nullLit",
       };
     } else if (input[position]?.tokenKind === "leftBrace") {
       position += 1; // move past opening brace

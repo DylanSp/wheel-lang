@@ -66,6 +66,7 @@ LiteralOrIdent -> Number
 			    | Boolean
                 | Identifier
 					| ObjectLiteral
+					| NullLiteral
 
 ObjectLiteral -> "{" (ObjectField ("," ObjectField):*):? "}"
 
@@ -76,3 +77,5 @@ Number -> [0-9]:+ ("." [0-9]:+):?
 Boolean -> "true" | "false"
 
 Identifier -> [a-zA-Z] [a-zA-Z0-9]:*
+
+NullLiteral -> "null"
