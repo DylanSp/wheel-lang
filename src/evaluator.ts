@@ -391,11 +391,7 @@ export const evaluate: Evaluate = (program) => {
         }
 
         const possibleVal = lookup(eqIdentifier)(expr.field)(obj.fields);
-        if (isSome(possibleVal)) {
-          return possibleVal.value;
-        } else {
-          throw new Error("Insert runtime error for trying to access nonexistent field");
-        }
+        return isSome(possibleVal) ? possibleVal.value : makeNullValue();
       }
       case "objectLit": {
         let fields = new Map<Identifier, Value>();

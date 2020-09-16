@@ -2265,6 +2265,54 @@ describe("Evaluator", () => {
 
         expect(evalResult.right.value).toBe(2);
       });
+
+      it("Evaluates { let x = { a: 1 }; return x.b; } to null (nonexistent property on object)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "objectLit",
+              fields: [
+                {
+                  fieldName: identifierIso.wrap("a"),
+                  fieldValue: {
+                    expressionKind: "numberLit",
+                    value: 1,
+                  },
+                },
+              ],
+            },
+          },
+
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("x"),
+              },
+              field: identifierIso.wrap("b"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(evalResult.right.valueKind).toBe("null");
+      });
     });
 
     describe("Other complex programs", () => {
