@@ -1,6 +1,6 @@
 import { Program, Expression, Block } from "./parser";
 import { Either, right, left } from "fp-ts/lib/Either";
-import { lookup, member } from "fp-ts/lib/Map";
+import { lookup, member, insertAt } from "fp-ts/lib/Map";
 import { Identifier, eqIdentifier, identifierIso } from "./types";
 import { isNone, Option, some, isSome, none } from "fp-ts/lib/Option";
 
@@ -154,8 +154,18 @@ const makeVoidValue = (): VoidValue => ({
   valueKind: "void",
 });
 
+interface ObjectValue {
+  valueKind: "object";
+  fields: Map<Identifier, Value>;
+}
+
+const makeObjectValue = (fields: Map<Identifier, Value>): ObjectValue => ({
+  valueKind: "object",
+  fields,
+});
+
 type ValueKind = Value["valueKind"];
-export type Value = NumberValue | BooleanValue | ClosureValue | NativeFunctionValue | VoidValue;
+export type Value = NumberValue | BooleanValue | ClosureValue | NativeFunctionValue | VoidValue | ObjectValue;
 
 type Evaluate = (program: Program) => Either<RuntimeFailure, Value>;
 
@@ -374,10 +384,26 @@ export const evaluate: Evaluate = (program) => {
           );
         }
       }
-      case "get":
-        throw new Error("Getters not currently handled!");
-      case "objectLit":
-        throw new Error("Object literals not currently handled!");
+      case "get": {
+        const obj = evaluateExpr(env, expr.object);
+        if (obj.valueKind !== "object") {
+          throw new Error("Insert runtime error for running getter on non-object");
+        }
+
+        const possibleVal = lookup(eqIdentifier)(expr.field)(obj.fields);
+        if (isSome(possibleVal)) {
+          return possibleVal.value;
+        } else {
+          throw new Error("Insert runtime error for trying to access nonexistent field");
+        }
+      }
+      case "objectLit": {
+        let fields = new Map<Identifier, Value>();
+        expr.fields.forEach((field) => {
+          fields = insertAt(eqIdentifier)(field.fieldName, evaluateExpr(env, field.fieldValue))(fields);
+        });
+        return makeObjectValue(fields);
+      }
     }
   };
 
@@ -438,6 +464,8 @@ export const evaluate: Evaluate = (program) => {
           });
         case "void":
           return makeVoidValue();
+        case "object":
+          throw new Error("Returning objects from native functions not yet supported!");
       }
     }
   };
@@ -538,6 +566,10 @@ export const evaluate: Evaluate = (program) => {
               break;
             }
           }
+          break;
+        }
+        case "set": {
+          throw new Error("Evaluating setters not yet implemented!");
         }
       }
     }
