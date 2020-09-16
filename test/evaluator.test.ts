@@ -899,6 +899,81 @@ describe("Evaluator", () => {
 
         expect(evalResult.right.isTrue).toBe(true);
       });
+
+      it("Evaluates { return null == null; } to true (evaluating equals operator with null)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "nullLit",
+              },
+              rightOperand: {
+                expressionKind: "nullLit",
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(true);
+      });
+
+      it("Evaluates { return null /= { a: 1 }; } to true (evaluating not-equals operator with null)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "notEqual",
+              leftOperand: {
+                expressionKind: "nullLit",
+              },
+              rightOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(true);
+      });
     });
 
     describe("Programs with simple variable use", () => {
