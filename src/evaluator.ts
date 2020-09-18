@@ -4,6 +4,7 @@ import { Either, right, left } from "fp-ts/lib/Either";
 import { lookup, member, insertAt, toArray } from "fp-ts/lib/Map";
 import { Identifier, eqIdentifier, identifierIso, ordIdentifier } from "./types";
 import { isNone, Option, some, isSome, none } from "fp-ts/lib/Option";
+import { prompt } from "readline-sync";
 
 /**
  * TYPES
@@ -507,7 +508,7 @@ export const evaluate: Evaluate = (program) => {
         case "null":
           return makeNullValue();
         case "object":
-          throw new Error("Returning objects from native functions not yet supported!");
+          return makeObjectValue(possibleResult as Map<Identifier, Value>);
       }
     }
   };
@@ -649,6 +650,28 @@ export const evaluate: Evaluate = (program) => {
         argTypes: ["boolean"],
         returnType: "null",
         body: (boolVal: BooleanValue): void => console.log(boolVal.isTrue),
+      },
+      {
+        funcName: identifierIso.wrap("readNum"),
+        valueKind: "nativeFunc",
+        argTypes: [],
+        returnType: "object",
+        body: (): Map<Identifier, Value> => {
+          const rawInput = prompt();
+          const parsed = parseFloat(rawInput);
+          let result = new Map<Identifier, Value>();
+          const validityIdent = identifierIso.wrap("isValid");
+          const valueIdent = identifierIso.wrap("value");
+
+          if (isNaN(parsed)) {
+            result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(false))(result);
+            result = insertAt(eqIdentifier)<Value>(valueIdent, makeNumberValue(0))(result);
+          } else {
+            result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(true))(result);
+            result = insertAt(eqIdentifier)<Value>(valueIdent, makeNumberValue(parsed))(result);
+          }
+          return result;
+        },
       },
     ];
 
