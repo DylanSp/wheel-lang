@@ -673,6 +673,31 @@ export const evaluate: Evaluate = (program) => {
           return result;
         },
       },
+      {
+        funcName: identifierIso.wrap("readBool"),
+        valueKind: "nativeFunc",
+        argTypes: [],
+        returnType: "object",
+        body: (): Map<Identifier, Value> => {
+          const rawInput = prompt();
+          let result = new Map<Identifier, Value>();
+          const validityIdent = identifierIso.wrap("isValid");
+          const valueIdent = identifierIso.wrap("value");
+
+          if (rawInput === "true") {
+            result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(true))(result);
+            result = insertAt(eqIdentifier)<Value>(valueIdent, makeBooleanValue(true))(result);
+          } else if (rawInput === "false") {
+            result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(true))(result);
+            result = insertAt(eqIdentifier)<Value>(valueIdent, makeBooleanValue(false))(result);
+          } else {
+            result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(false))(result);
+            result = insertAt(eqIdentifier)<Value>(valueIdent, makeBooleanValue(false))(result);
+          }
+
+          return result;
+        },
+      },
     ];
 
     nativeFuncs.forEach((nativeFunc) => {
