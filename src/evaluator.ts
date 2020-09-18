@@ -54,13 +54,13 @@ interface NotInScopeError {
 
 interface NotFunctionError {
   runtimeErrorKind: "notFunction";
-  nonFunctionType: string;
+  nonFunctionType: ValueKind;
 }
 
 interface TypeMismatchError {
   runtimeErrorKind: "typeMismatch";
-  expectedTypes: Array<string>;
-  actualType: string;
+  expectedTypes: Array<ValueKind>;
+  actualType: ValueKind;
 }
 
 interface NoReturnError {
