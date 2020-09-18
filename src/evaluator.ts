@@ -295,6 +295,22 @@ export const evaluate: Evaluate = (program) => {
               });
             }
 
+            if (lhsValue.valueKind === "nativeFunc") {
+              throw new RuntimeError("Trying to compare native function value", {
+                runtimeErrorKind: "typeMismatch",
+                expectedTypes: ["number", "boolean", "null", "object"],
+                actualType: "nativeFunc",
+              });
+            }
+
+            if (rhsValue.valueKind === "nativeFunc") {
+              throw new RuntimeError("Trying to compare native function value", {
+                runtimeErrorKind: "typeMismatch",
+                expectedTypes: ["number", "boolean", "null", "object"],
+                actualType: "nativeFunc",
+              });
+            }
+
             if (lhsValue.valueKind === "null") {
               if (rhsValue.valueKind === "null") {
                 return makeBooleanValue(true);
@@ -322,8 +338,6 @@ export const evaluate: Evaluate = (program) => {
               }
             }
 
-            // TODO reject native function comparison
-
             // TODO object equality
 
             if (lhsValue.valueKind === "number" && rhsValue.valueKind === "number") {
@@ -338,6 +352,7 @@ export const evaluate: Evaluate = (program) => {
               });
             }
           case "notEqual":
+            // TODO rather than rewriting code, extract this and "equals" case into a function, just return !equals() here?
             if (lhsValue.valueKind === "closure") {
               throw new RuntimeError("Trying to compare closure value", {
                 runtimeErrorKind: "typeMismatch",
@@ -351,6 +366,22 @@ export const evaluate: Evaluate = (program) => {
                 runtimeErrorKind: "typeMismatch",
                 expectedTypes: ["number", "boolean"],
                 actualType: "closure",
+              });
+            }
+
+            if (lhsValue.valueKind === "nativeFunc") {
+              throw new RuntimeError("Trying to compare native function value", {
+                runtimeErrorKind: "typeMismatch",
+                expectedTypes: ["number", "boolean", "null", "object"],
+                actualType: "nativeFunc",
+              });
+            }
+
+            if (rhsValue.valueKind === "nativeFunc") {
+              throw new RuntimeError("Trying to compare native function value", {
+                runtimeErrorKind: "typeMismatch",
+                expectedTypes: ["number", "boolean", "null", "object"],
+                actualType: "nativeFunc",
               });
             }
 
@@ -380,8 +411,6 @@ export const evaluate: Evaluate = (program) => {
                 });
               }
             }
-
-            // TODO reject native function comparison
 
             // TODO object inequality
 

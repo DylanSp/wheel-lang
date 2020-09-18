@@ -3766,6 +3766,154 @@ describe("Evaluator", () => {
       expect(evalResult.left.actualType).toBe("closure");
     });
 
+    it("Recognizes a TypeMismatch error for { return clock == 1; } (native function on LHS of equals expression)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "binOp",
+            binOp: "equals",
+            leftOperand: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("clock"),
+            },
+            rightOperand: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+      }
+
+      expect(evalResult.left.expectedTypes).toContain("boolean");
+      expect(evalResult.left.expectedTypes).toContain("number");
+      expect(evalResult.left.actualType).toBe("nativeFunc");
+    });
+
+    it("Recognizes a TypeMismatch error for { return 1 == clock; } (native function on RHS of equals expression)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "binOp",
+            binOp: "equals",
+            leftOperand: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+            rightOperand: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("clock"),
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+      }
+
+      expect(evalResult.left.expectedTypes).toContain("boolean");
+      expect(evalResult.left.expectedTypes).toContain("number");
+      expect(evalResult.left.actualType).toBe("nativeFunc");
+    });
+
+    it("Recognizes a TypeMismatch error for { return clock /= 1; } (native function on LHS of not-equal expression)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "binOp",
+            binOp: "notEqual",
+            leftOperand: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("clock"),
+            },
+            rightOperand: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+      }
+
+      expect(evalResult.left.expectedTypes).toContain("boolean");
+      expect(evalResult.left.expectedTypes).toContain("number");
+      expect(evalResult.left.actualType).toBe("nativeFunc");
+    });
+
+    it("Recognizes a TypeMismatch error for { return 1 /= clock; } (native function on RHS of not-equal expression)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "binOp",
+            binOp: "notEqual",
+            leftOperand: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+            rightOperand: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("clock"),
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+      }
+
+      expect(evalResult.left.expectedTypes).toContain("boolean");
+      expect(evalResult.left.expectedTypes).toContain("number");
+      expect(evalResult.left.actualType).toBe("nativeFunc");
+    });
+
     it("Recognizes a NoReturn error for {} (no return at top level)", () => {
       // Arrange
       const ast: Program = [];
