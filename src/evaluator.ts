@@ -1,7 +1,8 @@
 import { Program, Expression, Block } from "./parser";
+import { zip } from "fp-ts/lib/Array";
 import { Either, right, left } from "fp-ts/lib/Either";
-import { lookup, member, insertAt } from "fp-ts/lib/Map";
-import { Identifier, eqIdentifier, identifierIso } from "./types";
+import { lookup, member, insertAt, toArray } from "fp-ts/lib/Map";
+import { Identifier, eqIdentifier, identifierIso, ordIdentifier } from "./types";
 import { isNone, Option, some, isSome, none } from "fp-ts/lib/Option";
 
 /**
@@ -171,6 +172,100 @@ type Evaluate = (program: Program) => Either<RuntimeFailure, Value>;
 
 export const evaluate: Evaluate = (program) => {
   // utility functions
+  const areEqual = (lhsValue: Value, rhsValue: Value): boolean => {
+    if (lhsValue.valueKind === "closure") {
+      throw new RuntimeError("Trying to compare closure value", {
+        runtimeErrorKind: "typeMismatch",
+        expectedTypes: ["number", "boolean", "null", "object"], // not really scalable (would have to contain every type that supports equality), but allowable since this project doesn't allow custom types
+        actualType: "closure",
+      });
+    }
+
+    if (rhsValue.valueKind === "closure") {
+      throw new RuntimeError("Trying to compare closure value", {
+        runtimeErrorKind: "typeMismatch",
+        expectedTypes: ["number", "boolean", "null", "object"], // not really scalable (would have to contain every type that supports inequality), but allowable since this project doesn't allow custom types
+        actualType: "closure",
+      });
+    }
+
+    if (lhsValue.valueKind === "nativeFunc") {
+      throw new RuntimeError("Trying to compare native function value", {
+        runtimeErrorKind: "typeMismatch",
+        expectedTypes: ["number", "boolean", "null", "object"],
+        actualType: "nativeFunc",
+      });
+    }
+
+    if (rhsValue.valueKind === "nativeFunc") {
+      throw new RuntimeError("Trying to compare native function value", {
+        runtimeErrorKind: "typeMismatch",
+        expectedTypes: ["number", "boolean", "null", "object"],
+        actualType: "nativeFunc",
+      });
+    }
+
+    if (lhsValue.valueKind === "null") {
+      if (rhsValue.valueKind === "null") {
+        return true;
+      } else if (rhsValue.valueKind === "object") {
+        return false;
+      } else {
+        throw new RuntimeError("Trying to compare non-object to null", {
+          runtimeErrorKind: "typeMismatch",
+          expectedTypes: ["null", "object"],
+          actualType: rhsValue.valueKind,
+        });
+      }
+    }
+
+    if (rhsValue.valueKind === "null") {
+      // null == null already handled above
+      if (lhsValue.valueKind === "object") {
+        return false;
+      } else {
+        throw new RuntimeError("Trying to compare non-object to null", {
+          runtimeErrorKind: "typeMismatch",
+          expectedTypes: ["null", "object"],
+          actualType: lhsValue.valueKind,
+        });
+      }
+    }
+
+    if (lhsValue.valueKind === "object" && rhsValue.valueKind === "object") {
+      const lhsFields = toArray(ordIdentifier)(lhsValue.fields);
+      const rhsFields = toArray(ordIdentifier)(rhsValue.fields);
+
+      if (lhsFields.length !== rhsFields.length) {
+        return false;
+      }
+
+      for (const [[lhsFieldName, lhsFieldValue], [rhsFieldName, rhsFieldValue]] of zip(lhsFields, rhsFields)) {
+        if (lhsFieldName !== rhsFieldName) {
+          return false;
+        }
+
+        if (!areEqual(lhsFieldValue, rhsFieldValue)) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    if (lhsValue.valueKind === "number" && rhsValue.valueKind === "number") {
+      return lhsValue.value === rhsValue.value;
+    } else if (lhsValue.valueKind === "boolean" && rhsValue.valueKind === "boolean") {
+      return lhsValue.isTrue === rhsValue.isTrue;
+    } else {
+      throw new RuntimeError("Trying to compare values of different types", {
+        runtimeErrorKind: "typeMismatch",
+        expectedTypes: [lhsValue.valueKind],
+        actualType: rhsValue.valueKind,
+      });
+    }
+  };
+
   const evaluateExpr = (env: Environment, expr: Expression): Value => {
     switch (expr.expressionKind) {
       case "numberLit": {
@@ -279,152 +374,9 @@ export const evaluate: Evaluate = (program) => {
             }
             return makeBooleanValue(lhsValue.value >= rhsValue.value);
           case "equals":
-            if (lhsValue.valueKind === "closure") {
-              throw new RuntimeError("Trying to compare closure value", {
-                runtimeErrorKind: "typeMismatch",
-                expectedTypes: ["number", "boolean", "null", "object"], // not really scalable (would have to contain every type that supports equality), but allowable since this project doesn't allow custom types
-                actualType: "closure",
-              });
-            }
-
-            if (rhsValue.valueKind === "closure") {
-              throw new RuntimeError("Trying to compare closure value", {
-                runtimeErrorKind: "typeMismatch",
-                expectedTypes: ["number", "boolean", "null", "object"], // not really scalable (would have to contain every type that supports inequality), but allowable since this project doesn't allow custom types
-                actualType: "closure",
-              });
-            }
-
-            if (lhsValue.valueKind === "nativeFunc") {
-              throw new RuntimeError("Trying to compare native function value", {
-                runtimeErrorKind: "typeMismatch",
-                expectedTypes: ["number", "boolean", "null", "object"],
-                actualType: "nativeFunc",
-              });
-            }
-
-            if (rhsValue.valueKind === "nativeFunc") {
-              throw new RuntimeError("Trying to compare native function value", {
-                runtimeErrorKind: "typeMismatch",
-                expectedTypes: ["number", "boolean", "null", "object"],
-                actualType: "nativeFunc",
-              });
-            }
-
-            if (lhsValue.valueKind === "null") {
-              if (rhsValue.valueKind === "null") {
-                return makeBooleanValue(true);
-              } else if (rhsValue.valueKind === "object") {
-                return makeBooleanValue(false);
-              } else {
-                throw new RuntimeError("Trying to compare non-object to null", {
-                  runtimeErrorKind: "typeMismatch",
-                  expectedTypes: ["null", "object"],
-                  actualType: rhsValue.valueKind,
-                });
-              }
-            }
-
-            if (rhsValue.valueKind === "null") {
-              // null == null already handled above
-              if (lhsValue.valueKind === "object") {
-                return makeBooleanValue(false);
-              } else {
-                throw new RuntimeError("Trying to compare non-object to null", {
-                  runtimeErrorKind: "typeMismatch",
-                  expectedTypes: ["null", "object"],
-                  actualType: lhsValue.valueKind,
-                });
-              }
-            }
-
-            // TODO object equality
-
-            if (lhsValue.valueKind === "number" && rhsValue.valueKind === "number") {
-              return makeBooleanValue(lhsValue.value === rhsValue.value);
-            } else if (lhsValue.valueKind === "boolean" && rhsValue.valueKind === "boolean") {
-              return makeBooleanValue(lhsValue.isTrue === rhsValue.isTrue);
-            } else {
-              throw new RuntimeError("Trying to compare values of different types", {
-                runtimeErrorKind: "typeMismatch",
-                expectedTypes: [lhsValue.valueKind],
-                actualType: rhsValue.valueKind,
-              });
-            }
+            return makeBooleanValue(areEqual(lhsValue, rhsValue));
           case "notEqual":
-            // TODO rather than rewriting code, extract this and "equals" case into a function, just return !equals() here?
-            if (lhsValue.valueKind === "closure") {
-              throw new RuntimeError("Trying to compare closure value", {
-                runtimeErrorKind: "typeMismatch",
-                expectedTypes: ["number", "boolean"],
-                actualType: "closure",
-              });
-            }
-
-            if (rhsValue.valueKind === "closure") {
-              throw new RuntimeError("Trying to compare closure value", {
-                runtimeErrorKind: "typeMismatch",
-                expectedTypes: ["number", "boolean"],
-                actualType: "closure",
-              });
-            }
-
-            if (lhsValue.valueKind === "nativeFunc") {
-              throw new RuntimeError("Trying to compare native function value", {
-                runtimeErrorKind: "typeMismatch",
-                expectedTypes: ["number", "boolean", "null", "object"],
-                actualType: "nativeFunc",
-              });
-            }
-
-            if (rhsValue.valueKind === "nativeFunc") {
-              throw new RuntimeError("Trying to compare native function value", {
-                runtimeErrorKind: "typeMismatch",
-                expectedTypes: ["number", "boolean", "null", "object"],
-                actualType: "nativeFunc",
-              });
-            }
-
-            if (lhsValue.valueKind === "null") {
-              if (rhsValue.valueKind === "null") {
-                return makeBooleanValue(false);
-              } else if (rhsValue.valueKind === "object") {
-                return makeBooleanValue(true);
-              } else {
-                throw new RuntimeError("Trying to compare non-object to null", {
-                  runtimeErrorKind: "typeMismatch",
-                  expectedTypes: ["null", "object"],
-                  actualType: rhsValue.valueKind,
-                });
-              }
-            }
-
-            if (rhsValue.valueKind === "null") {
-              // null /= null already handled above
-              if (lhsValue.valueKind === "object") {
-                return makeBooleanValue(true);
-              } else {
-                throw new RuntimeError("Trying to compare non-object to null", {
-                  runtimeErrorKind: "typeMismatch",
-                  expectedTypes: ["null", "object"],
-                  actualType: lhsValue.valueKind,
-                });
-              }
-            }
-
-            // TODO object inequality
-
-            if (lhsValue.valueKind === "number" && rhsValue.valueKind === "number") {
-              return makeBooleanValue(lhsValue.value !== rhsValue.value);
-            } else if (lhsValue.valueKind === "boolean" && rhsValue.valueKind === "boolean") {
-              return makeBooleanValue(lhsValue.isTrue !== rhsValue.isTrue);
-            } else {
-              throw new RuntimeError("Trying to compare values of different types", {
-                runtimeErrorKind: "typeMismatch",
-                expectedTypes: [lhsValue.valueKind],
-                actualType: rhsValue.valueKind,
-              });
-            }
+            return makeBooleanValue(!areEqual(lhsValue, rhsValue));
         }
       }
       case "variableRef": {
