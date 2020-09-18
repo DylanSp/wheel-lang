@@ -13,6 +13,8 @@ describe("Scanner", () => {
         ["=", "singleEquals"],
         [",", "comma"],
         [";", "semicolon"],
+        [":", "colon"],
+        [".", "period"],
         ["+", "plus"],
         ["-", "minus"],
         ["*", "asterisk"],
@@ -32,6 +34,7 @@ describe("Scanner", () => {
         ["else", "else"],
         ["while", "while"],
         ["let", "let"],
+        ["null", "null"],
       ])('Recognizes "%s"', (input, tokenKind) => {
         // Act
         const scanResult = scan(input);
@@ -436,22 +439,6 @@ describe("Scanner", () => {
   });
 
   describe("Scan errors", () => {
-    it("Reports error on numbers with more than one decimal point", () => {
-      // Arrange
-      const inputStr = "12.34.56";
-
-      // Act
-      const scanResult = scan(inputStr);
-
-      // Assert
-      if (!isLeft(scanResult)) {
-        // type narrowing
-        throw new Error("Scan succeeded, should have failed");
-      }
-
-      expect(scanResult.left.map((error) => error.invalidLexeme)).toContain(".56");
-    });
-
     it("Reports error on special characters", () => {
       // Arrange
       const inputStr = "#";

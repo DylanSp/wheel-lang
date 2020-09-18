@@ -8,6 +8,7 @@ Statement -> FunctionDeclaration
 		   		 | VariableAssignment
 		   		 | IfStatement
 		   		 | WhileStatement
+					 | ExprStatement;
 		 
 FunctionDeclaration -> "function" Identifier "(" ParameterDeclarationList ")" Block
 
@@ -17,14 +18,14 @@ ReturnStatement -> "return" LogicalExpression ";"
 
 VariableDeclaration -> "let" Identifier ";"
 
-VariableAssignment -> Identifier "=" LogicalExpression ";"
+VariableAssignment -> (PossibleCall "."):? Identifier "=" LogicalExpression ";"
 
 IfStatement -> "if" "(" LogicalExpression ")" Block "else" Block
 					   | "if" "(" LogicalExpression ")" Block "else" IfStatement
 
 WhileStatement -> "while" "(" LogicalExpression ")" Block
 
-
+ExprStatement -> LogicalExpression ";"
 
 
 LogicalExpression -> LogicalTerm (OrOp LogicalTerm):*
@@ -54,16 +55,27 @@ UnaryOp -> "!" | "-"
 Factor -> "(" LogicalExpression ")"
         | PossibleCall
 		
-PossibleCall -> LiteralOrIdent ("(" ArgumentList ")"):*
+PossibleCall -> LiteralOrIdent CallSuffix:*
+
+CallSuffix -> ("(" ArgumentList ")")
+						| ("." Identifier)
 
 ArgumentList -> (LogicalExpression ("," LogicalExpression):*):?
 			
 LiteralOrIdent -> Number
 			    | Boolean
                 | Identifier
+					| ObjectLiteral
+					| NullLiteral
+
+ObjectLiteral -> "{" (ObjectField ("," ObjectField):*):? "}"
+
+ObjectField -> Identifier ":" LogicalExpression
 			   
 Number -> [0-9]:+ ("." [0-9]:+):?
 
 Boolean -> "true" | "false"
 
 Identifier -> [a-zA-Z] [a-zA-Z0-9]:*
+
+NullLiteral -> "null"

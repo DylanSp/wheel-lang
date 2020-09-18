@@ -156,6 +156,25 @@ describe("Full interpretation pipeline", () => {
 
       expect(runResult.right.value).toBe(2);
     });
+
+    it("Evaluates { let x = { field: 1 }; x.field = 2; return x.field; } to 2 ", () => {
+      // Arrange
+      const programText = "{ let x = { field: 1 }; x.field = 2; return x.field; }";
+
+      // Act
+      const runResult = runProgram(programText);
+
+      // Assert
+      if (!isRight(runResult)) {
+        throw new Error("Program failed, should have succeeded");
+      }
+
+      if (runResult.right.valueKind !== "number") {
+        throw new Error("Program did not return number");
+      }
+
+      expect(runResult.right.value).toBe(2);
+    });
   });
 
   describe("Scan errors", () => {

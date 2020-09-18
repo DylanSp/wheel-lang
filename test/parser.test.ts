@@ -1627,6 +1627,51 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredResult);
       });
 
+      it("Parses { x = null; }", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "null",
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "nullLit",
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
       it("Parses { x = !f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
@@ -3708,6 +3753,715 @@ describe("Parser", () => {
                 },
               },
             ],
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+    });
+
+    describe("Object usage", () => {
+      it("Parses { let x = { field: 1 }; } (simple object with one field)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "let",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("field"),
+          },
+          {
+            tokenKind: "colon",
+          },
+          {
+            tokenKind: "number",
+            value: 1,
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "objectLit",
+              fields: [
+                {
+                  fieldName: identifierIso.wrap("field"),
+                  fieldValue: {
+                    expressionKind: "numberLit",
+                    value: 1,
+                  },
+                },
+              ],
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { let x = { fieldA: 1, fieldB: true }; } (simple object with multiple fields)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "let",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("fieldA"),
+          },
+          {
+            tokenKind: "colon",
+          },
+          {
+            tokenKind: "number",
+            value: 1,
+          },
+          {
+            tokenKind: "comma",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("fieldB"),
+          },
+          {
+            tokenKind: "colon",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: true,
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "objectLit",
+              fields: [
+                {
+                  fieldName: identifierIso.wrap("fieldA"),
+                  fieldValue: {
+                    expressionKind: "numberLit",
+                    value: 1,
+                  },
+                },
+                {
+                  fieldName: identifierIso.wrap("fieldB"),
+                  fieldValue: {
+                    expressionKind: "booleanLit",
+                    isTrue: true,
+                  },
+                },
+              ],
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { let nested = { outerField: { innerField: 1 } }; } (object with nested fields)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "let",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("nested"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("outerField"),
+          },
+          {
+            tokenKind: "colon",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("innerField"),
+          },
+          {
+            tokenKind: "colon",
+          },
+          {
+            tokenKind: "number",
+            value: 1,
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("nested"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("nested"),
+            variableValue: {
+              expressionKind: "objectLit",
+              fields: [
+                {
+                  fieldName: identifierIso.wrap("outerField"),
+                  fieldValue: {
+                    expressionKind: "objectLit",
+                    fields: [
+                      {
+                        fieldName: identifierIso.wrap("innerField"),
+                        fieldValue: {
+                          expressionKind: "numberLit",
+                          value: 1,
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { let y = x.a; } (basic getter usage)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "let",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("y"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("a"),
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("y"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("y"),
+            variableValue: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("x"),
+              },
+              field: identifierIso.wrap("a"),
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x.a = 1; } (basic setter usage)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("a"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 1,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "set",
+            object: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("x"),
+            },
+            field: identifierIso.wrap("a"),
+            value: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { let y = x.a.b; } (chained getters)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "let",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("y"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("a"),
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("b"),
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("y"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("y"),
+            variableValue: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "get",
+                object: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("x"),
+                },
+                field: identifierIso.wrap("a"),
+              },
+              field: identifierIso.wrap("b"),
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x.a.b = 1; } (nested setter)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("a"),
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("b"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 1,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "set",
+            object: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("x"),
+              },
+              field: identifierIso.wrap("a"),
+            },
+            field: identifierIso.wrap("b"),
+            value: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { let y = x.f().a; } (chaining function call, then getter)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "let",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("y"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("f"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("a"),
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("y"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("y"),
+            variableValue: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "funcCall",
+                callee: {
+                  expressionKind: "get",
+                  object: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("x"),
+                  },
+                  field: identifierIso.wrap("f"),
+                },
+                args: [],
+              },
+              field: identifierIso.wrap("a"),
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { let y = x.a.f(); } (calling function after getter)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "let",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("y"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("a"),
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("f"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("y"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("y"),
+            variableValue: {
+              expressionKind: "funcCall",
+              callee: {
+                expressionKind: "get",
+                object: {
+                  expressionKind: "get",
+                  object: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("x"),
+                  },
+                  field: identifierIso.wrap("a"),
+                },
+                field: identifierIso.wrap("f"),
+              },
+              args: [],
+            },
           },
         ];
 

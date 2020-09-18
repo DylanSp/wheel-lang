@@ -17,8 +17,11 @@ export type Token =
   | IfKeyword
   | ElseKeyword
   | WhileKeyword
+  | NullKeyword
   | Semicolon
+  | Colon
   | Comma
+  | Period
   | PlusToken
   | MinusToken
   | Asterisk
@@ -80,12 +83,24 @@ interface WhileKeyword {
   tokenKind: "while";
 }
 
+interface NullKeyword {
+  tokenKind: "null";
+}
+
 interface Semicolon {
   tokenKind: "semicolon";
 }
 
+interface Colon {
+  tokenKind: "colon";
+}
+
 interface Comma {
   tokenKind: "comma";
+}
+
+interface Period {
+  tokenKind: "period";
 }
 
 interface PlusToken {
@@ -235,6 +250,14 @@ export const scan: Scan = (input: string) => {
         isTrue: false,
       });
       position += "false".length;
+    } else if (
+      /^null/.test(input.substring(position)) &&
+      !/^[a-zA-Z0-9]/.test(input.substring(position + "null".length))
+    ) {
+      tokens.push({
+        tokenKind: "null",
+      });
+      position += "null".length;
     } else if (/\d{1}/.test(char)) {
       const numberMatches = input.substring(position).match(/^[\d]+([.][\d]+)?/);
       if (numberMatches === null) {
@@ -320,6 +343,18 @@ export const scan: Scan = (input: string) => {
         case ";":
           tokens.push({
             tokenKind: "semicolon",
+          });
+          position += 1;
+          break;
+        case ":":
+          tokens.push({
+            tokenKind: "colon",
+          });
+          position += 1;
+          break;
+        case ".":
+          tokens.push({
+            tokenKind: "period",
           });
           position += 1;
           break;

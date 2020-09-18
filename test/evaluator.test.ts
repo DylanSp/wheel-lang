@@ -115,6 +115,28 @@ describe("Evaluator", () => {
         expect(evalResult.right.isTrue).toBe(false);
       });
 
+      it("Evaluates { return null; } to null (evaluating null literals)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "nullLit",
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(evalResult.right.valueKind).toBe("null");
+      });
+
       it("Evaluates { return 1 + 2; } to 3 (evaluating addition)", () => {
         // Arrange
         const ast: Program = [
@@ -858,6 +880,81 @@ describe("Evaluator", () => {
               rightOperand: {
                 expressionKind: "booleanLit",
                 isTrue: true,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(true);
+      });
+
+      it("Evaluates { return null == null; } to true (evaluating equals operator with null)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "nullLit",
+              },
+              rightOperand: {
+                expressionKind: "nullLit",
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(true);
+      });
+
+      it("Evaluates { return null /= { a: 1 }; } to true (evaluating not-equals operator with null)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "notEqual",
+              leftOperand: {
+                expressionKind: "nullLit",
+              },
+              rightOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                ],
               },
             },
           },
@@ -2006,6 +2103,984 @@ describe("Evaluator", () => {
         }
 
         expect(evalResult.right.value).toBe(6);
+      });
+    });
+
+    describe("Object usage", () => {
+      it("Evaluates { let x = { field: 1 }; return x.field; } to 1 (basic getter usage)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "objectLit",
+              fields: [
+                {
+                  fieldName: identifierIso.wrap("field"),
+                  fieldValue: {
+                    expressionKind: "numberLit",
+                    value: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("x"),
+              },
+              field: identifierIso.wrap("field"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(1);
+      });
+
+      it("Evaluates { let x = { field: 1 }; x.field = 2; return x.field; } to 2 (basic setter usage)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "objectLit",
+              fields: [
+                {
+                  fieldName: identifierIso.wrap("field"),
+                  fieldValue: {
+                    expressionKind: "numberLit",
+                    value: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            statementKind: "set",
+            object: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("x"),
+            },
+            field: identifierIso.wrap("field"),
+            value: {
+              expressionKind: "numberLit",
+              value: 2,
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("x"),
+              },
+              field: identifierIso.wrap("field"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(2);
+      });
+
+      it("Evaluates { let nested = { outer: { inner: 1 } }; return nested.outer.inner; } to 1 (chained getters)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("nested"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("nested"),
+            variableValue: {
+              expressionKind: "objectLit",
+              fields: [
+                {
+                  fieldName: identifierIso.wrap("outer"),
+                  fieldValue: {
+                    expressionKind: "objectLit",
+                    fields: [
+                      {
+                        fieldName: identifierIso.wrap("inner"),
+                        fieldValue: {
+                          expressionKind: "numberLit",
+                          value: 1,
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "get",
+                object: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("nested"),
+                },
+                field: identifierIso.wrap("outer"),
+              },
+              field: identifierIso.wrap("inner"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(1);
+      });
+
+      it("Evaluates { let nested = { outer: { inner: 1 } }; nested.outer.inner = 2; return nested.outer.inner; } to 2 (nested setter)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("nested"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("nested"),
+            variableValue: {
+              expressionKind: "objectLit",
+              fields: [
+                {
+                  fieldName: identifierIso.wrap("outer"),
+                  fieldValue: {
+                    expressionKind: "objectLit",
+                    fields: [
+                      {
+                        fieldName: identifierIso.wrap("inner"),
+                        fieldValue: {
+                          expressionKind: "numberLit",
+                          value: 1,
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            statementKind: "set",
+            object: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("nested"),
+              },
+              field: identifierIso.wrap("outer"),
+            },
+            field: identifierIso.wrap("inner"),
+            value: {
+              expressionKind: "numberLit",
+              value: 2,
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "get",
+                object: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("nested"),
+                },
+                field: identifierIso.wrap("outer"),
+              },
+              field: identifierIso.wrap("inner"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(2);
+      });
+
+      it("Evaluates { let x = { a: 1 }; return x.b; } to null (nonexistent property on object)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "objectLit",
+              fields: [
+                {
+                  fieldName: identifierIso.wrap("a"),
+                  fieldValue: {
+                    expressionKind: "numberLit",
+                    value: 1,
+                  },
+                },
+              ],
+            },
+          },
+
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("x"),
+              },
+              field: identifierIso.wrap("b"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(evalResult.right.valueKind).toBe("null");
+      });
+
+      it("Evaluates { let x = { a: { b: 1 } }; x.a = null; return x.a; } to null (assignment of null via setter)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "objectLit",
+              fields: [
+                {
+                  fieldName: identifierIso.wrap("a"),
+                  fieldValue: {
+                    expressionKind: "objectLit",
+                    fields: [
+                      {
+                        fieldName: identifierIso.wrap("b"),
+                        fieldValue: {
+                          expressionKind: "numberLit",
+                          value: 1,
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            statementKind: "set",
+            object: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("x"),
+            },
+            field: identifierIso.wrap("a"),
+            value: {
+              expressionKind: "nullLit",
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("x"),
+              },
+              field: identifierIso.wrap("a"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(evalResult.right.valueKind).toBe("null");
+      });
+
+      it("Evaluates { return {} == {}; } to true (empty objects are equal to each other)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "objectLit",
+                fields: [],
+              },
+              rightOperand: {
+                expressionKind: "objectLit",
+                fields: [],
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(true);
+      });
+
+      it("Evaluates { return { a: 1 } == {}; } to false (nonempty objects aren't equal to empty objects", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                ],
+              },
+              rightOperand: {
+                expressionKind: "objectLit",
+                fields: [],
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+      });
+
+      it("Evaluates { return { a: 1} == { a: 1}; } to true (objects with same fields and same values are equal)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                ],
+              },
+              rightOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(true);
+      });
+
+      it("Evaluates { return { a: 1 } == { a: 2 }; } to false (objects with same fields but different values are nonequal", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                ],
+              },
+              rightOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 2,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+      });
+
+      it("Evaluates { return { a: 1, b: 2 } == { a: 1 }; } to false (extra fields cause objects to be nonequal)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                  {
+                    fieldName: identifierIso.wrap("b"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 2,
+                    },
+                  },
+                ],
+              },
+              rightOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+      });
+
+      it("Evaluates { return { a: 1, b: 2 } == { a: 1, b: 2 }; } to true (objects with multiple, identical fields are equal)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                  {
+                    fieldName: identifierIso.wrap("b"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 2,
+                    },
+                  },
+                ],
+              },
+              rightOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                  {
+                    fieldName: identifierIso.wrap("b"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 2,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(true);
+      });
+
+      it("Evaluates { return {} /= {}; } to false (empty objects are equal to each other)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "notEqual",
+              leftOperand: {
+                expressionKind: "objectLit",
+                fields: [],
+              },
+              rightOperand: {
+                expressionKind: "objectLit",
+                fields: [],
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+      });
+
+      it("Evaluates { return { a: 1 } /= {}; } to true (nonempty objects aren't equal to empty objects", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "notEqual",
+              leftOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                ],
+              },
+              rightOperand: {
+                expressionKind: "objectLit",
+                fields: [],
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(true);
+      });
+
+      it("Evaluates { return { a: 1} /= { a: 1}; } to false (objects with same fields and same values are equal)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "notEqual",
+              leftOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                ],
+              },
+              rightOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+      });
+
+      it("Evaluates { return { a: 1 } /= { a: 2 }; } to true (objects with same fields but different values are nonequal", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "notEqual",
+              leftOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                ],
+              },
+              rightOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 2,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(true);
+      });
+
+      it("Evaluates { return { a: 1, b: 2 } /= { a: 1 }; } to true (extra fields cause objects to be nonequal)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "notEqual",
+              leftOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                  {
+                    fieldName: identifierIso.wrap("b"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 2,
+                    },
+                  },
+                ],
+              },
+              rightOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(true);
+      });
+
+      it("Evaluates { return { a: 1, b: 2 } /= { a: 1, b: 2 }; } to false (objects with multiple, identical fields are equal)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "notEqual",
+              leftOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                  {
+                    fieldName: identifierIso.wrap("b"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 2,
+                    },
+                  },
+                ],
+              },
+              rightOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                  {
+                    fieldName: identifierIso.wrap("b"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 2,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
       });
     });
 
@@ -3295,6 +4370,154 @@ describe("Evaluator", () => {
       expect(evalResult.left.expectedTypes).toContain("boolean");
       expect(evalResult.left.expectedTypes).toContain("number");
       expect(evalResult.left.actualType).toBe("closure");
+    });
+
+    it("Recognizes a TypeMismatch error for { return clock == 1; } (native function on LHS of equals expression)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "binOp",
+            binOp: "equals",
+            leftOperand: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("clock"),
+            },
+            rightOperand: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+      }
+
+      expect(evalResult.left.expectedTypes).toContain("boolean");
+      expect(evalResult.left.expectedTypes).toContain("number");
+      expect(evalResult.left.actualType).toBe("nativeFunc");
+    });
+
+    it("Recognizes a TypeMismatch error for { return 1 == clock; } (native function on RHS of equals expression)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "binOp",
+            binOp: "equals",
+            leftOperand: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+            rightOperand: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("clock"),
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+      }
+
+      expect(evalResult.left.expectedTypes).toContain("boolean");
+      expect(evalResult.left.expectedTypes).toContain("number");
+      expect(evalResult.left.actualType).toBe("nativeFunc");
+    });
+
+    it("Recognizes a TypeMismatch error for { return clock /= 1; } (native function on LHS of not-equal expression)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "binOp",
+            binOp: "notEqual",
+            leftOperand: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("clock"),
+            },
+            rightOperand: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+      }
+
+      expect(evalResult.left.expectedTypes).toContain("boolean");
+      expect(evalResult.left.expectedTypes).toContain("number");
+      expect(evalResult.left.actualType).toBe("nativeFunc");
+    });
+
+    it("Recognizes a TypeMismatch error for { return 1 /= clock; } (native function on RHS of not-equal expression)", () => {
+      // Arrange
+      const ast: Program = [
+        {
+          statementKind: "return",
+          returnedValue: {
+            expressionKind: "binOp",
+            binOp: "notEqual",
+            leftOperand: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+            rightOperand: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("clock"),
+            },
+          },
+        },
+      ];
+
+      // Act
+      const evalResult = evaluate(ast);
+
+      // Assert
+      if (!isLeft(evalResult)) {
+        throw new Error("Evaluation succeeded, should have failed");
+      }
+
+      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+      }
+
+      expect(evalResult.left.expectedTypes).toContain("boolean");
+      expect(evalResult.left.expectedTypes).toContain("number");
+      expect(evalResult.left.actualType).toBe("nativeFunc");
     });
 
     it("Recognizes a NoReturn error for {} (no return at top level)", () => {

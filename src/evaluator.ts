@@ -1,7 +1,8 @@
 import { Program, Expression, Block } from "./parser";
+import { zip } from "fp-ts/lib/Array";
 import { Either, right, left } from "fp-ts/lib/Either";
-import { lookup, member } from "fp-ts/lib/Map";
-import { Identifier, eqIdentifier, identifierIso } from "./types";
+import { lookup, member, insertAt, toArray } from "fp-ts/lib/Map";
+import { Identifier, eqIdentifier, identifierIso, ordIdentifier } from "./types";
 import { isNone, Option, some, isSome, none } from "fp-ts/lib/Option";
 
 /**
@@ -146,21 +147,125 @@ interface NativeFunctionValue {
   returnType: ValueKind;
 }
 
-interface VoidValue {
-  valueKind: "void";
+interface NullValue {
+  valueKind: "null";
 }
 
-const makeVoidValue = (): VoidValue => ({
-  valueKind: "void",
+const makeNullValue = (): NullValue => ({
+  valueKind: "null",
+});
+
+interface ObjectValue {
+  valueKind: "object";
+  fields: Map<Identifier, Value>;
+}
+
+const makeObjectValue = (fields: Map<Identifier, Value>): ObjectValue => ({
+  valueKind: "object",
+  fields,
 });
 
 type ValueKind = Value["valueKind"];
-export type Value = NumberValue | BooleanValue | ClosureValue | NativeFunctionValue | VoidValue;
+export type Value = NumberValue | BooleanValue | ClosureValue | NativeFunctionValue | NullValue | ObjectValue;
 
 type Evaluate = (program: Program) => Either<RuntimeFailure, Value>;
 
 export const evaluate: Evaluate = (program) => {
   // utility functions
+  const areEqual = (lhsValue: Value, rhsValue: Value): boolean => {
+    if (lhsValue.valueKind === "closure") {
+      throw new RuntimeError("Trying to compare closure value", {
+        runtimeErrorKind: "typeMismatch",
+        expectedTypes: ["number", "boolean", "null", "object"], // not really scalable (would have to contain every type that supports equality), but allowable since this project doesn't allow custom types
+        actualType: "closure",
+      });
+    }
+
+    if (rhsValue.valueKind === "closure") {
+      throw new RuntimeError("Trying to compare closure value", {
+        runtimeErrorKind: "typeMismatch",
+        expectedTypes: ["number", "boolean", "null", "object"], // not really scalable (would have to contain every type that supports inequality), but allowable since this project doesn't allow custom types
+        actualType: "closure",
+      });
+    }
+
+    if (lhsValue.valueKind === "nativeFunc") {
+      throw new RuntimeError("Trying to compare native function value", {
+        runtimeErrorKind: "typeMismatch",
+        expectedTypes: ["number", "boolean", "null", "object"],
+        actualType: "nativeFunc",
+      });
+    }
+
+    if (rhsValue.valueKind === "nativeFunc") {
+      throw new RuntimeError("Trying to compare native function value", {
+        runtimeErrorKind: "typeMismatch",
+        expectedTypes: ["number", "boolean", "null", "object"],
+        actualType: "nativeFunc",
+      });
+    }
+
+    if (lhsValue.valueKind === "null") {
+      if (rhsValue.valueKind === "null") {
+        return true;
+      } else if (rhsValue.valueKind === "object") {
+        return false;
+      } else {
+        throw new RuntimeError("Trying to compare non-object to null", {
+          runtimeErrorKind: "typeMismatch",
+          expectedTypes: ["null", "object"],
+          actualType: rhsValue.valueKind,
+        });
+      }
+    }
+
+    if (rhsValue.valueKind === "null") {
+      // null == null already handled above
+      if (lhsValue.valueKind === "object") {
+        return false;
+      } else {
+        throw new RuntimeError("Trying to compare non-object to null", {
+          runtimeErrorKind: "typeMismatch",
+          expectedTypes: ["null", "object"],
+          actualType: lhsValue.valueKind,
+        });
+      }
+    }
+
+    if (lhsValue.valueKind === "object" && rhsValue.valueKind === "object") {
+      const lhsFields = toArray(ordIdentifier)(lhsValue.fields);
+      const rhsFields = toArray(ordIdentifier)(rhsValue.fields);
+
+      if (lhsFields.length !== rhsFields.length) {
+        return false;
+      }
+
+      for (const [[lhsFieldName, lhsFieldValue], [rhsFieldName, rhsFieldValue]] of zip(lhsFields, rhsFields)) {
+        if (lhsFieldName !== rhsFieldName) {
+          return false;
+        }
+
+        if (!areEqual(lhsFieldValue, rhsFieldValue)) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    if (lhsValue.valueKind === "number" && rhsValue.valueKind === "number") {
+      return lhsValue.value === rhsValue.value;
+    } else if (lhsValue.valueKind === "boolean" && rhsValue.valueKind === "boolean") {
+      return lhsValue.isTrue === rhsValue.isTrue;
+    } else {
+      throw new RuntimeError("Trying to compare values of different types", {
+        runtimeErrorKind: "typeMismatch",
+        expectedTypes: [lhsValue.valueKind],
+        actualType: rhsValue.valueKind,
+      });
+    }
+  };
+
   const evaluateExpr = (env: Environment, expr: Expression): Value => {
     switch (expr.expressionKind) {
       case "numberLit": {
@@ -168,6 +273,9 @@ export const evaluate: Evaluate = (program) => {
       }
       case "booleanLit": {
         return makeBooleanValue(expr.isTrue);
+      }
+      case "nullLit": {
+        return makeNullValue();
       }
       case "binOp": {
         const lhsValue = evaluateExpr(env, expr.leftOperand);
@@ -266,61 +374,9 @@ export const evaluate: Evaluate = (program) => {
             }
             return makeBooleanValue(lhsValue.value >= rhsValue.value);
           case "equals":
-            if (lhsValue.valueKind === "closure") {
-              throw new RuntimeError("Trying to compare closure value", {
-                runtimeErrorKind: "typeMismatch",
-                expectedTypes: ["number", "boolean"], // not really scalable (would have to contain every type that supports equality), but allowable since this project doesn't allow custom types
-                actualType: "closure",
-              });
-            }
-
-            if (rhsValue.valueKind === "closure") {
-              throw new RuntimeError("Trying to compare closure value", {
-                runtimeErrorKind: "typeMismatch",
-                expectedTypes: ["number", "boolean"], // not really scalable (would have to contain every type that supports inequality), but allowable since this project doesn't allow custom types
-                actualType: "closure",
-              });
-            }
-
-            if (lhsValue.valueKind === "number" && rhsValue.valueKind === "number") {
-              return makeBooleanValue(lhsValue.value === rhsValue.value);
-            } else if (lhsValue.valueKind === "boolean" && rhsValue.valueKind === "boolean") {
-              return makeBooleanValue(lhsValue.isTrue === rhsValue.isTrue);
-            } else {
-              throw new RuntimeError("Trying to compare values of different types", {
-                runtimeErrorKind: "typeMismatch",
-                expectedTypes: [lhsValue.valueKind],
-                actualType: rhsValue.valueKind,
-              });
-            }
+            return makeBooleanValue(areEqual(lhsValue, rhsValue));
           case "notEqual":
-            if (lhsValue.valueKind === "closure") {
-              throw new RuntimeError("Trying to compare closure value", {
-                runtimeErrorKind: "typeMismatch",
-                expectedTypes: ["number", "boolean"],
-                actualType: "closure",
-              });
-            }
-
-            if (rhsValue.valueKind === "closure") {
-              throw new RuntimeError("Trying to compare closure value", {
-                runtimeErrorKind: "typeMismatch",
-                expectedTypes: ["number", "boolean"],
-                actualType: "closure",
-              });
-            }
-
-            if (lhsValue.valueKind === "number" && rhsValue.valueKind === "number") {
-              return makeBooleanValue(lhsValue.value !== rhsValue.value);
-            } else if (lhsValue.valueKind === "boolean" && rhsValue.valueKind === "boolean") {
-              return makeBooleanValue(lhsValue.isTrue !== rhsValue.isTrue);
-            } else {
-              throw new RuntimeError("Trying to compare values of different types", {
-                runtimeErrorKind: "typeMismatch",
-                expectedTypes: [lhsValue.valueKind],
-                actualType: rhsValue.valueKind,
-              });
-            }
+            return makeBooleanValue(!areEqual(lhsValue, rhsValue));
         }
       }
       case "variableRef": {
@@ -373,6 +429,22 @@ export const evaluate: Evaluate = (program) => {
             `Programming error; tried to evaluate unaryOp of kind ${expr.unaryOp}, only supported unary ops are "not" and "negative"`,
           );
         }
+      }
+      case "get": {
+        const obj = evaluateExpr(env, expr.object);
+        if (obj.valueKind !== "object") {
+          throw new Error("Insert runtime error for running getter on non-object");
+        }
+
+        const possibleVal = lookup(eqIdentifier)(expr.field)(obj.fields);
+        return isSome(possibleVal) ? possibleVal.value : makeNullValue();
+      }
+      case "objectLit": {
+        let fields = new Map<Identifier, Value>();
+        expr.fields.forEach((field) => {
+          fields = insertAt(eqIdentifier)(field.fieldName, evaluateExpr(env, field.fieldValue))(fields);
+        });
+        return makeObjectValue(fields);
       }
     }
   };
@@ -432,8 +504,10 @@ export const evaluate: Evaluate = (program) => {
             runtimeErrorKind: "nativeFunctionReturnFunc",
             nativeFunctionName: func.funcName,
           });
-        case "void":
-          return makeVoidValue();
+        case "null":
+          return makeNullValue();
+        case "object":
+          throw new Error("Returning objects from native functions not yet supported!");
       }
     }
   };
@@ -534,6 +608,18 @@ export const evaluate: Evaluate = (program) => {
               break;
             }
           }
+          break;
+        }
+        case "set": {
+          const obj = evaluateExpr(env, statement.object);
+          if (obj.valueKind !== "object") {
+            throw new Error("Insert runtime error for running setter on non-object");
+          }
+
+          const value = evaluateExpr(env, statement.value);
+          obj.fields = insertAt(eqIdentifier)(statement.field, value)(obj.fields);
+
+          break;
         }
       }
     }
@@ -554,14 +640,14 @@ export const evaluate: Evaluate = (program) => {
         funcName: identifierIso.wrap("printNum"),
         valueKind: "nativeFunc",
         argTypes: ["number"],
-        returnType: "void",
+        returnType: "null",
         body: (numVal: NumberValue): void => console.log(numVal.value),
       },
       {
         funcName: identifierIso.wrap("printBool"),
         valueKind: "nativeFunc",
         argTypes: ["boolean"],
-        returnType: "void",
+        returnType: "null",
         body: (boolVal: BooleanValue): void => console.log(boolVal.isTrue),
       },
     ];
