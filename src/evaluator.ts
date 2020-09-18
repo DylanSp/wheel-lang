@@ -210,7 +210,7 @@ export const evaluate: Evaluate = (program) => {
       if (rhsValue.valueKind === "null") {
         return true;
       } else if (rhsValue.valueKind === "object") {
-        return 1;
+        return false;
       } else {
         throw new RuntimeError("Trying to compare non-object to null", {
           runtimeErrorKind: "typeMismatch",

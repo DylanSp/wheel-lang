@@ -7,6 +7,10 @@ import { identifierIso } from "../src/types";
 describe("Evaluator", () => {
   describe("Successful evaluations", () => {
     describe("Simple programs with no functions or variables", () => {
+      it("Fails", () => {
+        expect(true).toBe(false);
+      });
+
       it("Evaluates { return 1; } to 1 (evaluating numeric literals)", () => {
         // Arrange
         const ast: Program = [
