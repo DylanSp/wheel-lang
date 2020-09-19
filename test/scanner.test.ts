@@ -1,6 +1,6 @@
 import "jest";
-import { scan } from "../src/scanner";
 import { isRight, isLeft } from "fp-ts/lib/Either";
+import { scan } from "../src/scanner";
 
 describe("Scanner", () => {
   describe("Successful scans", () => {

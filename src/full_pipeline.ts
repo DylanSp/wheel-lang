@@ -1,8 +1,8 @@
+import { Either, right, mapLeft, chain } from "fp-ts/lib/Either";
+import { pipe } from "fp-ts/lib/pipeable";
 import { ScanError, Token, scan } from "./scanner";
 import { ParseFailure, Program, parse } from "./parser";
 import { RuntimeFailure, Value, evaluate } from "./evaluator";
-import { Either, right, mapLeft, chain } from "fp-ts/lib/Either";
-import { pipe } from "fp-ts/lib/pipeable";
 
 /**
  * TYPES

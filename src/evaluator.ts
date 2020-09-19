@@ -1,10 +1,10 @@
-import { Program, Expression, Block } from "./parser";
 import { zip } from "fp-ts/lib/Array";
 import { Either, right, left } from "fp-ts/lib/Either";
 import { lookup, member, insertAt, toArray } from "fp-ts/lib/Map";
-import { Identifier, eqIdentifier, identifierIso, ordIdentifier } from "./types";
 import { isNone, Option, some, isSome, none } from "fp-ts/lib/Option";
 import { prompt } from "readline-sync";
+import { Identifier, eqIdentifier, identifierIso, ordIdentifier } from "./types";
+import { Program, Expression, Block } from "./parser";
 
 /**
  * TYPES
