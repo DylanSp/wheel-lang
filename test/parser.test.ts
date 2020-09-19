@@ -5351,6 +5351,42 @@ describe("Parser", () => {
       expect(parseResult.left.message).toMatch(/Expected ;/);
     });
 
+    it("Expects a semicolon after combined declaration/assignment statements", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "let",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("x"),
+        },
+        {
+          tokenKind: "singleEquals",
+        },
+        {
+          tokenKind: "number",
+          value: 1,
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected ;/);
+    });
+
     it("Expects a left brace at the beginning of a block", () => {
       // Arrange
       const tokens: Array<Token> = [];
