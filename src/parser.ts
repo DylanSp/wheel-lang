@@ -18,7 +18,8 @@ type Statement =
   | VariableAssignment
   | IfStatement
   | WhileStatement
-  | SetStatement;
+  | SetStatement
+  | ExpressionStatement;
 
 interface FunctionDeclaration {
   statementKind: "funcDecl";
@@ -61,6 +62,11 @@ interface SetStatement {
   object: Expression;
   field: Identifier;
   value: Expression;
+}
+
+interface ExpressionStatement {
+  statementKind: "expression";
+  expression: Expression;
 }
 
 export type Expression =
@@ -169,15 +175,8 @@ export const parse: Parse = (input) => {
 
     const statements: Array<Statement> = [];
 
-    while (
-      input[position]?.tokenKind === "let" ||
-      input[position]?.tokenKind === "function" ||
-      input[position]?.tokenKind === "return" ||
-      input[position]?.tokenKind === "identifier" ||
-      input[position]?.tokenKind === "if" ||
-      input[position]?.tokenKind === "while"
-    ) {
-      switch (input[position].tokenKind) {
+    while (input[position]?.tokenKind !== "rightBrace") {
+      switch (input[position]?.tokenKind) {
         case "let": {
           position += 1; // move past "let"
 
@@ -277,37 +276,45 @@ export const parse: Parse = (input) => {
           break;
         }
         case "identifier": {
-          const potentialObject = parsePotentialCall();
+          const expression = parsePotentialCall();
 
-          if (input[position]?.tokenKind !== "singleEquals") {
-            throw new ParseError("Expected =");
-          }
+          if (input[position]?.tokenKind === "semicolon") {
+            // standalone function call or variable ref (expression statement)
+            position += 1; // move past semicolon
 
-          position += 1; // move past "="
-
-          const expr = parseLogicalExpr();
-
-          if (input[position]?.tokenKind !== "semicolon") {
-            throw new ParseError("Expected ;");
-          }
-          position += 1; // move past semicolon
-
-          if (potentialObject.expressionKind === "variableRef") {
             statements.push({
-              statementKind: "assignment",
-              variableName: potentialObject.variableName,
-              variableValue: expr,
+              statementKind: "expression",
+              expression,
             });
-          } else if (potentialObject.expressionKind === "get") {
-            // indicates we're parsing a setter statement
-            statements.push({
-              statementKind: "set",
-              object: potentialObject.object,
-              field: potentialObject.field,
-              value: expr,
-            });
+          } else if (input[position]?.tokenKind === "singleEquals") {
+            position += 1; // move past "="
+
+            const expr = parseLogicalExpr();
+
+            if (input[position]?.tokenKind !== "semicolon") {
+              throw new ParseError("Expected ;");
+            }
+            position += 1; // move past semicolon
+
+            if (expression.expressionKind === "variableRef") {
+              statements.push({
+                statementKind: "assignment",
+                variableName: expression.variableName,
+                variableValue: expr,
+              });
+            } else if (expression.expressionKind === "get") {
+              // indicates we're parsing a setter statement
+              statements.push({
+                statementKind: "set",
+                object: expression.object,
+                field: expression.field,
+                value: expr,
+              });
+            } else {
+              throw new Error("Programming error - trying to parse setter, lhs was neither variableRef nor get");
+            }
           } else {
-            throw new Error("Programming error - trying to parse setter, lhs was neither variableRef nor get");
+            throw new ParseError("Expected = or ;");
           }
 
           break;
@@ -340,14 +347,28 @@ export const parse: Parse = (input) => {
           });
           break;
         }
+        case "number":
+        case "boolean": {
+          const expression = parseLogicalExpr();
+
+          if (input[position]?.tokenKind !== "semicolon") {
+            throw new ParseError("Expected ;");
+          }
+
+          position += 1; // move past semicolon
+          statements.push({
+            statementKind: "expression",
+            expression,
+          });
+          break;
+        }
+        default: {
+          throw new ParseError("Expected start of statement or expression");
+        }
       }
     }
 
-    if (input[position]?.tokenKind !== "rightBrace") {
-      throw new ParseError("Expected }");
-    }
-
-    position += 1; // move past right brace
+    position += 1; // move past right brace (we know it's there by while-loop condition)
     return statements;
   };
 

@@ -4469,6 +4469,174 @@ describe("Parser", () => {
       });
     });
 
+    describe("Expression statements", () => {
+      it("Parses { f(); } (calling function as expression statement)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("f"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "expression",
+            expression: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("f"),
+              },
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { x; } (variable reference as expression statement)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "expression",
+            expression: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("x"),
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { 1; } (number literal as expression statement)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "number",
+            value: 1,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "expression",
+            expression: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+
+      it("Parses { true; } (boolean literal as expression statement)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "boolean",
+            isTrue: true,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "expression",
+            expression: {
+              expressionKind: "booleanLit",
+              isTrue: true,
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
+    });
+
     describe("Multi-statement programs", () => {
       it("Parses { x = 1; return x; } (program with multiple simple statements)", () => {
         // Arrange
@@ -5149,39 +5317,6 @@ describe("Parser", () => {
       expect(parseResult.left.message).toMatch(/Expected ;/);
     });
 
-    it("Expects a single equals sign after an identifier at the beginning of a statement", () => {
-      // Arrange
-      const tokens: Array<Token> = [
-        {
-          tokenKind: "leftBrace",
-        },
-        {
-          tokenKind: "identifier",
-          name: identifierIso.wrap("x"),
-        },
-        {
-          tokenKind: "number",
-          value: 1,
-        },
-        {
-          tokenKind: "semicolon",
-        },
-        {
-          tokenKind: "rightBrace",
-        },
-      ];
-
-      // Act
-      const parseResult = parse(tokens);
-
-      // Assert
-      if (!isLeft(parseResult)) {
-        throw new Error("Parse succeeded, should have failed");
-      }
-
-      expect(parseResult.left.message).toMatch(/Expected =/);
-    });
-
     it("Expects a left brace at the beginning of a block", () => {
       // Arrange
       const tokens: Array<Token> = [];
@@ -5223,7 +5358,7 @@ describe("Parser", () => {
         throw new Error("Parse succeeded, should have failed");
       }
 
-      expect(parseResult.left.message).toMatch(/Expected }/);
+      expect(parseResult.left.message).toMatch(/Expected start/);
     });
 
     it("Expects a right parenthesis matching a left paren", () => {
