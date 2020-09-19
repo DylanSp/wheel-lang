@@ -10,43 +10,48 @@ import { prompt } from "readline-sync";
  * TYPES
  */
 
-// TODO make Environment a class with lookup(), define(), assign() methods?
-interface Environment {
-  values: Map<Identifier, Option<Value>>; // value of None represents a declared but unassigned variable; value of Some represents the assigned value
-  parentEnvironment?: Environment;
+class Environment {
+  private values: Map<Identifier, Option<Value>>;
+
+  private parentEnvironment?: Environment;
+
+  public constructor(parentEnvironment?: Environment) {
+    this.values = new Map<Identifier, Option<Value>>();
+    this.parentEnvironment = parentEnvironment;
+  }
+
+  public lookup = (ident: Identifier): Option<Option<Value>> => {
+    const possibleLocalValue = lookup(eqIdentifier)(ident, this.values);
+
+    if (isSome(possibleLocalValue)) {
+      return possibleLocalValue;
+    }
+
+    if (this.parentEnvironment !== undefined) {
+      return this.parentEnvironment.lookup(ident);
+    }
+
+    return none;
+  };
+
+  public define = (ident: Identifier): void => {
+    this.values = insertAt(eqIdentifier)<Option<Value>>(ident, none)(this.values);
+  };
+
+  // set a variable's value in the innermost environment in which it's found; return true iff variable was found
+  public assign = (ident: Identifier, value: Value): boolean => {
+    if (member(eqIdentifier)(ident, this.values)) {
+      this.values = insertAt(eqIdentifier)(ident, some(value))(this.values);
+      return true;
+    }
+
+    if (this.parentEnvironment !== undefined) {
+      return this.parentEnvironment.assign(ident, value);
+    }
+
+    return false;
+  };
 }
-
-const lookupInEnvironment = (ident: Identifier, env: Environment): Option<Option<Value>> => {
-  const result = lookup(eqIdentifier)(ident, env.values);
-
-  if (isSome(result)) {
-    return result;
-  }
-
-  if (env.parentEnvironment !== undefined) {
-    return lookupInEnvironment(ident, env.parentEnvironment);
-  }
-
-  return none;
-};
-
-const defineInEnvironment = (ident: Identifier, env: Environment): void => {
-  env.values.set(ident, none);
-};
-
-// set a variable's value in the innermost environment in which it's found; return true iff variable was found
-const assignInEnvironment = (ident: Identifier, value: Value, env: Environment): boolean => {
-  if (member(eqIdentifier)(ident, env.values)) {
-    env.values.set(ident, some(value));
-    return true;
-  }
-
-  if (env.parentEnvironment !== undefined) {
-    return assignInEnvironment(ident, value, env.parentEnvironment);
-  }
-
-  return false;
-};
 
 interface NotInScopeError {
   runtimeErrorKind: "notInScope";
@@ -381,7 +386,7 @@ export const evaluate: Evaluate = (program) => {
         }
       }
       case "variableRef": {
-        const variableValue = lookupInEnvironment(expr.variableName, env);
+        const variableValue = env.lookup(expr.variableName);
 
         if (isNone(variableValue)) {
           throw new RuntimeError(`Variable ${expr.variableName} not in scope`, {
@@ -467,13 +472,10 @@ export const evaluate: Evaluate = (program) => {
         });
       }
 
-      const functionLocalEnv: Environment = {
-        values: new Map<Identifier, Option<Value>>(),
-        parentEnvironment: func.env,
-      };
+      const functionLocalEnv = new Environment(func.env);
       for (let i = 0; i < func.argNames.length; i++) {
-        defineInEnvironment(func.argNames[i], functionLocalEnv);
-        assignInEnvironment(func.argNames[i], args[i], functionLocalEnv);
+        functionLocalEnv.define(func.argNames[i]);
+        functionLocalEnv.assign(func.argNames[i], args[i]);
       }
 
       const result = evaluateBlock(functionLocalEnv, func.body);
@@ -522,15 +524,11 @@ export const evaluate: Evaluate = (program) => {
           return some(evaluateExpr(env, statement.returnedValue));
         }
         case "varDecl": {
-          defineInEnvironment(statement.variableName, env);
+          env.define(statement.variableName);
           break;
         }
         case "assignment": {
-          const successfullyAssigned = assignInEnvironment(
-            statement.variableName,
-            evaluateExpr(env, statement.variableValue),
-            env,
-          );
+          const successfullyAssigned = env.assign(statement.variableName, evaluateExpr(env, statement.variableValue));
           if (!successfullyAssigned) {
             throw new RuntimeError(`Variable ${statement.variableName} not in scope`, {
               runtimeErrorKind: "notInScope",
@@ -541,17 +539,15 @@ export const evaluate: Evaluate = (program) => {
           break;
         }
         case "funcDecl": {
-          const closureEnv: Environment = {
-            values: new Map<Identifier, Option<Value>>(),
-            parentEnvironment: env,
-          };
+          const closureEnv = new Environment(env);
           const closureValue = makeClosureValue(statement.functionName, statement.argNames, statement.body, closureEnv);
 
-          defineInEnvironment(statement.functionName, closureEnv);
-          assignInEnvironment(statement.functionName, closureValue, closureEnv);
+          // TODO do I need to define functionName in closureEnv?
+          closureEnv.define(statement.functionName);
+          closureEnv.assign(statement.functionName, closureValue);
 
-          defineInEnvironment(statement.functionName, env);
-          assignInEnvironment(statement.functionName, closureValue, env);
+          env.define(statement.functionName);
+          env.assign(statement.functionName, closureValue);
           break;
         }
         case "if": {
@@ -564,10 +560,7 @@ export const evaluate: Evaluate = (program) => {
             });
           }
 
-          const blockEnv: Environment = {
-            values: new Map<Identifier, Option<Value>>(),
-            parentEnvironment: env,
-          };
+          const blockEnv = new Environment(env);
 
           if (condition.isTrue) {
             const blockResult = evaluateBlock(blockEnv, statement.trueBody);
@@ -597,10 +590,7 @@ export const evaluate: Evaluate = (program) => {
             }
 
             if (condition.isTrue) {
-              const blockEnv: Environment = {
-                values: new Map<Identifier, Option<Value>>(),
-                parentEnvironment: env,
-              };
+              const blockEnv = new Environment(env);
               const blockResult = evaluateBlock(blockEnv, statement.body);
               if (isSome(blockResult)) {
                 return blockResult;
@@ -701,16 +691,14 @@ export const evaluate: Evaluate = (program) => {
     ];
 
     nativeFuncs.forEach((nativeFunc) => {
-      defineInEnvironment(nativeFunc.funcName, env);
-      assignInEnvironment(nativeFunc.funcName, nativeFunc, env);
+      env.define(nativeFunc.funcName);
+      env.assign(nativeFunc.funcName, nativeFunc);
     });
   };
 
   // main driver
   try {
-    const topLevelEnv = {
-      values: new Map<Identifier, Option<Value>>(),
-    };
+    const topLevelEnv = new Environment();
     defineNativeFunctions(topLevelEnv);
     const evalResult = evaluateBlock(topLevelEnv, program);
     if (isNone(evalResult)) {
