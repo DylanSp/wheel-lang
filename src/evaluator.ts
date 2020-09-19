@@ -69,10 +69,6 @@ interface TypeMismatchError {
   actualType: ValueKind;
 }
 
-interface NoReturnError {
-  runtimeErrorKind: "noReturn";
-}
-
 interface ArityMismatchError {
   runtimeErrorKind: "arityMismatch";
   expectedNumArgs: number;
@@ -99,7 +95,6 @@ export type RuntimeFailure =
   | NotInScopeError
   | NotFunctionError
   | TypeMismatchError
-  | NoReturnError
   | ArityMismatchError
   | UnassignedVariableError
   | NativeFunctionReturnedFunctionError;
@@ -173,6 +168,12 @@ const makeObjectValue = (fields: Map<Identifier, Value>): ObjectValue => ({
 
 type ValueKind = Value["valueKind"];
 export type Value = NumberValue | BooleanValue | ClosureValue | NativeFunctionValue | NullValue | ObjectValue;
+
+class Return extends Error {
+  constructor(public readonly possibleValue: Value) {
+    super();
+  }
+}
 
 type Evaluate = (program: Program) => Either<RuntimeFailure, Value>;
 
@@ -477,15 +478,18 @@ export const evaluate: Evaluate = (program) => {
         functionLocalEnv.assign(func.argNames[i], args[i]);
       }
 
-      const result = evaluateBlock(functionLocalEnv, func.body);
-      if (isNone(result)) {
-        throw new RuntimeError("No return statement in block", {
-          runtimeErrorKind: "noReturn",
-        });
+      try {
+        evaluateBlock(functionLocalEnv, func.body);
+        return makeNullValue();
+      } catch (err) {
+        if (err instanceof Return) {
+          return err.possibleValue;
+        } else {
+          throw err;
+        }
       }
-
-      return result.value;
     } else {
+      // native function
       if (func.argTypes.length !== args.length) {
         throw new RuntimeError("Wrong number of arguments when applying function", {
           runtimeErrorKind: "arityMismatch",
@@ -514,13 +518,14 @@ export const evaluate: Evaluate = (program) => {
     }
   };
 
-  // returns None if the block has no return statement; lack of returns are caught by apply() for function bodies, main driver for main block
-  // if there is a return, returns Some
-  const evaluateBlock = (env: Environment, block: Block): Option<Value> => {
+  // throws a Return "error" if a value is returned; if this method returns, execution falls out of block
+  const evaluateBlock = (env: Environment, block: Block): void => {
     for (const statement of block) {
       switch (statement.statementKind) {
         case "return": {
-          return some(evaluateExpr(env, statement.returnedValue));
+          const valueToReturn =
+            statement.returnedValue === undefined ? makeNullValue() : evaluateExpr(env, statement.returnedValue);
+          throw new Return(valueToReturn);
         }
         case "varDecl": {
           env.define(statement.variableName);
@@ -558,20 +563,11 @@ export const evaluate: Evaluate = (program) => {
           const blockEnv = new Environment(env);
 
           if (condition.isTrue) {
-            const blockResult = evaluateBlock(blockEnv, statement.trueBody);
-            if (isSome(blockResult)) {
-              return blockResult;
-            }
-
-            break;
+            evaluateBlock(blockEnv, statement.trueBody);
           } else {
-            const blockResult = evaluateBlock(blockEnv, statement.falseBody);
-            if (isSome(blockResult)) {
-              return blockResult;
-            }
-
-            break;
+            evaluateBlock(blockEnv, statement.falseBody);
           }
+          break;
         }
         case "while": {
           while (true) {
@@ -586,10 +582,7 @@ export const evaluate: Evaluate = (program) => {
 
             if (condition.isTrue) {
               const blockEnv = new Environment(env);
-              const blockResult = evaluateBlock(blockEnv, statement.body);
-              if (isSome(blockResult)) {
-                return blockResult;
-              }
+              evaluateBlock(blockEnv, statement.body);
             } else {
               break;
             }
@@ -607,10 +600,12 @@ export const evaluate: Evaluate = (program) => {
 
           break;
         }
+        case "expression": {
+          evaluateExpr(env, statement.expression);
+          break;
+        }
       }
     }
-
-    return none;
   };
 
   const defineNativeFunctions = (env: Environment): void => {
@@ -695,17 +690,13 @@ export const evaluate: Evaluate = (program) => {
   try {
     const topLevelEnv = new Environment();
     defineNativeFunctions(topLevelEnv);
-    const evalResult = evaluateBlock(topLevelEnv, program);
-    if (isNone(evalResult)) {
-      throw new RuntimeError("No return statement in main program", {
-        runtimeErrorKind: "noReturn",
-      });
-    }
-
-    return right(evalResult.value);
+    evaluateBlock(topLevelEnv, program);
+    return right(makeNullValue());
   } catch (err) {
     if (err instanceof RuntimeError) {
       return left(err.underlyingFailure);
+    } else if (err instanceof Return) {
+      return right(err.possibleValue);
     } else {
       throw err;
     }
