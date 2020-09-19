@@ -5,6 +5,8 @@ import { evaluate } from "../src/evaluator";
 import { identifierIso } from "../src/types";
 
 describe("Evaluator", () => {
+  // TODO mock native functions
+
   describe("Successful evaluations", () => {
     describe("Simple programs with no functions or variables", () => {
       it("Evaluates { return 1; } to 1 (evaluating numeric literals)", () => {
@@ -974,6 +976,40 @@ describe("Evaluator", () => {
 
         expect(evalResult.right.isTrue).toBe(true);
       });
+
+      it("Evaluates { return; } to null (evaluating top-level empty returns)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(evalResult.right.valueKind).toBe("null");
+      });
+
+      it("Evaluates { } to null (evaluating lack of top-level explicit return)", () => {
+        // Arrange
+        const ast: Program = [];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(evalResult.right.valueKind).toBe("null");
+      });
     });
 
     describe("Programs with simple variable use", () => {
@@ -1464,6 +1500,168 @@ describe("Evaluator", () => {
         }
 
         expect(evalResult.right.value).toBe(3);
+      });
+
+      it("Evaluates { function f() { return; } return f(); } to null (checking evaluation of empty returns from functions)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: identifierIso.wrap("f"),
+            argNames: [],
+            body: [
+              {
+                statementKind: "return",
+              },
+            ],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "funcCall",
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("f"),
+              },
+              args: [],
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(evalResult.right.valueKind).toBe("null");
+      });
+
+      it("Evaluates { function f() { printNum(1); return; } f(); return 2; } to 2 (Evaluates programs with standalone function calls)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: identifierIso.wrap("f"),
+            argNames: [],
+            body: [
+              {
+                statementKind: "expression",
+                expression: {
+                  expressionKind: "funcCall",
+                  args: [
+                    {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  ],
+                  callee: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("printNum"),
+                  },
+                },
+              },
+              {
+                statementKind: "return",
+              },
+            ],
+          },
+          {
+            statementKind: "expression",
+            expression: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("f"),
+              },
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "numberLit",
+              value: 2,
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(2);
+      });
+
+      it("Evaluates { function f() { printNum(3); } f(); return 4; } to 4 (Evaluates programs with function calls with no explicit return)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: identifierIso.wrap("f"),
+            argNames: [],
+            body: [
+              {
+                statementKind: "expression",
+                expression: {
+                  expressionKind: "funcCall",
+                  args: [
+                    {
+                      expressionKind: "numberLit",
+                      value: 3,
+                    },
+                  ],
+                  callee: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("printNum"),
+                  },
+                },
+              },
+            ],
+          },
+          {
+            statementKind: "expression",
+            expression: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("f"),
+              },
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "numberLit",
+              value: 4,
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(4);
       });
     });
 
@@ -4676,54 +4874,6 @@ describe("Evaluator", () => {
       expect(evalResult.left.expectedTypes).toContain("boolean");
       expect(evalResult.left.expectedTypes).toContain("number");
       expect(evalResult.left.actualType).toBe("nativeFunc");
-    });
-
-    it("Recognizes a NoReturn error for {} (no return at top level)", () => {
-      // Arrange
-      const ast: Program = [];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      expect(evalResult.left.runtimeErrorKind).toBe("noReturn");
-    });
-
-    it("Recognizes a NoReturn error for { function f() {} return f(); } (no return in function declaration)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "funcDecl",
-          functionName: identifierIso.wrap("f"),
-          argNames: [],
-          body: [],
-        },
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "funcCall",
-            callee: {
-              expressionKind: "variableRef",
-              variableName: identifierIso.wrap("f"),
-            },
-            args: [],
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      expect(evalResult.left.runtimeErrorKind).toBe("noReturn");
     });
 
     it("Recognizes an arity mismatch (too few arguments) for { function f(x) { return x; } return f(); }", () => {
