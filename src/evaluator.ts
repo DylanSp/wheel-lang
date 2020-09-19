@@ -288,7 +288,6 @@ export const evaluate: Evaluate = (program) => {
         const rhsValue = evaluateExpr(env, expr.rightOperand);
 
         switch (expr.binOp) {
-          // TODO refactor type-checking? pull it out into a separate function?
           case "add":
             if (lhsValue.valueKind !== "number" || rhsValue.valueKind !== "number") {
               throw new RuntimeError("Trying to perform binOp on non-numeric values", {
