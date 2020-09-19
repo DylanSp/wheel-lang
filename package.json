@@ -8,7 +8,7 @@
     "test:ci": "jest",
     "test:coverage": "jest --coverage",
     "build": "tsc",
-    "lint": "eslint",
+    "lint": "eslint --max-warnings 0 src/**/*.ts test/**/*.ts",
     "lint:fix": "eslint --fix"
   },
   "keywords": [],
