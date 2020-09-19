@@ -1,0 +1,23 @@
+{
+  let accumulator = 0;
+  let a = 0;
+
+  function addByA()
+  {
+    accumulator = accumulator + a;
+    return 0;
+  }
+
+  let throwaway1 = addByA();
+
+  function inner() 
+  {
+    let a = 99;
+    let throwaway2 = addByA();
+    return 0;
+  }
+
+  let throwaway3 = inner();
+
+  return accumulator;
+}
