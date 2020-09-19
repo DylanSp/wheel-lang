@@ -542,10 +542,6 @@ export const evaluate: Evaluate = (program) => {
           const closureEnv = new Environment(env);
           const closureValue = makeClosureValue(statement.functionName, statement.argNames, statement.body, closureEnv);
 
-          // TODO do I need to define functionName in closureEnv?
-          closureEnv.define(statement.functionName);
-          closureEnv.assign(statement.functionName, closureValue);
-
           env.define(statement.functionName);
           env.assign(statement.functionName, closureValue);
           break;
