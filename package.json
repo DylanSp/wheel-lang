@@ -9,7 +9,7 @@
     "test:coverage": "jest --coverage",
     "build": "tsc",
     "lint": "eslint --max-warnings 0 src/**/*.ts test/**/*.ts",
-    "lint:fix": "eslint --fix"
+    "lint:fix": "eslint --fix src/**/*.ts test/**/*.ts"
   },
   "keywords": [],
   "author": "Dylan Sprague",

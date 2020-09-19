@@ -1,7 +1,7 @@
 import "jest";
+import { isRight, isLeft } from "fp-ts/lib/Either";
 import { Program } from "../src/parser";
 import { evaluate } from "../src/evaluator";
-import { isRight, isLeft } from "fp-ts/lib/Either";
 import { identifierIso } from "../src/types";
 
 describe("Evaluator", () => {

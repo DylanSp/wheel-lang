@@ -1,6 +1,6 @@
 import "jest";
-import { runProgram } from "../src/full_pipeline";
 import { isRight, isLeft } from "fp-ts/lib/Either";
+import { runProgram } from "../src/full_pipeline";
 
 describe("Full interpretation pipeline", () => {
   describe("Correct programs", () => {

@@ -1,7 +1,7 @@
 import { promisify } from "util";
 import { readFile as fsReadFile } from "fs";
-import { runProgram } from "./full_pipeline";
 import { isLeft } from "fp-ts/lib/Either";
+import { runProgram } from "./full_pipeline";
 
 const args = process.argv.slice(2); // ignore "node", JS filename
 

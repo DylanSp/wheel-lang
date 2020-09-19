@@ -1,7 +1,7 @@
-import { IdentifierToken, Token, NumberToken, BooleanToken } from "./scanner";
 import { Either, right, left } from "fp-ts/lib/Either";
-import { Identifier } from "./types";
 import { none, Option, some, isSome } from "fp-ts/lib/Option";
+import { IdentifierToken, Token, NumberToken, BooleanToken } from "./scanner";
+import { Identifier } from "./types";
 
 /**
  * TYPES
