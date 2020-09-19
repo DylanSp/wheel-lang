@@ -5559,7 +5559,99 @@ describe("Parser", () => {
         throw new Error("Parse succeeded, should have failed");
       }
 
-      expect(parseResult.left.message).toMatch(/Expected \)/);
+      expect(parseResult.left.message).toMatch(/Expected ,/);
+    });
+
+    it("Expects a comma between parameter names in a function definition", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "function",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("func"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("x"),
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("y"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected ,/);
+    });
+
+    it("Expects a comma between arguments in a function call", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("func"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("x"),
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("y"),
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
+          tokenKind: "semicolon",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected ,/);
     });
 
     it("Expects an identifier in non-number, non-parenthesized primary expressions", () => {
@@ -5882,6 +5974,69 @@ describe("Parser", () => {
       }
 
       expect(parseResult.left.message).toMatch(/Expected identifier/);
+    });
+
+    it("Expects commas between field definitions in an object", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "let",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("obj"),
+        },
+        {
+          tokenKind: "singleEquals",
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("a"),
+        },
+        {
+          tokenKind: "colon",
+        },
+        {
+          tokenKind: "number",
+          value: 1,
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("b"),
+        },
+        {
+          tokenKind: "colon",
+        },
+        {
+          tokenKind: "number",
+          value: 2,
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+        {
+          tokenKind: "semicolon",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected ,/);
     });
   });
 });

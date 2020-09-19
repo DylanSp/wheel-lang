@@ -241,9 +241,15 @@ export const parse: Parse = (input) => {
             args.push((input[position] as IdentifierToken).name);
             position += 1;
 
-            if (input[position]?.tokenKind === "comma") {
-              position += 1; // move past comma
+            if (input[position]?.tokenKind === "rightParen") {
+              break;
             }
+
+            if (input[position]?.tokenKind !== "comma") {
+              throw new ParseError("Expected ,");
+            }
+
+            position += 1; // move past comma
           }
 
           if (input[position]?.tokenKind !== "rightParen") {
@@ -578,9 +584,15 @@ export const parse: Parse = (input) => {
         while (input[position]?.tokenKind !== "rightParen") {
           args.push(parseLogicalExpr());
 
-          if (input[position]?.tokenKind == "comma") {
-            position += 1; // move past comma
+          if (input[position]?.tokenKind === "rightParen") {
+            break;
           }
+
+          if (input[position]?.tokenKind !== "comma") {
+            throw new ParseError("Expected ,");
+          }
+
+          position += 1; // move past comma
         }
 
         // we know from while loop condition that we're at a right paren, so just move past it
@@ -657,9 +669,15 @@ export const parse: Parse = (input) => {
           fieldValue,
         });
 
-        if (input[position]?.tokenKind === "comma") {
-          position += 1; // move past comma
+        if (input[position]?.tokenKind === "rightBrace") {
+          break;
         }
+
+        if (input[position]?.tokenKind !== "comma") {
+          throw new ParseError("Expected ,");
+        }
+
+        position += 1; // move past comma
       }
 
       if (input[position]?.tokenKind !== "rightBrace") {
