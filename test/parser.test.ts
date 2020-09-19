@@ -6077,5 +6077,33 @@ describe("Parser", () => {
 
       expect(parseResult.left.message).toMatch(/Expected ,/);
     });
+
+    it("Expects an = or ; after an identifier beginning a statement", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("x"),
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected/);
+      expect(parseResult.left.message).toMatch(/;/);
+      expect(parseResult.left.message).toMatch(/=/);
+    });
   });
 });
