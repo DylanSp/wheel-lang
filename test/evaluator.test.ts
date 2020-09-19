@@ -3375,6 +3375,164 @@ describe("Evaluator", () => {
 
         expect(evalResult.right.value).toBe(1);
       });
+
+      // similar to the error in https://craftinginterpreters.com/resolving-and-binding.html
+      // program is the same as examples/closure_shadowing_interaction.wheel
+      it("Does *not* let shadowing variables modify existing closures", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("accumulator"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("accumulator"),
+            variableValue: {
+              expressionKind: "numberLit",
+              value: 0,
+            },
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("a"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("a"),
+            variableValue: {
+              expressionKind: "numberLit",
+              value: 0,
+            },
+          },
+          {
+            statementKind: "funcDecl",
+            functionName: identifierIso.wrap("addByA"),
+            argNames: [],
+            body: [
+              {
+                statementKind: "assignment",
+                variableName: identifierIso.wrap("accumulator"),
+                variableValue: {
+                  expressionKind: "binOp",
+                  binOp: "add",
+                  leftOperand: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("accumulator"),
+                  },
+                  rightOperand: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("a"),
+                  },
+                },
+              },
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 0,
+                },
+              },
+            ],
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("throwaway1"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("throwaway1"),
+            variableValue: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("addByA"),
+              },
+            },
+          },
+          {
+            statementKind: "funcDecl",
+            functionName: identifierIso.wrap("inner"),
+            argNames: [],
+            body: [
+              {
+                statementKind: "varDecl",
+                variableName: identifierIso.wrap("a"),
+              },
+              {
+                statementKind: "assignment",
+                variableName: identifierIso.wrap("a"),
+                variableValue: {
+                  expressionKind: "numberLit",
+                  value: 99,
+                },
+              },
+              {
+                statementKind: "varDecl",
+                variableName: identifierIso.wrap("throwaway2"),
+              },
+              {
+                statementKind: "assignment",
+                variableName: identifierIso.wrap("throwaway2"),
+                variableValue: {
+                  expressionKind: "funcCall",
+                  args: [],
+                  callee: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("addByA"),
+                  },
+                },
+              },
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 0,
+                },
+              },
+            ],
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("throwaway3"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("throwaway3"),
+            variableValue: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("inner"),
+              },
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("accumulator"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        // returning 99 indicates that a = 99 was used when inner() called
+        expect(evalResult.right.value).toBe(0);
+      });
     });
   });
 
