@@ -5577,6 +5577,9 @@ describe("Parser", () => {
           name: identifierIso.wrap("x"),
         },
         {
+          tokenKind: "comma",
+        },
+        {
           tokenKind: "leftBrace",
         },
         {
@@ -5595,7 +5598,7 @@ describe("Parser", () => {
         throw new Error("Parse succeeded, should have failed");
       }
 
-      expect(parseResult.left.message).toMatch(/Expected ,/);
+      expect(parseResult.left.message).toMatch(/Expected \)/);
     });
 
     it("Expects a comma between parameter names in a function definition", () => {
