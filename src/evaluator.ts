@@ -600,6 +600,10 @@ export const evaluate: Evaluate = (program) => {
 
           break;
         }
+        case "expression": {
+          evaluateExpr(env, statement.expression);
+          break;
+        }
       }
     }
   };
