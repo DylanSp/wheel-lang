@@ -30,7 +30,7 @@ interface FunctionDeclaration {
 
 interface ReturnStatement {
   statementKind: "return";
-  returnedValue: Expression;
+  returnedValue?: Expression;
 }
 
 interface VariableDeclaration {
@@ -262,17 +262,28 @@ export const parse: Parse = (input) => {
         }
         case "return": {
           position += 1; // move past "return"
-          const expr = parseLogicalExpr();
 
-          if (input[position]?.tokenKind !== "semicolon") {
-            throw new ParseError("Expected ;");
+          if (input[position]?.tokenKind === "semicolon") {
+            // empty return
+            position += 1; // move past semicolon
+
+            statements.push({
+              statementKind: "return",
+            });
+          } else {
+            // returning expression
+            const expr = parseLogicalExpr();
+            if (input[position]?.tokenKind !== "semicolon") {
+              throw new ParseError("Expected ;");
+            }
+            position += 1; // move past semicolon
+
+            statements.push({
+              statementKind: "return",
+              returnedValue: expr,
+            });
           }
-          position += 1; // move past semicolon
 
-          statements.push({
-            statementKind: "return",
-            returnedValue: expr,
-          });
           break;
         }
         case "identifier": {

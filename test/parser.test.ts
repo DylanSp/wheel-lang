@@ -3433,6 +3433,40 @@ describe("Parser", () => {
 
         expect(parseResult.right).toEqual(desiredResult);
       });
+
+      it("Parses { return; } (return with no expression)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "return",
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parse(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredResult: Program = [
+          {
+            statementKind: "return",
+          },
+        ];
+
+        expect(parseResult.right).toEqual(desiredResult);
+      });
     });
 
     describe("Simple function declarations", () => {
