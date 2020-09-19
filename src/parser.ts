@@ -669,9 +669,15 @@ export const parse: Parse = (input) => {
           fieldValue,
         });
 
-        if (input[position]?.tokenKind === "comma") {
-          position += 1; // move past comma
+        if (input[position]?.tokenKind === "rightBrace") {
+          break;
         }
+
+        if (input[position]?.tokenKind !== "comma") {
+          throw new ParseError("Expected ,");
+        }
+
+        position += 1; // move past comma
       }
 
       if (input[position]?.tokenKind !== "rightBrace") {
