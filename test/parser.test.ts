@@ -6157,5 +6157,38 @@ describe("Parser", () => {
 
       expect(parseResult.left.message).toMatch(/Expected ;/);
     });
+
+    it("Expects an identifier following a period in a get expression/set statement", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("obj"),
+        },
+        {
+          tokenKind: "period",
+        },
+        {
+          tokenKind: "number",
+          value: 1,
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected identifier/);
+    });
   });
 });
