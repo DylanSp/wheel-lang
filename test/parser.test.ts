@@ -6233,5 +6233,40 @@ describe("Parser", () => {
 
       expect(parseResult.left.message).toMatch(/Expected :/);
     });
+
+    it("Expects a right brace at the end of an object literal", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("obj"),
+        },
+        {
+          tokenKind: "singleEquals",
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "semicolon",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected }/);
+    });
   });
 });
