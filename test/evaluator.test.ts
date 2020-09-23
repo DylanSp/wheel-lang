@@ -5,8 +5,6 @@ import { evaluate } from "../src/evaluator";
 import { identifierIso } from "../src/types";
 
 describe("Evaluator", () => {
-  // TODO mock native functions
-
   describe("Successful evaluations", () => {
     describe("Simple programs with no functions or variables", () => {
       it("Evaluates { return 1; } to 1 (evaluating numeric literals)", () => {
@@ -3426,6 +3424,84 @@ describe("Evaluator", () => {
 
         // Cleanup
         jest.useRealTimers();
+      });
+
+      it('Prints "1" with console.log when evaluating { printNum(1); }', () => {
+        // Arrange
+        const num = 1;
+        const ast: Program = [
+          {
+            statementKind: "expression",
+            expression: {
+              expressionKind: "funcCall",
+              args: [
+                {
+                  expressionKind: "numberLit",
+                  value: num,
+                },
+              ],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("printNum"),
+              },
+            },
+          },
+        ];
+        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
+          /* intentional no-op */
+        });
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(consoleLogSpy).toBeCalledWith(num);
+
+        // Cleanup
+        consoleLogSpy.mockRestore();
+      });
+
+      it('Prints "true" with console.log when evaluating { printBool(true); }', () => {
+        // Arrange
+        const bool = true;
+        const ast: Program = [
+          {
+            statementKind: "expression",
+            expression: {
+              expressionKind: "funcCall",
+              args: [
+                {
+                  expressionKind: "booleanLit",
+                  isTrue: bool,
+                },
+              ],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("printBool"),
+              },
+            },
+          },
+        ];
+        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
+          /* intentional no-op */
+        });
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(consoleLogSpy).toBeCalledWith(bool);
+
+        // Cleanup
+        consoleLogSpy.mockRestore();
       });
     });
 
