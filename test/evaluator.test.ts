@@ -3389,6 +3389,46 @@ describe("Evaluator", () => {
       });
     });
 
+    describe("Native functions", () => {
+      it("Evaluates { return clock(); } to the current time as a number using Date.now()", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("clock"),
+              },
+            },
+          },
+        ];
+
+        jest.useFakeTimers("modern");
+        const time = 5;
+        jest.setSystemTime(time);
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(time);
+
+        // Cleanup
+        jest.useRealTimers();
+      });
+    });
+
     describe("Other complex programs", () => {
       it("Evaluates { let x; x = 1; function f() { let x; x = 2; return x; } return x + f(); } to 3 (checking that local variables shadow variables in outer scopes)", () => {
         // Arrange
