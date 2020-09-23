@@ -5158,6 +5158,43 @@ describe("Evaluator", () => {
         expect(evalResult.left.expectedNumArgs).toBe(0);
         expect(evalResult.left.actualNumArgs).toBe(1);
       });
+
+      it("Recognizes an arity mismatch (too many arguments to native function) for { return clock(1); }", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "funcCall",
+              args: [
+                {
+                  expressionKind: "numberLit",
+                  value: 1,
+                },
+              ],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("clock"),
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "arityMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of ArityMismatch error`);
+        }
+
+        expect(evalResult.left.expectedNumArgs).toBe(0);
+        expect(evalResult.left.actualNumArgs).toBe(1);
+      });
     });
 
     describe("UnassignedVariable errors", () => {
