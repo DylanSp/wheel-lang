@@ -85,6 +85,11 @@ interface NativeFunctionReturnedFunctionError {
   nativeFunctionName: Identifier;
 }
 
+interface NotObjectError {
+  runtimeErrorKind: "notObject";
+  nonObjectType: ValueKind;
+}
+
 class RuntimeError extends Error {
   constructor(public readonly message: string, public readonly underlyingFailure: RuntimeFailure) {
     super(message);
@@ -97,7 +102,8 @@ export type RuntimeFailure =
   | TypeMismatchError
   | ArityMismatchError
   | UnassignedVariableError
-  | NativeFunctionReturnedFunctionError;
+  | NativeFunctionReturnedFunctionError
+  | NotObjectError;
 
 interface NumberValue {
   valueKind: "number";
@@ -439,7 +445,10 @@ export const evaluate: Evaluate = (program) => {
       case "get": {
         const obj = evaluateExpr(env, expr.object);
         if (obj.valueKind !== "object") {
-          throw new Error("Insert runtime error for running getter on non-object");
+          throw new RuntimeError("Attempting to get a field on a non-object", {
+            runtimeErrorKind: "notObject",
+            nonObjectType: obj.valueKind,
+          });
         }
 
         const possibleVal = lookup(eqIdentifier)(expr.field)(obj.fields);

@@ -5192,5 +5192,38 @@ describe("Evaluator", () => {
         expect(evalResult.left.unassignedIdentifier).toBe("x");
       });
     });
+
+    describe("NotObject errors", () => {
+      it("Recognizes a NotObject error for { return 1.field; } (attempting to call getter on non-object)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+              field: identifierIso.wrap("field"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "notObject") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotObject error`);
+        }
+
+        expect(evalResult.left.nonObjectType).toBe("number");
+      });
+    });
   });
 });
