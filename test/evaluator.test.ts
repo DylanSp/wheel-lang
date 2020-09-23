@@ -1627,6 +1627,9 @@ describe("Evaluator", () => {
             },
           },
         ];
+        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
+          /* intentional no-op */
+        });
 
         // Act
         const evalResult = evaluate(ast);
@@ -1641,6 +1644,9 @@ describe("Evaluator", () => {
         }
 
         expect(evalResult.right.value).toBe(2);
+
+        // Cleanup
+        consoleLogSpy.mockRestore();
       });
 
       it("Evaluates { function f() { printNum(3); } f(); return 4; } to 4 (Evaluates programs with function calls with no explicit return)", () => {
@@ -1688,6 +1694,9 @@ describe("Evaluator", () => {
             },
           },
         ];
+        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
+          /* intentional no-op */
+        });
 
         // Act
         const evalResult = evaluate(ast);
@@ -1702,6 +1711,9 @@ describe("Evaluator", () => {
         }
 
         expect(evalResult.right.value).toBe(4);
+
+        // Cleanup
+        consoleLogSpy.mockRestore();
       });
     });
 
