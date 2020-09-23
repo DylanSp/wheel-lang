@@ -977,6 +977,48 @@ describe("Evaluator", () => {
         expect(evalResult.right.isTrue).toBe(true);
       });
 
+      it("Evaluates { return { a: 1 } == null; } to false (evaluating equals operator with object and null", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                ],
+              },
+              rightOperand: {
+                expressionKind: "nullLit",
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+      });
+
       it("Evaluates { return; } to null (evaluating top-level empty returns)", () => {
         // Arrange
         const ast: Program = [
@@ -2976,6 +3018,71 @@ describe("Evaluator", () => {
         }
 
         expect(evalResult.right.isTrue).toBe(true);
+      });
+
+      it("Evaluates { return { a: 1, b: 2} == { a: 1, c: 2 }; } to false (objects with same number of fields but different names are nonequal)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                  {
+                    fieldName: identifierIso.wrap("b"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 2,
+                    },
+                  },
+                ],
+              },
+              rightOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                  {
+                    fieldName: identifierIso.wrap("c"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 2,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
       });
 
       it("Evaluates { return {} /= {}; } to false (empty objects are equal to each other)", () => {
