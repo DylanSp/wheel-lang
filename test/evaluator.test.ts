@@ -4880,6 +4880,78 @@ describe("Evaluator", () => {
         expect(evalResult.left.expectedTypes).toContain("number");
         expect(evalResult.left.actualType).toBe("nativeFunc");
       });
+
+      it("Recognizes a TypeMismatch error for { return 1 == null; } (comparison of null on LHS to non-object)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+              rightOperand: {
+                expressionKind: "nullLit",
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toContain("object");
+        expect(evalResult.left.expectedTypes).toContain("null");
+        expect(evalResult.left.actualType).toBe("number");
+      });
+
+      it("Recognizes a TypeMismatch error for { return null == 1; } (comparison of null on RHS to non-object)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "nullLit",
+              },
+              rightOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toContain("object");
+        expect(evalResult.left.expectedTypes).toContain("null");
+        expect(evalResult.left.actualType).toBe("number");
+      });
     });
 
     describe("ArityMismatch errors", () => {
