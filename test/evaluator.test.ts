@@ -5261,6 +5261,38 @@ describe("Evaluator", () => {
 
         expect(evalResult.left.nonObjectType).toBe("number");
       });
+
+      it("Recognizes a NotObject error for { 1.field = 2; } (attempting to call setter on non-object)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "set",
+            object: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+            field: identifierIso.wrap("field"),
+            value: {
+              expressionKind: "numberLit",
+              value: 2,
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "notObject") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotObject error`);
+        }
+
+        expect(evalResult.left.nonObjectType).toBe("number");
+      });
     });
   });
 });

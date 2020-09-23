@@ -601,7 +601,10 @@ export const evaluate: Evaluate = (program) => {
         case "set": {
           const obj = evaluateExpr(env, statement.object);
           if (obj.valueKind !== "object") {
-            throw new Error("Insert runtime error for running setter on non-object");
+            throw new RuntimeError("Attempting to set a field on a non-object", {
+              runtimeErrorKind: "notObject",
+              nonObjectType: obj.valueKind,
+            });
           }
 
           const value = evaluateExpr(env, statement.value);
