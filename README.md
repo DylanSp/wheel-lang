@@ -1,4 +1,4 @@
-# WheelLang
+# WheelLang v0.2
 
 The wheel. I reinvented it.
 
@@ -13,15 +13,14 @@ The only external dependencies for building and using this language are `node` a
 1. Build the interpreter with `yarn build`/`npm run build`.
 1. Run a program with `node dist/main.js [path/to/program]`; for example, to run the example of an addition function, use `node dist/main.js examples/adder.wheel`.
 
-If you open this project in VS Code, make sure to use the local project's version of TypeScript, until VS Code updates to use TypeScript version >= 3.8.1. Otherwise, [this TypeScript bug](https://github.com/microsoft/TypeScript/issues/35970) will cause VS Code to show errors for correct code.
-
 ## Programming in Wheel
 
 ### Syntax
 
-Programs in Wheel are composed of a block of statements, following a JavaScript-esque syntax. The top-level block must have braces surrounding it. There are six types of statements:
+Programs in Wheel are composed of a block of statements, following a JavaScript-esque syntax. The top-level block must have braces surrounding it. There are eight types of statements:
 
-1. Function declarations, following Javascript function declaration syntax. Example:
+1. Standalone expressions (followed by a semicolon), i.e. `printNum(1);`. Most commonly used for calling functions.
+2. Function declarations, following Javascript function declaration syntax. Example:
 
 ```
 function f(x)
@@ -30,25 +29,36 @@ function f(x)
 }
 ```
 
-2. Return statements:
+3. Return statements (optionally returning a value):
 
 ```
 return 1;
 ```
 
-3. Variable declarations, using the keyword `let`. This declares a variable for use in this scope; it doesn't initialize it, and the variable must be assigned a value before use in an expression. Example:
+4. Variable declarations, using the keyword `let`. This declares a variable for use in this scope; it doesn't initialize it, and the variable must be assigned a value before use in an expression. Example:
 
 ```
 let x;
 ```
 
-4. Variable assignments. The variable must be declared beforehand. Variables are mutable, and can have different values assigned to them. Example:
+5. Variable assignments. The variable must be declared either beforehand or in the same statement. Variables are mutable, and can have different values assigned to them. Example:
 
 ```
+let x = 0;
 x = x + 1;
+
+let y;
+y = 2;
 ```
 
-5. If statements. Braces around the body are mandatory, as is an `else` block. Example:
+6. Setting a field value on an object. Fields are accessed with a `.`, i.e. `obj.fieldName`; JS's `obj["fieldName"]` syntax is not currently supported. Example:
+
+```
+let obj = {};
+obj.field = 1;
+```
+
+7. If statements. Braces around the body are mandatory, as is an `else` block. Example:
 
 ```
 if (x == 1)
@@ -61,24 +71,9 @@ else
 }
 ```
 
-Note that this means `if {} else if {} else{}` chains are not allowed; instead, they must be nested:
+`if {} else if {} else{}` chains (with an arbitrary number of `else if` blocks) are now allowed, as of v0.2.
 
-```
-if (x == 0)
-{
-}
-else
-{
-  if (x == 1)
-  {
-  }
-  else
-  {
-  }
-}
-```
-
-6. While statements. Braces around the body are mandatory. Example:
+8. While statements. Braces around the body are mandatory. Example:
 
 ```
 while (x < 2)
@@ -88,7 +83,7 @@ while (x < 2)
 }
 ```
 
-Expressions can have number and boolean values, as well as variable references. Supported operators:
+Expressions can have number, boolean, object, and `null` values, as well as variable references. Supported operators:
 
 - Arithmetic: `+`, `-`, `*`, `/`
 - Logical: `&`, `|`, `!` (Note that logical and/or use a single character, not `&&`/`||`)
@@ -106,25 +101,38 @@ Reserved keywords:
 - `while`
 - `true`
 - `false`
+- `null`
 
 For a somewhat more formal specification of the grammar, see `docs/grammar.ne`, which goes over the grammar's structure, using the format of [nearley.js](https://nearley.js.org/); it can be explored by pasting it into the [Nearley Parser Playground](https://omrelli.ug/nearley-playground/). This version of the grammar doesn't include any whitespace, though, so the generated examples will be hard to read.
 
 ### Semantics
 
-Generally, Wheel behaves like you'd expect it to. The only types are numbers, booleans, and functions; no strings, no collections, no objects. Wheel is currently dynamically typed; [issue #14](https://github.com/DylanSp/extended-four-function-console/issues/14) covers a possible addition of static typing. A few notes:
+Wheel is dynamically typed, supporting several types of values: numbers, booleans, functions, objects, and `null`. There are no strings and no built-in collection types. A few notes:
 
 - All variables are mutable; there's no `const`.
 - Higher-order functions are supported.
 - The `==` and `/=` operators only operate on two operands of the same type.
 - The `!` operator only operates on booleans.
+- `null` can only be compared to objects (currently; follow [issue #58](https://github.com/DylanSp/wheel-lang/issues/58) for possible revision of this)
+- Wheel objects are comparable to C structs; they're bags of data, nothing more.
+  - Accessing an undeclared field on an object returns null, i.e. `{ return {}.field; }` returns `null`.
+  - Fields do not have to be declared on an object's initial declaration/initialization to be set. `{ let obj = {}; obj.a = 1; }` is a legal program.
+  - Objects can have functions assigned to fields, but these functions are not true object methods, they don't have a built-in `this` reference to the object. However, "methods" can be constructed with some setup; see [`examples/oop.wheel`](examples/oop.wheel), and v0.3 will explore JS-style prototypical objects and inheritance, see [issue #43](https://github.com/DylanSp/wheel-lang/issues/43).
 
-Wheel has no `print`/`log`/`console` statements (currently; follow [issue #18](https://github.com/DylanSp/extended-four-function-console/issues/18) for work on this); the only way to get a value out of a program is by returning it from the program's top level. The driver in `src/main.ts` handles this; it scans, parses, and evaluates a program, printing the returned result if all steps are successful (and the error(s), if not).
+For input, Wheel has two functions (provided by the interpreter), `readNum()` and `readBool()`. Both of these functions display a prompt character, read a string from user input, then attempt to parse it as a number or boolean. If the input parses correctly, the functions return an object with an `isValid` field set to `true` and a `value` field with the parsed value; if the input does not parse, they return an object with an `isValid` field set to `false`.
+
+- For parsing numbers, the interpreter uses JavaScript's `parseFloat()` function; see its documentation for valid input formats.
+- For parsing booleans, the interpreter recognizes `"true"` and `"false"` (with that exact lack of capitalization) as valid inputs; all other strings fail to parse.
+
+For output, Wheel has two functions (provided by the interpreter), `printNum()` and `printBool()`. `printNum()` takes a number value and prints it to the console; `printBool()` takes a boolean value and prints it to the console. The driver in `src/main.ts` also prints the result returned from a program's top-level, if it exists.
+
+Additionally, Wheel has a function `clock()` that returns the number of milliseconds since the start of the Unix epoch. (Yes, it's just a wrapper for JS's `Date.now()`)
 
 ## Implementation/Architecture Notes
 
 The Wheel interpreter is built as a composition of three modules: scanning/lexing, parsing, and evaluation. [`full_pipeline`](src/full_pipeline.ts) feeds a string input through the three modules, aborting at the first error. [`main`](src/main.ts) acts as the top-level driver, reading a program file into memory, running the pipeline, and reporting the result/errors.
 
-Each of the modules is built around a single central pure function, which either reports an error or produces a type to be consumed by the next module. This design allows for a small API surface, with each function having a single responsibility, no external dependencies, and no side effects. This allows for extensive unit testing; for examples of how each module is used, consult the `test` directory.
+Each of the modules is built around a single central function, which either reports an error or produces a type to be consumed by the next module. `scan()` and `parse()` are pure functions; `evaluate()` may prompt for input or log output to the console. This design allows for a small API surface, with each function having a single responsibility, no external dependencies, and no side effects. This allows for extensive unit testing; for examples of how each module is used, consult the `test` directory.
 
 In addition to the central functions, each module also exports the types required to consume its output. [`types`](src/types.ts) contains types used by multiple modules.
 
@@ -140,4 +148,6 @@ The parser is built as an [LL(1)](https://en.wikipedia.org/wiki/LL_parser) [recu
 
 The evaluator iterates through the list of statements in the `Program` produced by the parser, evaluating one at a time. Expressions are trees of sub-expressions; the evaluator performs a post-order traversal of an expression tree to evaluate it.
 
-The one subtlety concerns how function declarations and calls are evaluated. When a function is declared, it's evaluated to a `ClosureValue`, capturing the current environment at the time of its declaration. The environment is represented as a `Map<Identifier, Option<Value>>` object, containing the values of all declared variables/functions present at a given time; a value of `None` represents a variable that's been declared but not assigned a value, while a value of `Some(val)` represents that `val` has been assigned to that variable. Function calls are represented by `apply()`'ing a `ClosureValue` to an `Array<Value>`, where the array represents the arguments to the function call. This allows functions to be treated as first-class values which can be passed to and returned from other functions, as well as properly representing closures.
+Function calls are evaluated using the `apply()` function. When a function is declared, it's evaluated to a `ClosureValue`, capturing the current environment at the time of its declaration. The environment is represented as a `Map<Identifier, Option<Value>>` object, containing the values of all declared variables/functions present at a given time; a value of `None` represents a variable that's been declared but not assigned a value, while a value of `Some(val)` represents that `val` has been assigned to that variable. Function calls are represented by `apply()`'ing a `ClosureValue` to an `Array<Value>`, where the array represents the arguments to the function call. This allows functions to be treated as first-class values which can be passed to and returned from other functions, as well as properly representing closures.
+
+`printNum()`, `printBool()`, `readNum()`, `readBool()`, and `clock()` are provided as native functions by the interpreter, implemented in TS. The `NativeFunctionValue` type, when `apply()`'d, evaluates arbitrary TS code, then wraps the result (if any) in an appropriate `Value` type to pass it back into the Wheel environment.
