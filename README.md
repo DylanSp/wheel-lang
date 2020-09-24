@@ -17,9 +17,10 @@ The only external dependencies for building and using this language are `node` a
 
 ### Syntax
 
-Programs in Wheel are composed of a block of statements, following a JavaScript-esque syntax. The top-level block must have braces surrounding it. There are six types of statements:
+Programs in Wheel are composed of a block of statements, following a JavaScript-esque syntax. The top-level block must have braces surrounding it. There are eight types of statements:
 
-1. Function declarations, following Javascript function declaration syntax. Example:
+1. Standalone expressions (followed by a semicolon), i.e. `printNum(1);`. Most commonly used for calling functions.
+2. Function declarations, following Javascript function declaration syntax. Example:
 
 ```
 function f(x)
@@ -28,25 +29,36 @@ function f(x)
 }
 ```
 
-2. Return statements:
+3. Return statements:
 
 ```
 return 1;
 ```
 
-3. Variable declarations, using the keyword `let`. This declares a variable for use in this scope; it doesn't initialize it, and the variable must be assigned a value before use in an expression. Example:
+4. Variable declarations, using the keyword `let`. This declares a variable for use in this scope; it doesn't initialize it, and the variable must be assigned a value before use in an expression. Example:
 
 ```
 let x;
 ```
 
-4. Variable assignments. The variable must be declared beforehand. Variables are mutable, and can have different values assigned to them. Example:
+5. Variable assignments. The variable must be declared either beforehand or in the same statement. Variables are mutable, and can have different values assigned to them. Example:
 
 ```
+let x = 0;
 x = x + 1;
+
+let y;
+y = 2;
 ```
 
-5. If statements. Braces around the body are mandatory, as is an `else` block. Example:
+6. Setting a field value on an object. Fields are accessed with a `.`, i.e. `obj.fieldName`; JS's `obj["fieldName"]` syntax is not currently supported. Example:
+
+```
+let obj = {};
+obj.field = 1;
+```
+
+7. If statements. Braces around the body are mandatory, as is an `else` block. Example:
 
 ```
 if (x == 1)
@@ -59,24 +71,9 @@ else
 }
 ```
 
-Note that this means `if {} else if {} else{}` chains are not allowed; instead, they must be nested:
+`if {} else if {} else{}` chains (with an arbitrary number of `else if` blocks) are now allowed, as of v0.2.
 
-```
-if (x == 0)
-{
-}
-else
-{
-  if (x == 1)
-  {
-  }
-  else
-  {
-  }
-}
-```
-
-6. While statements. Braces around the body are mandatory. Example:
+8. While statements. Braces around the body are mandatory. Example:
 
 ```
 while (x < 2)
@@ -86,7 +83,7 @@ while (x < 2)
 }
 ```
 
-Expressions can have number and boolean values, as well as variable references. Supported operators:
+Expressions can have number, boolean, object, and `null` values, as well as variable references. Supported operators:
 
 - Arithmetic: `+`, `-`, `*`, `/`
 - Logical: `&`, `|`, `!` (Note that logical and/or use a single character, not `&&`/`||`)
