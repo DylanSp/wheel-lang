@@ -29,7 +29,7 @@ function f(x)
 }
 ```
 
-3. Return statements:
+3. Return statements (optionally returning a value):
 
 ```
 return 1;
@@ -126,11 +126,13 @@ For input, Wheel has two functions (provided by the interpreter), `readNum()` an
 
 For output, Wheel has two functions (provided by the interpreter), `printNum()` and `printBool()`. `printNum()` takes a number value and prints it to the console; `printBool()` takes a boolean value and prints it to the console. The driver in `src/main.ts` also prints the result returned from a program's top-level, if it exists.
 
+Additionally, Wheel has a function `clock()` that returns the number of milliseconds since the start of the Unix epoch. (Yes, it's just a wrapper for JS's `Date.now()`)
+
 ## Implementation/Architecture Notes
 
 The Wheel interpreter is built as a composition of three modules: scanning/lexing, parsing, and evaluation. [`full_pipeline`](src/full_pipeline.ts) feeds a string input through the three modules, aborting at the first error. [`main`](src/main.ts) acts as the top-level driver, reading a program file into memory, running the pipeline, and reporting the result/errors.
 
-Each of the modules is built around a single central pure function, which either reports an error or produces a type to be consumed by the next module. This design allows for a small API surface, with each function having a single responsibility, no external dependencies, and no side effects. This allows for extensive unit testing; for examples of how each module is used, consult the `test` directory.
+Each of the modules is built around a single central function, which either reports an error or produces a type to be consumed by the next module. `scan()` and `parse()` are pure functions; `evaluate()` may prompt for input or log output to the console. This design allows for a small API surface, with each function having a single responsibility, no external dependencies, and no side effects. This allows for extensive unit testing; for examples of how each module is used, consult the `test` directory.
 
 In addition to the central functions, each module also exports the types required to consume its output. [`types`](src/types.ts) contains types used by multiple modules.
 
@@ -146,4 +148,6 @@ The parser is built as an [LL(1)](https://en.wikipedia.org/wiki/LL_parser) [recu
 
 The evaluator iterates through the list of statements in the `Program` produced by the parser, evaluating one at a time. Expressions are trees of sub-expressions; the evaluator performs a post-order traversal of an expression tree to evaluate it.
 
-The one subtlety concerns how function declarations and calls are evaluated. When a function is declared, it's evaluated to a `ClosureValue`, capturing the current environment at the time of its declaration. The environment is represented as a `Map<Identifier, Option<Value>>` object, containing the values of all declared variables/functions present at a given time; a value of `None` represents a variable that's been declared but not assigned a value, while a value of `Some(val)` represents that `val` has been assigned to that variable. Function calls are represented by `apply()`'ing a `ClosureValue` to an `Array<Value>`, where the array represents the arguments to the function call. This allows functions to be treated as first-class values which can be passed to and returned from other functions, as well as properly representing closures.
+Function calls are evaluated using the `apply()` function. When a function is declared, it's evaluated to a `ClosureValue`, capturing the current environment at the time of its declaration. The environment is represented as a `Map<Identifier, Option<Value>>` object, containing the values of all declared variables/functions present at a given time; a value of `None` represents a variable that's been declared but not assigned a value, while a value of `Some(val)` represents that `val` has been assigned to that variable. Function calls are represented by `apply()`'ing a `ClosureValue` to an `Array<Value>`, where the array represents the arguments to the function call. This allows functions to be treated as first-class values which can be passed to and returned from other functions, as well as properly representing closures.
+
+`printNum()`, `printBool()`, `readNum()`, `readBool()`, and `clock()` are provided as native functions by the interpreter, implemented in TS. The `NativeFunctionValue` type, when `apply()`'d, evaluates arbitrary TS code, then wraps the result (if any) in an appropriate `Value` type to pass it back into the Wheel environment.
