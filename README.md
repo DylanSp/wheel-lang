@@ -101,6 +101,7 @@ Reserved keywords:
 - `while`
 - `true`
 - `false`
+- `null`
 
 For a somewhat more formal specification of the grammar, see `docs/grammar.ne`, which goes over the grammar's structure, using the format of [nearley.js](https://nearley.js.org/); it can be explored by pasting it into the [Nearley Parser Playground](https://omrelli.ug/nearley-playground/). This version of the grammar doesn't include any whitespace, though, so the generated examples will be hard to read.
 
