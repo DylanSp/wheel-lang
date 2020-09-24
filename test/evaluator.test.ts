@@ -3517,7 +3517,7 @@ describe("Evaluator", () => {
         consoleLogSpy.mockRestore();
       });
 
-      it('Given input of "1.2", evalutes { let readResult = readNum(); if (readResult.isValid) { return readResult.value; } else { return 0; } } to 1.2', () => {
+      it('Given input of "1.2", evaluates { let readResult = readNum(); if (readResult.isValid) { return readResult.value; } else { return 0; } } to 1.2', () => {
         // Arrange
         const ast: Program = [
           {
@@ -3591,7 +3591,7 @@ describe("Evaluator", () => {
         promptSpy.mockRestore();
       });
 
-      it('Given input of "notANumber", evalutes { let readResult = readNum(); return readResult.isValid; } to false', () => {
+      it('Given input of "notANumber", evaluates { let readResult = readNum(); return readResult.isValid; } to false', () => {
         // Arrange
         const ast: Program = [
           {
@@ -3623,6 +3623,205 @@ describe("Evaluator", () => {
           },
         ];
         const promptSpy = jest.spyOn(readlineSync, "prompt").mockImplementation(() => "notANumber");
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+
+        // Cleanup
+        promptSpy.mockRestore();
+      });
+
+      it('Given input of "true", evaluates { let readResult = readBool(); if (readResult.isValid) { return readResult.value; } else { return 0; } } to true', () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("readResult"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("readResult"),
+            variableValue: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("readBool"),
+              },
+            },
+          },
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("readResult"),
+              },
+              field: identifierIso.wrap("isValid"),
+            },
+            trueBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "get",
+                  object: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("readResult"),
+                  },
+                  field: identifierIso.wrap("value"),
+                },
+              },
+            ],
+            falseBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 0,
+                },
+              },
+            ],
+          },
+        ];
+        const inputValue = true;
+        const promptSpy = jest.spyOn(readlineSync, "prompt").mockImplementation(() => inputValue.toString());
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(inputValue);
+
+        // Cleanup
+        promptSpy.mockRestore();
+      });
+
+      it('Given input of "false", evaluates { let readResult = readBool(); if (readResult.isValid) { return readResult.value; } else { return 0; } } to false', () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("readResult"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("readResult"),
+            variableValue: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("readBool"),
+              },
+            },
+          },
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("readResult"),
+              },
+              field: identifierIso.wrap("isValid"),
+            },
+            trueBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "get",
+                  object: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("readResult"),
+                  },
+                  field: identifierIso.wrap("value"),
+                },
+              },
+            ],
+            falseBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 0,
+                },
+              },
+            ],
+          },
+        ];
+        const inputValue = false;
+        const promptSpy = jest.spyOn(readlineSync, "prompt").mockImplementation(() => inputValue.toString());
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(inputValue);
+
+        // Cleanup
+        promptSpy.mockRestore();
+      });
+
+      it('Given input of "notABool", evaluates { let readResult = readBool(); return readResult.isValid; } to false', () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("readResult"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("readResult"),
+            variableValue: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("readBool"),
+              },
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("readResult"),
+              },
+              field: identifierIso.wrap("isValid"),
+            },
+          },
+        ];
+        const promptSpy = jest.spyOn(readlineSync, "prompt").mockImplementation(() => "notABool");
 
         // Act
         const evalResult = evaluate(ast);
