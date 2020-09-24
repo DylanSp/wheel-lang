@@ -1,4 +1,4 @@
-# WheelLang
+# WheelLang v0.2
 
 The wheel. I reinvented it.
 
@@ -107,14 +107,24 @@ For a somewhat more formal specification of the grammar, see `docs/grammar.ne`, 
 
 ### Semantics
 
-Generally, Wheel behaves like you'd expect it to. The only types are numbers, booleans, and functions; no strings, no collections, no objects. Wheel is currently dynamically typed; [issue #14](https://github.com/DylanSp/extended-four-function-console/issues/14) covers a possible addition of static typing. A few notes:
+Wheel is dynamically typed, supporting several types of values: numbers, booleans, functions, objects, and `null`. There are no strings and no built-in collection types. A few notes:
 
 - All variables are mutable; there's no `const`.
 - Higher-order functions are supported.
 - The `==` and `/=` operators only operate on two operands of the same type.
 - The `!` operator only operates on booleans.
+- `null` can only be compared to objects (currently; follow [issue #58](https://github.com/DylanSp/wheel-lang/issues/58) for possible revision of this)
+- Wheel objects are comparable to C structs; they're bags of data, nothing more.
+  - Accessing an undeclared field on an object returns null, i.e. `{ return {}.field; }` returns `null`.
+  - Fields do not have to be declared on an object's initial declaration/initialization to be set. `{ let obj = {}; obj.a = 1; }` is a legal program.
+  - Objects can have functions assigned to fields, but these functions are not true object methods, they don't have a built-in `this` reference to the object. However, "methods" can be constructed with some setup; see [`examples/oop.wheel`](examples/oop.wheel), and v0.3 will explore JS-style prototypical objects and inheritance, see [issue #43](https://github.com/DylanSp/wheel-lang/issues/43).
 
-Wheel has no `print`/`log`/`console` statements (currently; follow [issue #18](https://github.com/DylanSp/extended-four-function-console/issues/18) for work on this); the only way to get a value out of a program is by returning it from the program's top level. The driver in `src/main.ts` handles this; it scans, parses, and evaluates a program, printing the returned result if all steps are successful (and the error(s), if not).
+For input, Wheel has two functions (provided by the interpreter), `readNum()` and `readBool()`. Both of these functions display a prompt character, read a string from user input, then attempt to parse it as a number or boolean. If the input parses correctly, the functions return an object with an `isValid` field set to `true` and a `value` field with the parsed value; if the input does not parse, they return an object with an `isValid` field set to `false`.
+
+- For parsing numbers, the interpreter uses JavaScript's `parseFloat()` function; see its documentation for valid input formats.
+- For parsing booleans, the interpreter recognizes `"true"` and `"false"` (with that exact lack of capitalization) as valid inputs; all other strings fail to parse.
+
+For output, Wheel has two functions (provided by the interpreter), `printNum()` and `printBool()`. `printNum()` takes a number value and prints it to the console; `printBool()` takes a boolean value and prints it to the console. The driver in `src/main.ts` also prints the result returned from a program's top-level, if it exists.
 
 ## Implementation/Architecture Notes
 
