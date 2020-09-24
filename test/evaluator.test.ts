@@ -1,5 +1,6 @@
 import "jest";
 import { isRight, isLeft } from "fp-ts/lib/Either";
+import readlineSync from "readline-sync";
 import { Program } from "../src/parser";
 import { evaluate } from "../src/evaluator";
 import { identifierIso } from "../src/types";
@@ -3514,6 +3515,131 @@ describe("Evaluator", () => {
 
         // Cleanup
         consoleLogSpy.mockRestore();
+      });
+
+      it('Given input of "1.2", evalutes { let readResult = readNum(); if (readResult.isValid) { return readResult.value; } else { return 0; } } to 1.2', () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("readResult"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("readResult"),
+            variableValue: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("readNum"),
+              },
+            },
+          },
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("readResult"),
+              },
+              field: identifierIso.wrap("isValid"),
+            },
+            trueBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "get",
+                  object: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("readResult"),
+                  },
+                  field: identifierIso.wrap("value"),
+                },
+              },
+            ],
+            falseBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 0,
+                },
+              },
+            ],
+          },
+        ];
+        const inputValue = 1.2;
+        const promptSpy = jest.spyOn(readlineSync, "prompt").mockImplementation(() => inputValue.toString());
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(inputValue);
+
+        // Cleanup
+        promptSpy.mockRestore();
+      });
+
+      it('Given input of "notANumber", evalutes { let readResult = readNum(); return readResult.isValid; } to false', () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("readResult"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("readResult"),
+            variableValue: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("readNum"),
+              },
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("readResult"),
+              },
+              field: identifierIso.wrap("isValid"),
+            },
+          },
+        ];
+        const promptSpy = jest.spyOn(readlineSync, "prompt").mockImplementation(() => "notANumber");
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+
+        // Cleanup
+        promptSpy.mockRestore();
       });
     });
 
