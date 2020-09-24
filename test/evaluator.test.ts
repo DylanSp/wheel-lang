@@ -1,12 +1,11 @@
 import "jest";
 import { isRight, isLeft } from "fp-ts/lib/Either";
+import readlineSync from "readline-sync";
 import { Program } from "../src/parser";
 import { evaluate } from "../src/evaluator";
 import { identifierIso } from "../src/types";
 
 describe("Evaluator", () => {
-  // TODO mock native functions
-
   describe("Successful evaluations", () => {
     describe("Simple programs with no functions or variables", () => {
       it("Evaluates { return 1; } to 1 (evaluating numeric literals)", () => {
@@ -977,6 +976,48 @@ describe("Evaluator", () => {
         expect(evalResult.right.isTrue).toBe(true);
       });
 
+      it("Evaluates { return { a: 1 } == null; } to false (evaluating equals operator with object and null", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                ],
+              },
+              rightOperand: {
+                expressionKind: "nullLit",
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+      });
+
       it("Evaluates { return; } to null (evaluating top-level empty returns)", () => {
         // Arrange
         const ast: Program = [
@@ -1587,6 +1628,9 @@ describe("Evaluator", () => {
             },
           },
         ];
+        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
+          /* intentional no-op */
+        });
 
         // Act
         const evalResult = evaluate(ast);
@@ -1601,6 +1645,9 @@ describe("Evaluator", () => {
         }
 
         expect(evalResult.right.value).toBe(2);
+
+        // Cleanup
+        consoleLogSpy.mockRestore();
       });
 
       it("Evaluates { function f() { printNum(3); } f(); return 4; } to 4 (Evaluates programs with function calls with no explicit return)", () => {
@@ -1648,6 +1695,9 @@ describe("Evaluator", () => {
             },
           },
         ];
+        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
+          /* intentional no-op */
+        });
 
         // Act
         const evalResult = evaluate(ast);
@@ -1662,6 +1712,9 @@ describe("Evaluator", () => {
         }
 
         expect(evalResult.right.value).toBe(4);
+
+        // Cleanup
+        consoleLogSpy.mockRestore();
       });
     });
 
@@ -2978,6 +3031,71 @@ describe("Evaluator", () => {
         expect(evalResult.right.isTrue).toBe(true);
       });
 
+      it("Evaluates { return { a: 1, b: 2} == { a: 1, c: 2 }; } to false (objects with same number of fields but different names are nonequal)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                  {
+                    fieldName: identifierIso.wrap("b"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 2,
+                    },
+                  },
+                ],
+              },
+              rightOperand: {
+                expressionKind: "objectLit",
+                fields: [
+                  {
+                    fieldName: identifierIso.wrap("a"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 1,
+                    },
+                  },
+                  {
+                    fieldName: identifierIso.wrap("c"),
+                    fieldValue: {
+                      expressionKind: "numberLit",
+                      value: 2,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+      });
+
       it("Evaluates { return {} /= {}; } to false (empty objects are equal to each other)", () => {
         // Arrange
         const ast: Program = [
@@ -3279,6 +3397,448 @@ describe("Evaluator", () => {
         }
 
         expect(evalResult.right.isTrue).toBe(false);
+      });
+    });
+
+    describe("Native functions", () => {
+      it("Evaluates { return clock(); } to the current time as a number using Date.now()", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("clock"),
+              },
+            },
+          },
+        ];
+
+        jest.useFakeTimers("modern");
+        const time = 5;
+        jest.setSystemTime(time);
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(time);
+
+        // Cleanup
+        jest.useRealTimers();
+      });
+
+      it('Prints "1" with console.log when evaluating { printNum(1); }', () => {
+        // Arrange
+        const num = 1;
+        const ast: Program = [
+          {
+            statementKind: "expression",
+            expression: {
+              expressionKind: "funcCall",
+              args: [
+                {
+                  expressionKind: "numberLit",
+                  value: num,
+                },
+              ],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("printNum"),
+              },
+            },
+          },
+        ];
+        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
+          /* intentional no-op */
+        });
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(consoleLogSpy).toBeCalledWith(num);
+
+        // Cleanup
+        consoleLogSpy.mockRestore();
+      });
+
+      it('Prints "true" with console.log when evaluating { printBool(true); }', () => {
+        // Arrange
+        const bool = true;
+        const ast: Program = [
+          {
+            statementKind: "expression",
+            expression: {
+              expressionKind: "funcCall",
+              args: [
+                {
+                  expressionKind: "booleanLit",
+                  isTrue: bool,
+                },
+              ],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("printBool"),
+              },
+            },
+          },
+        ];
+        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
+          /* intentional no-op */
+        });
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(consoleLogSpy).toBeCalledWith(bool);
+
+        // Cleanup
+        consoleLogSpy.mockRestore();
+      });
+
+      it('Given input of "1.2", evaluates { let readResult = readNum(); if (readResult.isValid) { return readResult.value; } else { return 0; } } to 1.2', () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("readResult"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("readResult"),
+            variableValue: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("readNum"),
+              },
+            },
+          },
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("readResult"),
+              },
+              field: identifierIso.wrap("isValid"),
+            },
+            trueBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "get",
+                  object: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("readResult"),
+                  },
+                  field: identifierIso.wrap("value"),
+                },
+              },
+            ],
+            falseBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 0,
+                },
+              },
+            ],
+          },
+        ];
+        const inputValue = 1.2;
+        const promptSpy = jest.spyOn(readlineSync, "prompt").mockImplementation(() => inputValue.toString());
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(inputValue);
+
+        // Cleanup
+        promptSpy.mockRestore();
+      });
+
+      it('Given input of "notANumber", evaluates { let readResult = readNum(); return readResult.isValid; } to false', () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("readResult"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("readResult"),
+            variableValue: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("readNum"),
+              },
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("readResult"),
+              },
+              field: identifierIso.wrap("isValid"),
+            },
+          },
+        ];
+        const promptSpy = jest.spyOn(readlineSync, "prompt").mockImplementation(() => "notANumber");
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+
+        // Cleanup
+        promptSpy.mockRestore();
+      });
+
+      it('Given input of "true", evaluates { let readResult = readBool(); if (readResult.isValid) { return readResult.value; } else { return 0; } } to true', () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("readResult"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("readResult"),
+            variableValue: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("readBool"),
+              },
+            },
+          },
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("readResult"),
+              },
+              field: identifierIso.wrap("isValid"),
+            },
+            trueBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "get",
+                  object: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("readResult"),
+                  },
+                  field: identifierIso.wrap("value"),
+                },
+              },
+            ],
+            falseBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 0,
+                },
+              },
+            ],
+          },
+        ];
+        const inputValue = true;
+        const promptSpy = jest.spyOn(readlineSync, "prompt").mockImplementation(() => inputValue.toString());
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(inputValue);
+
+        // Cleanup
+        promptSpy.mockRestore();
+      });
+
+      it('Given input of "false", evaluates { let readResult = readBool(); if (readResult.isValid) { return readResult.value; } else { return 0; } } to false', () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("readResult"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("readResult"),
+            variableValue: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("readBool"),
+              },
+            },
+          },
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("readResult"),
+              },
+              field: identifierIso.wrap("isValid"),
+            },
+            trueBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "get",
+                  object: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("readResult"),
+                  },
+                  field: identifierIso.wrap("value"),
+                },
+              },
+            ],
+            falseBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 0,
+                },
+              },
+            ],
+          },
+        ];
+        const inputValue = false;
+        const promptSpy = jest.spyOn(readlineSync, "prompt").mockImplementation(() => inputValue.toString());
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(inputValue);
+
+        // Cleanup
+        promptSpy.mockRestore();
+      });
+
+      it('Given input of "notABool", evaluates { let readResult = readBool(); return readResult.isValid; } to false', () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("readResult"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("readResult"),
+            variableValue: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("readBool"),
+              },
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("readResult"),
+              },
+              field: identifierIso.wrap("isValid"),
+            },
+          },
+        ];
+        const promptSpy = jest.spyOn(readlineSync, "prompt").mockImplementation(() => "notABool");
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+
+        // Cleanup
+        promptSpy.mockRestore();
       });
     });
 
@@ -3735,202 +4295,392 @@ describe("Evaluator", () => {
   });
 
   describe("Failed evaluations", () => {
-    it("Recognizes a NotInScope error for { return x; }", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "variableRef",
-            variableName: identifierIso.wrap("x"),
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "notInScope") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
-      }
-
-      expect(evalResult.left.outOfScopeIdentifier).toBe("x");
-    });
-
-    it("Recognizes a NotInScope error for { x = 1; } (undeclared variable)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "assignment",
-          variableName: identifierIso.wrap("x"),
-          variableValue: {
-            expressionKind: "numberLit",
-            value: 1,
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "notInScope") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
-      }
-
-      expect(evalResult.left.outOfScopeIdentifier).toBe("x");
-    });
-
-    it("Recognizes a NotInScope error for { if (true) { let x; x = 1; } else {} return x; } (variables declared in an if statement's true block's scope don't exist in outer scopes)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "if",
-          condition: {
-            expressionKind: "booleanLit",
-            isTrue: true,
-          },
-          trueBody: [
-            {
-              statementKind: "varDecl",
-              variableName: identifierIso.wrap("x"),
-            },
-            {
-              statementKind: "assignment",
-              variableName: identifierIso.wrap("x"),
-              variableValue: {
-                expressionKind: "numberLit",
-                value: 1,
-              },
-            },
-          ],
-          falseBody: [],
-        },
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "variableRef",
-            variableName: identifierIso.wrap("x"),
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "notInScope") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
-      }
-
-      expect(evalResult.left.outOfScopeIdentifier).toBe("x");
-    });
-
-    it("Recognizes a NotInScope error for { if (false) {} else { let x; x = 1; } return x; } (variables declared in an if statement's false block's scope don't exist in outer scopes)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "if",
-          condition: {
-            expressionKind: "booleanLit",
-            isTrue: false,
-          },
-          trueBody: [],
-          falseBody: [
-            {
-              statementKind: "varDecl",
-              variableName: identifierIso.wrap("x"),
-            },
-            {
-              statementKind: "assignment",
-              variableName: identifierIso.wrap("x"),
-              variableValue: {
-                expressionKind: "numberLit",
-                value: 1,
-              },
-            },
-          ],
-        },
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "variableRef",
-            variableName: identifierIso.wrap("x"),
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "notInScope") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
-      }
-
-      expect(evalResult.left.outOfScopeIdentifier).toBe("x");
-    });
-
-    it("Recognizes a NotInScope error for { let x; x = 0; while (x < 1) { let y; x = x + 1; } return y; } (variables declared in a while statement's block's scope don't exist in outer scopes)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "varDecl",
-          variableName: identifierIso.wrap("x"),
-        },
-        {
-          statementKind: "assignment",
-          variableName: identifierIso.wrap("x"),
-          variableValue: {
-            expressionKind: "numberLit",
-            value: 0,
-          },
-        },
-        {
-          statementKind: "while",
-          condition: {
-            expressionKind: "binOp",
-            binOp: "lessThan",
-            leftOperand: {
+    describe("NotInScope errors", () => {
+      it("Recognizes a NotInScope error for { return x; }", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
               expressionKind: "variableRef",
               variableName: identifierIso.wrap("x"),
             },
-            rightOperand: {
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "notInScope") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
+        }
+
+        expect(evalResult.left.outOfScopeIdentifier).toBe("x");
+      });
+
+      it("Recognizes a NotInScope error for { x = 1; } (undeclared variable)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
               expressionKind: "numberLit",
               value: 1,
             },
           },
-          body: [
-            {
-              statementKind: "varDecl",
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "notInScope") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
+        }
+
+        expect(evalResult.left.outOfScopeIdentifier).toBe("x");
+      });
+
+      it("Recognizes a NotInScope error for { if (true) { let x; x = 1; } else {} return x; } (variables declared in an if statement's true block's scope don't exist in outer scopes)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "booleanLit",
+              isTrue: true,
+            },
+            trueBody: [
+              {
+                statementKind: "varDecl",
+                variableName: identifierIso.wrap("x"),
+              },
+              {
+                statementKind: "assignment",
+                variableName: identifierIso.wrap("x"),
+                variableValue: {
+                  expressionKind: "numberLit",
+                  value: 1,
+                },
+              },
+            ],
+            falseBody: [],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("x"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "notInScope") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
+        }
+
+        expect(evalResult.left.outOfScopeIdentifier).toBe("x");
+      });
+
+      it("Recognizes a NotInScope error for { if (false) {} else { let x; x = 1; } return x; } (variables declared in an if statement's false block's scope don't exist in outer scopes)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "booleanLit",
+              isTrue: false,
+            },
+            trueBody: [],
+            falseBody: [
+              {
+                statementKind: "varDecl",
+                variableName: identifierIso.wrap("x"),
+              },
+              {
+                statementKind: "assignment",
+                variableName: identifierIso.wrap("x"),
+                variableValue: {
+                  expressionKind: "numberLit",
+                  value: 1,
+                },
+              },
+            ],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("x"),
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "notInScope") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
+        }
+
+        expect(evalResult.left.outOfScopeIdentifier).toBe("x");
+      });
+
+      it("Recognizes a NotInScope error for { let x; x = 0; while (x < 1) { let y; x = x + 1; } return y; } (variables declared in a while statement's block's scope don't exist in outer scopes)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "numberLit",
+              value: 0,
+            },
+          },
+          {
+            statementKind: "while",
+            condition: {
+              expressionKind: "binOp",
+              binOp: "lessThan",
+              leftOperand: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("x"),
+              },
+              rightOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+            },
+            body: [
+              {
+                statementKind: "varDecl",
+                variableName: identifierIso.wrap("y"),
+              },
+              {
+                statementKind: "assignment",
+                variableName: identifierIso.wrap("x"),
+                variableValue: {
+                  expressionKind: "binOp",
+                  binOp: "add",
+                  leftOperand: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("x"),
+                  },
+                  rightOperand: {
+                    expressionKind: "numberLit",
+                    value: 1,
+                  },
+                },
+              },
+            ],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "variableRef",
               variableName: identifierIso.wrap("y"),
             },
-            {
-              statementKind: "assignment",
-              variableName: identifierIso.wrap("x"),
-              variableValue: {
-                expressionKind: "binOp",
-                binOp: "add",
-                leftOperand: {
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "notInScope") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
+        }
+
+        expect(evalResult.left.outOfScopeIdentifier).toBe("y");
+      });
+
+      it("Recognizes a NotInScope error for { function f() { let x; return 1; } return f() + x; } (variables declared local to a function don't exist in outer scopes)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: identifierIso.wrap("f"),
+            argNames: [],
+            body: [
+              {
+                statementKind: "varDecl",
+                variableName: identifierIso.wrap("x"),
+              },
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 1,
+                },
+              },
+            ],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "add",
+              leftOperand: {
+                expressionKind: "funcCall",
+                callee: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("f"),
+                },
+                args: [],
+              },
+              rightOperand: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("x"),
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "notInScope") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
+        }
+
+        expect(evalResult.left.outOfScopeIdentifier).toBe("x");
+      });
+
+      it("Recognizes a NotInScope error for { function f() { return x; } return f(); }", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: identifierIso.wrap("f"),
+            argNames: [],
+            body: [
+              {
+                statementKind: "return",
+                returnedValue: {
                   expressionKind: "variableRef",
                   variableName: identifierIso.wrap("x"),
+                },
+              },
+            ],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("f"),
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "notInScope") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
+        }
+
+        expect(evalResult.left.outOfScopeIdentifier).toBe("x");
+      });
+    });
+
+    describe("NotFunction errors", () => {
+      it("Recognizes a NotFunction error for { return 1(); }", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "notFunction") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotFunction error`);
+        }
+
+        expect(evalResult.left.nonFunctionType).toBe("number");
+      });
+    });
+
+    describe("TypeMismatch errors", () => {
+      test.each([["add" as const], ["subtract" as const], ["multiply" as const], ["divide" as const]])(
+        "Recognizes a TypeMismatch error for non-numbers on LHS of %s operations",
+        (binOp) => {
+          // Arrange
+          const ast: Program = [
+            {
+              statementKind: "funcDecl",
+              functionName: identifierIso.wrap("f"),
+              argNames: [],
+              body: [],
+            },
+            {
+              statementKind: "return",
+              returnedValue: {
+                expressionKind: "binOp",
+                binOp,
+                leftOperand: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("f"),
                 },
                 rightOperand: {
                   expressionKind: "numberLit",
@@ -3938,189 +4688,1014 @@ describe("Evaluator", () => {
                 },
               },
             },
-          ],
+          ];
+
+          // Act
+          const evalResult = evaluate(ast);
+
+          // Assert
+          if (!isLeft(evalResult)) {
+            throw new Error("Evaluation succeeded, should have failed");
+          }
+
+          if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+            throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+          }
+
+          expect(evalResult.left.expectedTypes).toEqual(["number"]);
+          expect(evalResult.left.actualType).toBe("closure");
         },
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "variableRef",
-            variableName: identifierIso.wrap("y"),
-          },
-        },
-      ];
+      );
 
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "notInScope") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
-      }
-
-      expect(evalResult.left.outOfScopeIdentifier).toBe("y");
-    });
-
-    it("Recognizes a NotInScope error for { function f() { let x; return 1; } return f() + x; } (variables declared local to a function don't exist in outer scopes)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "funcDecl",
-          functionName: identifierIso.wrap("f"),
-          argNames: [],
-          body: [
+      test.each([["add" as const], ["subtract" as const], ["multiply" as const], ["divide" as const]])(
+        "Recognizes a TypeMismatch error for non-numbers on RHS of %s operations",
+        (binOp) => {
+          // Arrange
+          const ast: Program = [
             {
-              statementKind: "varDecl",
-              variableName: identifierIso.wrap("x"),
+              statementKind: "funcDecl",
+              functionName: identifierIso.wrap("f"),
+              argNames: [],
+              body: [],
             },
             {
               statementKind: "return",
               returnedValue: {
+                expressionKind: "binOp",
+                binOp,
+                leftOperand: {
+                  expressionKind: "numberLit",
+                  value: 1,
+                },
+                rightOperand: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("f"),
+                },
+              },
+            },
+          ];
+
+          // Act
+          const evalResult = evaluate(ast);
+
+          // Assert
+          if (!isLeft(evalResult)) {
+            throw new Error("Evaluation succeeded, should have failed");
+          }
+
+          if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+            throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+          }
+
+          expect(evalResult.left.expectedTypes).toEqual(["number"]);
+          expect(evalResult.left.actualType).toBe("closure");
+        },
+      );
+
+      it("Recognizes a TypeMismatch error for { if(1) {} else {} } (non-boolean in if statement's condition", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+            trueBody: [],
+            falseBody: [],
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
+      });
+
+      it("Recognizes a TypeMismatch error for { while(2) {} } (non-boolean in while statement's condition", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "while",
+            condition: {
+              expressionKind: "numberLit",
+              value: 2,
+            },
+            body: [],
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
+      });
+
+      test.each([
+        ["lessThan" as const],
+        ["greaterThan" as const],
+        ["lessThanEquals" as const],
+        ["greaterThanEquals" as const],
+      ])("Recognizes a TypeMismatch error for non-numbers in %s relations", (binOp) => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp,
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+              rightOperand: {
+                expressionKind: "booleanLit",
+                isTrue: true,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toEqual(["number"]);
+      });
+
+      it("Recognizes a TypeMismatch error for { return true & 1; } (non-boolean in logical and)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "and",
+              leftOperand: {
+                expressionKind: "booleanLit",
+                isTrue: true,
+              },
+              rightOperand: {
                 expressionKind: "numberLit",
                 value: 1,
               },
             },
-          ],
-        },
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "binOp",
-            binOp: "add",
-            leftOperand: {
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
+      });
+
+      it("Recognizes a TypeMismatch error for { return false | 2; } (non-boolean in logical or)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "or",
+              leftOperand: {
+                expressionKind: "booleanLit",
+                isTrue: false,
+              },
+              rightOperand: {
+                expressionKind: "numberLit",
+                value: 2,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
+      });
+
+      it("Recognizes a TypeMismatch error for { return !3; } (non-boolean in logical not)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "unaryOp",
+              unaryOp: "not",
+              operand: {
+                expressionKind: "numberLit",
+                value: 3,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
+      });
+
+      it("Recognizes a TypeMismatch error for { return -true; } (non-number in unary negation)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "unaryOp",
+              unaryOp: "negative",
+              operand: {
+                expressionKind: "booleanLit",
+                isTrue: true,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toEqual(["number"]);
+      });
+
+      it("Recognizes a TypeMismatch error for { return 1 == true; } (mismatched types in equals expression)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+              rightOperand: {
+                expressionKind: "booleanLit",
+                isTrue: true,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toEqual(["number"]);
+      });
+
+      it("Recognizes a TypeMismatch error for { return true == 1; } (mismatched types in equals expression)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "booleanLit",
+                isTrue: true,
+              },
+              rightOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
+      });
+
+      it("Recognizes a TypeMismatch error for { return 1 /= true; } (mismatched types in not-equal expression)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "notEqual",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+              rightOperand: {
+                expressionKind: "booleanLit",
+                isTrue: true,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toEqual(["number"]);
+      });
+
+      it("Recognizes a TypeMismatch error for { return true /= 1; } (mismatched types in not-equal expression)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "notEqual",
+              leftOperand: {
+                expressionKind: "booleanLit",
+                isTrue: true,
+              },
+              rightOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
+      });
+
+      it("Recognizes a TypeMismatch error for { function f() {} return f == 1; } (closure on LHS of equals expression)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: identifierIso.wrap("f"),
+            argNames: [],
+            body: [],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("f"),
+              },
+              rightOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toContain("boolean");
+        expect(evalResult.left.expectedTypes).toContain("number");
+        expect(evalResult.left.actualType).toBe("closure");
+      });
+
+      it("Recognizes a TypeMismatch error for { function f() {} return 1 == f; } (closure on RHS of equals expression)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: identifierIso.wrap("f"),
+            argNames: [],
+            body: [],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+              rightOperand: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("f"),
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toContain("boolean");
+        expect(evalResult.left.expectedTypes).toContain("number");
+        expect(evalResult.left.actualType).toBe("closure");
+      });
+
+      it("Recognizes a TypeMismatch error for { function f() {} return f /= 1; } (closure on LHS of not-equal expression)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: identifierIso.wrap("f"),
+            argNames: [],
+            body: [],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "notEqual",
+              leftOperand: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("f"),
+              },
+              rightOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toContain("boolean");
+        expect(evalResult.left.expectedTypes).toContain("number");
+        expect(evalResult.left.actualType).toBe("closure");
+      });
+
+      it("Recognizes a TypeMismatch error for { function f() {} return 1 /= f; } (closure on RHS of not-equal expression)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: identifierIso.wrap("f"),
+            argNames: [],
+            body: [],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "notEqual",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+              rightOperand: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("f"),
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toContain("boolean");
+        expect(evalResult.left.expectedTypes).toContain("number");
+        expect(evalResult.left.actualType).toBe("closure");
+      });
+
+      it("Recognizes a TypeMismatch error for { return clock == 1; } (native function on LHS of equals expression)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("clock"),
+              },
+              rightOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toContain("boolean");
+        expect(evalResult.left.expectedTypes).toContain("number");
+        expect(evalResult.left.actualType).toBe("nativeFunc");
+      });
+
+      it("Recognizes a TypeMismatch error for { return 1 == clock; } (native function on RHS of equals expression)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+              rightOperand: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("clock"),
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toContain("boolean");
+        expect(evalResult.left.expectedTypes).toContain("number");
+        expect(evalResult.left.actualType).toBe("nativeFunc");
+      });
+
+      it("Recognizes a TypeMismatch error for { return clock /= 1; } (native function on LHS of not-equal expression)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "notEqual",
+              leftOperand: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("clock"),
+              },
+              rightOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toContain("boolean");
+        expect(evalResult.left.expectedTypes).toContain("number");
+        expect(evalResult.left.actualType).toBe("nativeFunc");
+      });
+
+      it("Recognizes a TypeMismatch error for { return 1 /= clock; } (native function on RHS of not-equal expression)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "notEqual",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+              rightOperand: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("clock"),
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toContain("boolean");
+        expect(evalResult.left.expectedTypes).toContain("number");
+        expect(evalResult.left.actualType).toBe("nativeFunc");
+      });
+
+      it("Recognizes a TypeMismatch error for { return 1 == null; } (comparison of null on LHS to non-object)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+              rightOperand: {
+                expressionKind: "nullLit",
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toContain("object");
+        expect(evalResult.left.expectedTypes).toContain("null");
+        expect(evalResult.left.actualType).toBe("number");
+      });
+
+      it("Recognizes a TypeMismatch error for { return null == 1; } (comparison of null on RHS to non-object)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "nullLit",
+              },
+              rightOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        }
+
+        expect(evalResult.left.expectedTypes).toContain("object");
+        expect(evalResult.left.expectedTypes).toContain("null");
+        expect(evalResult.left.actualType).toBe("number");
+      });
+    });
+
+    describe("ArityMismatch errors", () => {
+      it("Recognizes an arity mismatch (too few arguments) for { function f(x) { return x; } return f(); }", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: identifierIso.wrap("f"),
+            argNames: [identifierIso.wrap("x")],
+            body: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("x"),
+                },
+              },
+            ],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
               expressionKind: "funcCall",
+              args: [],
               callee: {
                 expressionKind: "variableRef",
                 variableName: identifierIso.wrap("f"),
               },
-              args: [],
             },
-            rightOperand: {
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "arityMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of ArityMismatch error`);
+        }
+
+        expect(evalResult.left.expectedNumArgs).toBe(1);
+        expect(evalResult.left.actualNumArgs).toBe(0);
+      });
+
+      it("Recognizes an arity mismatch (too many arguments) for { function f() { return 1; } return f(2); }", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "funcDecl",
+            functionName: identifierIso.wrap("f"),
+            argNames: [],
+            body: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 1,
+                },
+              },
+            ],
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "funcCall",
+              args: [
+                {
+                  expressionKind: "numberLit",
+                  value: 2,
+                },
+              ],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("f"),
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "arityMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of ArityMismatch error`);
+        }
+
+        expect(evalResult.left.expectedNumArgs).toBe(0);
+        expect(evalResult.left.actualNumArgs).toBe(1);
+      });
+
+      it("Recognizes an arity mismatch (too many arguments to native function) for { return clock(1); }", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "funcCall",
+              args: [
+                {
+                  expressionKind: "numberLit",
+                  value: 1,
+                },
+              ],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("clock"),
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluate(ast);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "arityMismatch") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of ArityMismatch error`);
+        }
+
+        expect(evalResult.left.expectedNumArgs).toBe(0);
+        expect(evalResult.left.actualNumArgs).toBe(1);
+      });
+    });
+
+    describe("UnassignedVariable errors", () => {
+      it("Recognizes an UnassignedVariable error for { let x; return x; } (variable used before assigning it a value)", () => {
+        // Arrange
+        const ast: Program = [
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("x"),
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
               expressionKind: "variableRef",
               variableName: identifierIso.wrap("x"),
             },
           },
-        },
-      ];
+        ];
 
-      // Act
-      const evalResult = evaluate(ast);
+        // Act
+        const evalResult = evaluate(ast);
 
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
 
-      if (evalResult.left.runtimeErrorKind !== "notInScope") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
-      }
+        if (evalResult.left.runtimeErrorKind !== "unassignedVariable") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of ArityMismatch error`);
+        }
 
-      expect(evalResult.left.outOfScopeIdentifier).toBe("x");
+        expect(evalResult.left.unassignedIdentifier).toBe("x");
+      });
     });
 
-    it("Recognizes a NotInScope error for { function f() { return x; } return f(); }", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "funcDecl",
-          functionName: identifierIso.wrap("f"),
-          argNames: [],
-          body: [
-            {
-              statementKind: "return",
-              returnedValue: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("x"),
-              },
-            },
-          ],
-        },
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "funcCall",
-            args: [],
-            callee: {
-              expressionKind: "variableRef",
-              variableName: identifierIso.wrap("f"),
-            },
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "notInScope") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
-      }
-
-      expect(evalResult.left.outOfScopeIdentifier).toBe("x");
-    });
-
-    it("Recognizes a NotFunction error for { return 1(); }", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "funcCall",
-            args: [],
-            callee: {
-              expressionKind: "numberLit",
-              value: 1,
-            },
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "notFunction") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotFunction error`);
-      }
-
-      expect(evalResult.left.nonFunctionType).toBe("number");
-    });
-
-    test.each([["add" as const], ["subtract" as const], ["multiply" as const], ["divide" as const]])(
-      "Recognizes a TypeMismatch error for non-numbers on LHS of %s operations",
-      (binOp) => {
+    describe("NotObject errors", () => {
+      it("Recognizes a NotObject error for { return 1.field; } (attempting to call getter on non-object)", () => {
         // Arrange
         const ast: Program = [
           {
-            statementKind: "funcDecl",
-            functionName: identifierIso.wrap("f"),
-            argNames: [],
-            body: [],
-          },
-          {
             statementKind: "return",
             returnedValue: {
-              expressionKind: "binOp",
-              binOp,
-              leftOperand: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("f"),
-              },
-              rightOperand: {
+              expressionKind: "get",
+              object: {
                 expressionKind: "numberLit",
                 value: 1,
               },
+              field: identifierIso.wrap("field"),
             },
           },
         ];
@@ -4133,875 +5708,44 @@ describe("Evaluator", () => {
           throw new Error("Evaluation succeeded, should have failed");
         }
 
-        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
+        if (evalResult.left.runtimeErrorKind !== "notObject") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotObject error`);
         }
 
-        expect(evalResult.left.expectedTypes).toEqual(["number"]);
-        expect(evalResult.left.actualType).toBe("closure");
-      },
-    );
+        expect(evalResult.left.nonObjectType).toBe("number");
+      });
 
-    test.each([["add" as const], ["subtract" as const], ["multiply" as const], ["divide" as const]])(
-      "Recognizes a TypeMismatch error for non-numbers on RHS of %s operations",
-      (binOp) => {
+      it("Recognizes a NotObject error for { 1.field = 2; } (attempting to call setter on non-object)", () => {
         // Arrange
         const ast: Program = [
           {
-            statementKind: "funcDecl",
-            functionName: identifierIso.wrap("f"),
-            argNames: [],
-            body: [],
-          },
-          {
-            statementKind: "return",
-            returnedValue: {
-              expressionKind: "binOp",
-              binOp,
-              leftOperand: {
-                expressionKind: "numberLit",
-                value: 1,
-              },
-              rightOperand: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("f"),
-              },
-            },
-          },
-        ];
-
-        // Act
-        const evalResult = evaluate(ast);
-
-        // Assert
-        if (!isLeft(evalResult)) {
-          throw new Error("Evaluation succeeded, should have failed");
-        }
-
-        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-        }
-
-        expect(evalResult.left.expectedTypes).toEqual(["number"]);
-        expect(evalResult.left.actualType).toBe("closure");
-      },
-    );
-
-    it("Recognizes a TypeMismatch error for { if(1) {} else {} } (non-boolean in if statement's condition", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "if",
-          condition: {
-            expressionKind: "numberLit",
-            value: 1,
-          },
-          trueBody: [],
-          falseBody: [],
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-      }
-
-      expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
-    });
-
-    it("Recognizes a TypeMismatch error for { while(2) {} } (non-boolean in while statement's condition", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "while",
-          condition: {
-            expressionKind: "numberLit",
-            value: 2,
-          },
-          body: [],
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-      }
-
-      expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
-    });
-
-    test.each([
-      ["lessThan" as const],
-      ["greaterThan" as const],
-      ["lessThanEquals" as const],
-      ["greaterThanEquals" as const],
-    ])("Recognizes a TypeMismatch error for non-numbers in %s relations", (binOp) => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "binOp",
-            binOp,
-            leftOperand: {
+            statementKind: "set",
+            object: {
               expressionKind: "numberLit",
               value: 1,
             },
-            rightOperand: {
-              expressionKind: "booleanLit",
-              isTrue: true,
-            },
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-      }
-
-      expect(evalResult.left.expectedTypes).toEqual(["number"]);
-    });
-
-    it("Recognizes a TypeMismatch error for { return true & 1; } (non-boolean in logical and)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "binOp",
-            binOp: "and",
-            leftOperand: {
-              expressionKind: "booleanLit",
-              isTrue: true,
-            },
-            rightOperand: {
-              expressionKind: "numberLit",
-              value: 1,
-            },
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-      }
-
-      expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
-    });
-
-    it("Recognizes a TypeMismatch error for { return false | 2; } (non-boolean in logical or)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "binOp",
-            binOp: "or",
-            leftOperand: {
-              expressionKind: "booleanLit",
-              isTrue: false,
-            },
-            rightOperand: {
+            field: identifierIso.wrap("field"),
+            value: {
               expressionKind: "numberLit",
               value: 2,
             },
           },
-        },
-      ];
+        ];
 
-      // Act
-      const evalResult = evaluate(ast);
+        // Act
+        const evalResult = evaluate(ast);
 
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
 
-      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-      }
+        if (evalResult.left.runtimeErrorKind !== "notObject") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotObject error`);
+        }
 
-      expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
-    });
-
-    it("Recognizes a TypeMismatch error for { return !3; } (non-boolean in logical not)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "unaryOp",
-            unaryOp: "not",
-            operand: {
-              expressionKind: "numberLit",
-              value: 3,
-            },
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-      }
-
-      expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
-    });
-
-    it("Recognizes a TypeMismatch error for { return -true; } (non-number in unary negation)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "unaryOp",
-            unaryOp: "negative",
-            operand: {
-              expressionKind: "booleanLit",
-              isTrue: true,
-            },
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-      }
-
-      expect(evalResult.left.expectedTypes).toEqual(["number"]);
-    });
-
-    it("Recognizes a TypeMismatch error for { return 1 == true; } (mismatched types in equals expression)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "binOp",
-            binOp: "equals",
-            leftOperand: {
-              expressionKind: "numberLit",
-              value: 1,
-            },
-            rightOperand: {
-              expressionKind: "booleanLit",
-              isTrue: true,
-            },
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-      }
-
-      expect(evalResult.left.expectedTypes).toEqual(["number"]);
-    });
-
-    it("Recognizes a TypeMismatch error for { return true == 1; } (mismatched types in equals expression)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "binOp",
-            binOp: "equals",
-            leftOperand: {
-              expressionKind: "booleanLit",
-              isTrue: true,
-            },
-            rightOperand: {
-              expressionKind: "numberLit",
-              value: 1,
-            },
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-      }
-
-      expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
-    });
-
-    it("Recognizes a TypeMismatch error for { return 1 /= true; } (mismatched types in not-equal expression)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "binOp",
-            binOp: "notEqual",
-            leftOperand: {
-              expressionKind: "numberLit",
-              value: 1,
-            },
-            rightOperand: {
-              expressionKind: "booleanLit",
-              isTrue: true,
-            },
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-      }
-
-      expect(evalResult.left.expectedTypes).toEqual(["number"]);
-    });
-
-    it("Recognizes a TypeMismatch error for { return true /= 1; } (mismatched types in not-equal expression)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "binOp",
-            binOp: "notEqual",
-            leftOperand: {
-              expressionKind: "booleanLit",
-              isTrue: true,
-            },
-            rightOperand: {
-              expressionKind: "numberLit",
-              value: 1,
-            },
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-      }
-
-      expect(evalResult.left.expectedTypes).toEqual(["boolean"]);
-    });
-
-    it("Recognizes a TypeMismatch error for { function f() {} return f == 1; } (closure on LHS of equals expression)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "funcDecl",
-          functionName: identifierIso.wrap("f"),
-          argNames: [],
-          body: [],
-        },
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "binOp",
-            binOp: "equals",
-            leftOperand: {
-              expressionKind: "variableRef",
-              variableName: identifierIso.wrap("f"),
-            },
-            rightOperand: {
-              expressionKind: "numberLit",
-              value: 1,
-            },
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-      }
-
-      expect(evalResult.left.expectedTypes).toContain("boolean");
-      expect(evalResult.left.expectedTypes).toContain("number");
-      expect(evalResult.left.actualType).toBe("closure");
-    });
-
-    it("Recognizes a TypeMismatch error for { function f() {} return 1 == f; } (closure on RHS of equals expression)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "funcDecl",
-          functionName: identifierIso.wrap("f"),
-          argNames: [],
-          body: [],
-        },
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "binOp",
-            binOp: "equals",
-            leftOperand: {
-              expressionKind: "numberLit",
-              value: 1,
-            },
-            rightOperand: {
-              expressionKind: "variableRef",
-              variableName: identifierIso.wrap("f"),
-            },
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-      }
-
-      expect(evalResult.left.expectedTypes).toContain("boolean");
-      expect(evalResult.left.expectedTypes).toContain("number");
-      expect(evalResult.left.actualType).toBe("closure");
-    });
-
-    it("Recognizes a TypeMismatch error for { function f() {} return f /= 1; } (closure on LHS of not-equal expression)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "funcDecl",
-          functionName: identifierIso.wrap("f"),
-          argNames: [],
-          body: [],
-        },
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "binOp",
-            binOp: "notEqual",
-            leftOperand: {
-              expressionKind: "variableRef",
-              variableName: identifierIso.wrap("f"),
-            },
-            rightOperand: {
-              expressionKind: "numberLit",
-              value: 1,
-            },
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-      }
-
-      expect(evalResult.left.expectedTypes).toContain("boolean");
-      expect(evalResult.left.expectedTypes).toContain("number");
-      expect(evalResult.left.actualType).toBe("closure");
-    });
-
-    it("Recognizes a TypeMismatch error for { function f() {} return 1 /= f; } (closure on RHS of not-equal expression)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "funcDecl",
-          functionName: identifierIso.wrap("f"),
-          argNames: [],
-          body: [],
-        },
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "binOp",
-            binOp: "notEqual",
-            leftOperand: {
-              expressionKind: "numberLit",
-              value: 1,
-            },
-            rightOperand: {
-              expressionKind: "variableRef",
-              variableName: identifierIso.wrap("f"),
-            },
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-      }
-
-      expect(evalResult.left.expectedTypes).toContain("boolean");
-      expect(evalResult.left.expectedTypes).toContain("number");
-      expect(evalResult.left.actualType).toBe("closure");
-    });
-
-    it("Recognizes a TypeMismatch error for { return clock == 1; } (native function on LHS of equals expression)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "binOp",
-            binOp: "equals",
-            leftOperand: {
-              expressionKind: "variableRef",
-              variableName: identifierIso.wrap("clock"),
-            },
-            rightOperand: {
-              expressionKind: "numberLit",
-              value: 1,
-            },
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-      }
-
-      expect(evalResult.left.expectedTypes).toContain("boolean");
-      expect(evalResult.left.expectedTypes).toContain("number");
-      expect(evalResult.left.actualType).toBe("nativeFunc");
-    });
-
-    it("Recognizes a TypeMismatch error for { return 1 == clock; } (native function on RHS of equals expression)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "binOp",
-            binOp: "equals",
-            leftOperand: {
-              expressionKind: "numberLit",
-              value: 1,
-            },
-            rightOperand: {
-              expressionKind: "variableRef",
-              variableName: identifierIso.wrap("clock"),
-            },
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-      }
-
-      expect(evalResult.left.expectedTypes).toContain("boolean");
-      expect(evalResult.left.expectedTypes).toContain("number");
-      expect(evalResult.left.actualType).toBe("nativeFunc");
-    });
-
-    it("Recognizes a TypeMismatch error for { return clock /= 1; } (native function on LHS of not-equal expression)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "binOp",
-            binOp: "notEqual",
-            leftOperand: {
-              expressionKind: "variableRef",
-              variableName: identifierIso.wrap("clock"),
-            },
-            rightOperand: {
-              expressionKind: "numberLit",
-              value: 1,
-            },
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-      }
-
-      expect(evalResult.left.expectedTypes).toContain("boolean");
-      expect(evalResult.left.expectedTypes).toContain("number");
-      expect(evalResult.left.actualType).toBe("nativeFunc");
-    });
-
-    it("Recognizes a TypeMismatch error for { return 1 /= clock; } (native function on RHS of not-equal expression)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "binOp",
-            binOp: "notEqual",
-            leftOperand: {
-              expressionKind: "numberLit",
-              value: 1,
-            },
-            rightOperand: {
-              expressionKind: "variableRef",
-              variableName: identifierIso.wrap("clock"),
-            },
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-      }
-
-      expect(evalResult.left.expectedTypes).toContain("boolean");
-      expect(evalResult.left.expectedTypes).toContain("number");
-      expect(evalResult.left.actualType).toBe("nativeFunc");
-    });
-
-    it("Recognizes an arity mismatch (too few arguments) for { function f(x) { return x; } return f(); }", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "funcDecl",
-          functionName: identifierIso.wrap("f"),
-          argNames: [identifierIso.wrap("x")],
-          body: [
-            {
-              statementKind: "return",
-              returnedValue: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("x"),
-              },
-            },
-          ],
-        },
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "funcCall",
-            args: [],
-            callee: {
-              expressionKind: "variableRef",
-              variableName: identifierIso.wrap("f"),
-            },
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "arityMismatch") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of ArityMismatch error`);
-      }
-
-      expect(evalResult.left.expectedNumArgs).toBe(1);
-      expect(evalResult.left.actualNumArgs).toBe(0);
-    });
-
-    it("Recognizes an arity mismatch (too many arguments) for { function f() { return 1; } return f(2); }", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "funcDecl",
-          functionName: identifierIso.wrap("f"),
-          argNames: [],
-          body: [
-            {
-              statementKind: "return",
-              returnedValue: {
-                expressionKind: "numberLit",
-                value: 1,
-              },
-            },
-          ],
-        },
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "funcCall",
-            args: [
-              {
-                expressionKind: "numberLit",
-                value: 2,
-              },
-            ],
-            callee: {
-              expressionKind: "variableRef",
-              variableName: identifierIso.wrap("f"),
-            },
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "arityMismatch") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of ArityMismatch error`);
-      }
-
-      expect(evalResult.left.expectedNumArgs).toBe(0);
-      expect(evalResult.left.actualNumArgs).toBe(1);
-    });
-
-    it("Recognizes an UnassignedVariable error for { let x; return x; } (variable used before assigning it a value)", () => {
-      // Arrange
-      const ast: Program = [
-        {
-          statementKind: "varDecl",
-          variableName: identifierIso.wrap("x"),
-        },
-        {
-          statementKind: "return",
-          returnedValue: {
-            expressionKind: "variableRef",
-            variableName: identifierIso.wrap("x"),
-          },
-        },
-      ];
-
-      // Act
-      const evalResult = evaluate(ast);
-
-      // Assert
-      if (!isLeft(evalResult)) {
-        throw new Error("Evaluation succeeded, should have failed");
-      }
-
-      if (evalResult.left.runtimeErrorKind !== "unassignedVariable") {
-        throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of ArityMismatch error`);
-      }
-
-      expect(evalResult.left.unassignedIdentifier).toBe("x");
+        expect(evalResult.left.nonObjectType).toBe("number");
+      });
     });
   });
 });

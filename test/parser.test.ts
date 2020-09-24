@@ -5351,6 +5351,42 @@ describe("Parser", () => {
       expect(parseResult.left.message).toMatch(/Expected ;/);
     });
 
+    it("Expects a semicolon after combined declaration/assignment statements", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "let",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("x"),
+        },
+        {
+          tokenKind: "singleEquals",
+        },
+        {
+          tokenKind: "number",
+          value: 1,
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected ;/);
+    });
+
     it("Expects a left brace at the beginning of a block", () => {
       // Arrange
       const tokens: Array<Token> = [];
@@ -5541,6 +5577,9 @@ describe("Parser", () => {
           name: identifierIso.wrap("x"),
         },
         {
+          tokenKind: "comma",
+        },
+        {
           tokenKind: "leftBrace",
         },
         {
@@ -5559,7 +5598,7 @@ describe("Parser", () => {
         throw new Error("Parse succeeded, should have failed");
       }
 
-      expect(parseResult.left.message).toMatch(/Expected ,/);
+      expect(parseResult.left.message).toMatch(/Expected \)/);
     });
 
     it("Expects a comma between parameter names in a function definition", () => {
@@ -6037,6 +6076,197 @@ describe("Parser", () => {
       }
 
       expect(parseResult.left.message).toMatch(/Expected ,/);
+    });
+
+    it("Expects an = or ; after an identifier beginning a statement", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("x"),
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected/);
+      expect(parseResult.left.message).toMatch(/;/);
+      expect(parseResult.left.message).toMatch(/=/);
+    });
+
+    it("Expects a semicolon following a number literal expression statement", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "number",
+          value: 1,
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected ;/);
+    });
+
+    it("Expects a semicolon following a boolean literal expression statement", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "boolean",
+          isTrue: true,
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected ;/);
+    });
+
+    it("Expects an identifier following a period in a get expression/set statement", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("obj"),
+        },
+        {
+          tokenKind: "period",
+        },
+        {
+          tokenKind: "number",
+          value: 1,
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected identifier/);
+    });
+
+    it("Expects a colon after a field name in an object literal", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("obj"),
+        },
+        {
+          tokenKind: "singleEquals",
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("field"),
+        },
+        {
+          tokenKind: "number",
+          value: 1,
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected :/);
+    });
+
+    it("Expects a right brace at the end of an object literal", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("obj"),
+        },
+        {
+          tokenKind: "singleEquals",
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "semicolon",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parse(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected }/);
     });
   });
 });
