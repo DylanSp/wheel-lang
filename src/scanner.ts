@@ -35,6 +35,9 @@ export type Token =
   | LessThanEqualsToken
   | GreaterThanToken
   | GreaterThanEqualsToken
+  | ModuleToken
+  | ImportToken
+  | ExportToken
   | NumberToken
   | BooleanToken
   | IdentifierToken;
@@ -153,6 +156,18 @@ interface GreaterThanToken {
 
 interface GreaterThanEqualsToken {
   tokenKind: "greaterThanEquals";
+}
+
+interface ModuleToken {
+  tokenKind: "module";
+}
+
+interface ImportToken {
+  tokenKind: "import";
+}
+
+interface ExportToken {
+  tokenKind: "export";
 }
 
 export interface NumberToken {
@@ -402,6 +417,24 @@ export const scan: Scan = (input: string) => {
             "null",
             {
               tokenKind: "null",
+            },
+          ],
+          [
+            "module",
+            {
+              tokenKind: "module",
+            },
+          ],
+          [
+            "import",
+            {
+              tokenKind: "import",
+            },
+          ],
+          [
+            "export",
+            {
+              tokenKind: "export",
             },
           ],
         ];
