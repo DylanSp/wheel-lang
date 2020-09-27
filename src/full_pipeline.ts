@@ -1,7 +1,7 @@
 import { Either, right, mapLeft, chain } from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/pipeable";
 import { ScanError, Token, scan } from "./scanner";
-import { ParseFailure, Program, parse } from "./parser";
+import { ParseFailure, Program, parseModule } from "./parser";
 import { RuntimeFailure, Value, evaluate } from "./evaluator";
 
 /**
@@ -39,7 +39,7 @@ export const runProgram: RunProgram = (programText) => {
     return mapLeft((parseError: ParseFailure) => ({
       pipelineErrorKind: "parse" as const,
       parseError,
-    }))(parse(input));
+    }))(parseModule(input));
   };
 
   const liftedEval = (input: Program): Either<PipelineError, Value> => {
