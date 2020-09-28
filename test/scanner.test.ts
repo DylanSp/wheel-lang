@@ -38,6 +38,7 @@ describe("Scanner", () => {
         ["module", "module"],
         ["import", "import"],
         ["export", "export"],
+        ["from", "from"],
       ])('Recognizes "%s"', (input, tokenKind) => {
         // Act
         const scanResult = scan(input);

@@ -38,6 +38,7 @@ export type Token =
   | ModuleToken
   | ImportToken
   | ExportToken
+  | FromToken
   | NumberToken
   | BooleanToken
   | IdentifierToken;
@@ -168,6 +169,10 @@ interface ImportToken {
 
 interface ExportToken {
   tokenKind: "export";
+}
+
+interface FromToken {
+  tokenKind: "from";
 }
 
 export interface NumberToken {
@@ -435,6 +440,12 @@ export const scan: Scan = (input: string) => {
             "export",
             {
               tokenKind: "export",
+            },
+          ],
+          [
+            "from",
+            {
+              tokenKind: "from",
             },
           ],
         ];
