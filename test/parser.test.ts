@@ -5759,6 +5759,121 @@ describe("Parser", () => {
       });
     });
 
+    describe("Import statements", () => {
+      it("Parses { import someObj from SomeModule; } (program with single import)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "import",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("someObj"),
+          },
+          {
+            tokenKind: "from",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SomeModule"),
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "import",
+            moduleName: identifierIso.wrap("SomeModule"),
+            imports: [identifierIso.wrap("someObj")],
+          },
+        ];
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it("Parses { import someObj, someFunc from SomeModule; } (program with multiple imports)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "import",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("someObj"),
+          },
+          {
+            tokenKind: "comma",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("someFunc"),
+          },
+          {
+            tokenKind: "from",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SomeModule"),
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "import",
+            moduleName: identifierIso.wrap("SomeModule"),
+            imports: [identifierIso.wrap("someObj"), identifierIso.wrap("someFunc")],
+          },
+        ];
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+    });
+
     describe("Modules with exports", () => {
       it("Parses a module with a single export", () => {
         // Arrange

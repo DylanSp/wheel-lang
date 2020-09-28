@@ -23,7 +23,8 @@ type Statement =
   | IfStatement
   | WhileStatement
   | SetStatement
-  | ExpressionStatement;
+  | ExpressionStatement
+  | ImportStatement;
 
 interface FunctionDeclaration {
   statementKind: "funcDecl";
@@ -71,6 +72,12 @@ interface SetStatement {
 interface ExpressionStatement {
   statementKind: "expression";
   expression: Expression;
+}
+
+interface ImportStatement {
+  statementKind: "import";
+  moduleName: Identifier;
+  imports: Array<Identifier>;
 }
 
 export type Expression =
@@ -406,6 +413,49 @@ export const parseModule = (input: Array<Token>): Either<ParseFailure, Module> =
             condition,
             body,
           });
+          break;
+        }
+        case "import": {
+          position += 1; // move past "import"
+
+          const imports: Array<Identifier> = [];
+          while (input[position]?.tokenKind === "identifier") {
+            imports.push((input[position] as IdentifierToken).name);
+            position += 1;
+
+            if (input[position]?.tokenKind === "from") {
+              break;
+            }
+
+            if (input[position]?.tokenKind !== "comma") {
+              throw new ParseError("Expected ,");
+            }
+
+            position += 1; // move past comma
+          }
+
+          if (input[position]?.tokenKind !== "from") {
+            throw new ParseError('Expected "from"');
+          }
+          position += 1; // move past "from"
+
+          if (input[position]?.tokenKind !== "identifier") {
+            throw new ParseError("Expected identifier");
+          }
+          const moduleName = (input[position] as IdentifierToken).name; // cast should always succeed
+          position += 1; // move past module name
+
+          if (input[position]?.tokenKind !== "semicolon") {
+            throw new ParseError("Expected ;");
+          }
+          position += 1; // move past semicolon
+
+          statements.push({
+            statementKind: "import",
+            moduleName,
+            imports,
+          });
+
           break;
         }
         case "number":
