@@ -2,7 +2,7 @@ import { Either, right, mapLeft, chain } from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/pipeable";
 import { ScanError, Token, scan } from "./scanner";
 import { ParseFailure, Program, parseModule } from "./parser";
-import { RuntimeFailure, Value, evaluate } from "./evaluator";
+import { RuntimeFailure, Value, evaluateModule } from "./evaluator";
 
 /**
  * TYPES
@@ -46,7 +46,7 @@ export const runProgram: RunProgram = (programText) => {
     return mapLeft((evalError: RuntimeFailure) => ({
       pipelineErrorKind: "evaluation" as const,
       evalError,
-    }))(evaluate(input));
+    }))(evaluateModule(input));
   };
 
   return pipe(right(programText), chain(liftedScan), chain(liftedParse), chain(liftedEval));

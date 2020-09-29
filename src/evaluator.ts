@@ -1,10 +1,10 @@
 import { zip } from "fp-ts/lib/Array";
-import { Either, right, left } from "fp-ts/lib/Either";
+import { Either, right, left, isLeft } from "fp-ts/lib/Either";
 import { lookup, member, insertAt, toArray } from "fp-ts/lib/Map";
 import { isNone, Option, some, isSome, none } from "fp-ts/lib/Option";
 import { prompt } from "readline-sync";
 import { Identifier, eqIdentifier, identifierIso, ordIdentifier } from "./types";
-import { Program, Expression, Block } from "./parser";
+import { Expression, Block, Module } from "./parser";
 
 /**
  * TYPES
@@ -90,6 +90,10 @@ interface NotObjectError {
   nonObjectType: ValueKind;
 }
 
+interface NoMainError {
+  runtimeErrorKind: "noMain";
+}
+
 class RuntimeError extends Error {
   constructor(public readonly message: string, public readonly underlyingFailure: RuntimeFailure) {
     super(message);
@@ -103,7 +107,8 @@ export type RuntimeFailure =
   | ArityMismatchError
   | UnassignedVariableError
   | NativeFunctionReturnedFunctionError
-  | NotObjectError;
+  | NotObjectError
+  | NoMainError;
 
 interface NumberValue {
   valueKind: "number";
@@ -181,9 +186,153 @@ class Return extends Error {
   }
 }
 
-type Evaluate = (program: Program) => Either<RuntimeFailure, Value>;
+type ImportResult =
+  | { exportResultKind: "noSuchModule" }
+  | { exportResultKind: "noSuchExport" }
+  | { exportResultKind: "validExport"; exportedValue: Value };
 
-export const evaluate: Evaluate = (program) => {
+class ExportedValues {
+  // maps module names to their exports
+  // value of None represents an un-evaluated module,
+  // value of Some represents an evaluated module
+  private exportValues: Map<Identifier, Option<Map<Identifier, Value>>>;
+
+  private modules: Array<Module>;
+
+  public constructor(modules: Array<Module>) {
+    this.modules = modules;
+
+    this.exportValues = new Map<Identifier, Option<Map<Identifier, Value>>>();
+    modules
+      .map((module) => module.name)
+      .forEach((moduleName) => {
+        this.exportValues = insertAt(eqIdentifier)(moduleName, none as Option<Map<Identifier, Value>>)(
+          this.exportValues,
+        );
+      });
+  }
+
+  public getExportedValue = (moduleName: Identifier, exportName: Identifier): ImportResult => {
+    const possibleExports = lookup(eqIdentifier)(moduleName)(this.exportValues);
+    const moduleToExport = this.modules.find((module) => module.name === moduleName);
+    if (isNone(possibleExports) || moduleToExport === undefined) {
+      return {
+        exportResultKind: "noSuchModule",
+      };
+    }
+
+    let exportValues: Map<Identifier, Value>;
+
+    if (isNone(possibleExports.value)) {
+      const moduleEvalResult = evaluateModule(this, moduleToExport);
+      if (isLeft(moduleEvalResult)) {
+        throw new RuntimeError(`Error evaluating imported module ${moduleName}`, moduleEvalResult.left);
+      }
+      const exports = moduleEvalResult.right[1];
+
+      this.exportValues = insertAt(eqIdentifier)(moduleName, some(exports))(this.exportValues);
+      exportValues = exports;
+    } else {
+      exportValues = possibleExports.value.value;
+    }
+
+    const possibleExport = lookup(eqIdentifier)(exportName)(exportValues);
+    if (isNone(possibleExport)) {
+      return {
+        exportResultKind: "noSuchExport",
+      };
+    }
+
+    return {
+      exportResultKind: "validExport",
+      exportedValue: possibleExport.value,
+    };
+  };
+}
+
+const defineNativeFunctions = (env: Environment): void => {
+  const nativeFuncs: Array<NativeFunctionValue> = [
+    {
+      funcName: identifierIso.wrap("clock"),
+      valueKind: "nativeFunc",
+      argTypes: [],
+      returnType: "number",
+      body: (): number => Date.now(),
+    },
+    {
+      funcName: identifierIso.wrap("printNum"),
+      valueKind: "nativeFunc",
+      argTypes: ["number"],
+      returnType: "null",
+      body: (numVal: NumberValue): void => console.log(numVal.value),
+    },
+    {
+      funcName: identifierIso.wrap("printBool"),
+      valueKind: "nativeFunc",
+      argTypes: ["boolean"],
+      returnType: "null",
+      body: (boolVal: BooleanValue): void => console.log(boolVal.isTrue),
+    },
+    {
+      funcName: identifierIso.wrap("readNum"),
+      valueKind: "nativeFunc",
+      argTypes: [],
+      returnType: "object",
+      body: (): Map<Identifier, Value> => {
+        const rawInput = prompt();
+        const parsed = parseFloat(rawInput);
+        let result = new Map<Identifier, Value>();
+        const validityIdent = identifierIso.wrap("isValid");
+        const valueIdent = identifierIso.wrap("value");
+
+        if (isNaN(parsed)) {
+          result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(false))(result);
+          result = insertAt(eqIdentifier)<Value>(valueIdent, makeNumberValue(0))(result);
+        } else {
+          result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(true))(result);
+          result = insertAt(eqIdentifier)<Value>(valueIdent, makeNumberValue(parsed))(result);
+        }
+        return result;
+      },
+    },
+    {
+      funcName: identifierIso.wrap("readBool"),
+      valueKind: "nativeFunc",
+      argTypes: [],
+      returnType: "object",
+      body: (): Map<Identifier, Value> => {
+        const rawInput = prompt();
+        let result = new Map<Identifier, Value>();
+        const validityIdent = identifierIso.wrap("isValid");
+        const valueIdent = identifierIso.wrap("value");
+
+        if (rawInput === "true") {
+          result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(true))(result);
+          result = insertAt(eqIdentifier)<Value>(valueIdent, makeBooleanValue(true))(result);
+        } else if (rawInput === "false") {
+          result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(true))(result);
+          result = insertAt(eqIdentifier)<Value>(valueIdent, makeBooleanValue(false))(result);
+        } else {
+          result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(false))(result);
+          result = insertAt(eqIdentifier)<Value>(valueIdent, makeBooleanValue(false))(result);
+        }
+
+        return result;
+      },
+    },
+  ];
+
+  nativeFuncs.forEach((nativeFunc) => {
+    env.define(nativeFunc.funcName);
+    env.assign(nativeFunc.funcName, nativeFunc);
+  });
+};
+
+// [Value, Map<Identifier, Value>] represents [top-level returned value, exports]
+export const evaluateModule = (
+  exports: ExportedValues,
+  module: Module,
+): Either<RuntimeFailure, [Value, Map<Identifier, Value>]> => {
   // utility functions
   const areEqual = (lhsValue: Value, rhsValue: Value): boolean => {
     if (lhsValue.valueKind === "closure") {
@@ -616,101 +765,78 @@ export const evaluate: Evaluate = (program) => {
           evaluateExpr(env, statement.expression);
           break;
         }
+        case "import": {
+          statement.imports.forEach((importName) => {
+            const importResult = exports.getExportedValue(statement.moduleName, importName);
+
+            if (importResult.exportResultKind === "noSuchModule") {
+              throw new Error("Import error handling for no such module");
+            } else if (importResult.exportResultKind === "noSuchExport") {
+              throw new Error("Import error handling for no such export");
+            }
+
+            env.define(importName);
+            env.assign(importName, importResult.exportedValue);
+          });
+
+          break;
+        }
       }
     }
   };
 
-  const defineNativeFunctions = (env: Environment): void => {
-    const nativeFuncs: Array<NativeFunctionValue> = [
-      {
-        funcName: identifierIso.wrap("clock"),
-        valueKind: "nativeFunc",
-        argTypes: [],
-        returnType: "number",
-        body: (): number => Date.now(),
-      },
-      {
-        funcName: identifierIso.wrap("printNum"),
-        valueKind: "nativeFunc",
-        argTypes: ["number"],
-        returnType: "null",
-        body: (numVal: NumberValue): void => console.log(numVal.value),
-      },
-      {
-        funcName: identifierIso.wrap("printBool"),
-        valueKind: "nativeFunc",
-        argTypes: ["boolean"],
-        returnType: "null",
-        body: (boolVal: BooleanValue): void => console.log(boolVal.isTrue),
-      },
-      {
-        funcName: identifierIso.wrap("readNum"),
-        valueKind: "nativeFunc",
-        argTypes: [],
-        returnType: "object",
-        body: (): Map<Identifier, Value> => {
-          const rawInput = prompt();
-          const parsed = parseFloat(rawInput);
-          let result = new Map<Identifier, Value>();
-          const validityIdent = identifierIso.wrap("isValid");
-          const valueIdent = identifierIso.wrap("value");
-
-          if (isNaN(parsed)) {
-            result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(false))(result);
-            result = insertAt(eqIdentifier)<Value>(valueIdent, makeNumberValue(0))(result);
-          } else {
-            result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(true))(result);
-            result = insertAt(eqIdentifier)<Value>(valueIdent, makeNumberValue(parsed))(result);
-          }
-          return result;
-        },
-      },
-      {
-        funcName: identifierIso.wrap("readBool"),
-        valueKind: "nativeFunc",
-        argTypes: [],
-        returnType: "object",
-        body: (): Map<Identifier, Value> => {
-          const rawInput = prompt();
-          let result = new Map<Identifier, Value>();
-          const validityIdent = identifierIso.wrap("isValid");
-          const valueIdent = identifierIso.wrap("value");
-
-          if (rawInput === "true") {
-            result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(true))(result);
-            result = insertAt(eqIdentifier)<Value>(valueIdent, makeBooleanValue(true))(result);
-          } else if (rawInput === "false") {
-            result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(true))(result);
-            result = insertAt(eqIdentifier)<Value>(valueIdent, makeBooleanValue(false))(result);
-          } else {
-            result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(false))(result);
-            result = insertAt(eqIdentifier)<Value>(valueIdent, makeBooleanValue(false))(result);
-          }
-
-          return result;
-        },
-      },
-    ];
-
-    nativeFuncs.forEach((nativeFunc) => {
-      env.define(nativeFunc.funcName);
-      env.assign(nativeFunc.funcName, nativeFunc);
-    });
-  };
-
   // main driver
+  let exportedValues = new Map<Identifier, Value>();
   try {
     const topLevelEnv = new Environment();
-    defineNativeFunctions(topLevelEnv);
-    evaluateBlock(topLevelEnv, program);
-    return right(makeNullValue());
+    evaluateBlock(topLevelEnv, module.body);
+
+    // TODO extract this into function, call it when catching Return as well?
+    module.exports.forEach((exportName) => {
+      const possibleExportValue = topLevelEnv.lookup(exportName);
+      if (isNone(possibleExportValue)) {
+        throw new RuntimeError("Exported variable not declared", {
+          runtimeErrorKind: "notInScope",
+          outOfScopeIdentifier: exportName,
+        });
+      }
+
+      if (isNone(possibleExportValue.value)) {
+        throw new RuntimeError("Exported variable not assigned a value", {
+          runtimeErrorKind: "unassignedVariable",
+          unassignedIdentifier: exportName,
+        });
+      }
+
+      exportedValues = insertAt(eqIdentifier)(exportName, possibleExportValue.value.value)(exportedValues);
+    });
+
+    return right([makeNullValue(), exportedValues]);
   } catch (err) {
     if (err instanceof RuntimeError) {
       return left(err.underlyingFailure);
     } else if (err instanceof Return) {
-      return right(err.possibleValue);
+      return right([err.possibleValue, exportedValues]);
     } else {
       throw err;
     }
   }
+};
+
+export const evaluateProgram = (modules: Array<Module>): Either<RuntimeFailure, Value> => {
+  const mainModule = modules.find((module) => module.name === identifierIso.wrap("Main")); // TODO constant-ify Main
+  if (mainModule === undefined) {
+    return left({
+      runtimeErrorKind: "noMain",
+    });
+  }
+
+  // TODO bring native functions into scope somehow
+
+  const mainEvalResult = evaluateModule(new ExportedValues([]), mainModule);
+  if (isLeft(mainEvalResult)) {
+    return mainEvalResult;
+  }
+
+  return right(mainEvalResult.right[0]);
 };
