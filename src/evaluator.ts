@@ -833,7 +833,7 @@ export const evaluateProgram = (modules: Array<Module>): Either<RuntimeFailure, 
 
   // TODO bring native functions into scope somehow
 
-  const mainEvalResult = evaluateModule(new ExportedValues([]), mainModule);
+  const mainEvalResult = evaluateModule(new ExportedValues(modules), mainModule);
   if (isLeft(mainEvalResult)) {
     return mainEvalResult;
   }
