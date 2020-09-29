@@ -1,5 +1,5 @@
 module Source
 {
-  let someObj = 1;
+  let someNum = 1;
 }
-export someObj;
+export someNum;

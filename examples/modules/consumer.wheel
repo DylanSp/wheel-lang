@@ -1,5 +1,5 @@
 module Main
 {
-  import someObj from Source;
-  return someObj;
+  import someNum from Source;
+  return someNum;
 }

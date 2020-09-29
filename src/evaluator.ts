@@ -228,10 +228,10 @@ class ExportedValues {
       if (isLeft(moduleEvalResult)) {
         throw new RuntimeError(`Error evaluating imported module ${moduleName}`, moduleEvalResult.left);
       }
-      const exports = moduleEvalResult.right[1];
+      const moduleExports = moduleEvalResult.right[1];
 
-      this.exportValues = insertAt(eqIdentifier)(moduleName, some(exports))(this.exportValues);
-      exportValues = exports;
+      this.exportValues = insertAt(eqIdentifier)(moduleName, some(moduleExports))(this.exportValues);
+      exportValues = moduleExports;
     } else {
       exportValues = possibleExports.value.value;
     }
