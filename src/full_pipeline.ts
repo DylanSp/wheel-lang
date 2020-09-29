@@ -1,8 +1,7 @@
-import { Either, right, mapLeft, chain } from "fp-ts/lib/Either";
-import { pipe } from "fp-ts/lib/pipeable";
+import { Either, isLeft, left, Right } from "fp-ts/lib/Either";
 import { ScanError, Token, scan } from "./scanner";
-import { ParseFailure, Program, parseModule } from "./parser";
-import { RuntimeFailure, Value, evaluateModule } from "./evaluator";
+import { ParseFailure, parseModule, Module } from "./parser";
+import { RuntimeFailure, Value, evaluateProgram } from "./evaluator";
 
 /**
  * TYPES
@@ -27,27 +26,32 @@ type PipelineError = PipelineScanError | PipelineParseError | PipelineEvalError;
 
 type RunProgram = (programText: string) => Either<PipelineError, Value>;
 
-export const runProgram: RunProgram = (programText) => {
-  const liftedScan = (input: string): Either<PipelineError, Array<Token>> => {
-    return mapLeft((scanErrors: Array<ScanError>) => ({
-      pipelineErrorKind: "scan" as const,
+export const runProgram = (moduleTexts: Array<string>): Either<PipelineError, Value> => {
+  const scanResults = moduleTexts.map(scan);
+
+  if (scanResults.some(isLeft)) {
+    const scanErrors = scanResults.filter(isLeft).reduce((prev, current) => {
+      return prev.concat(current.left);
+    }, [] as Array<ScanError>);
+    return left({
+      pipelineErrorKind: "scan",
       scanErrors,
-    }))(scan(input));
-  };
+    });
+  }
 
-  const liftedParse = (input: Array<Token>): Either<PipelineError, Program> => {
-    return mapLeft((parseError: ParseFailure) => ({
-      pipelineErrorKind: "parse" as const,
-      parseError,
-    }))(parseModule(input));
-  };
+  const scannedModules = scanResults.map((result) => (result as Right<Array<Token>>).right);
+  const parsedModules: Array<Module> = [];
+  scannedModules.forEach((scannedModule) => {
+    const parseResult = parseModule(scannedModule);
+    if (isLeft(parseResult)) {
+      throw new Error("Bad parse");
+    }
+    parsedModules.push(parseResult.right);
+  });
 
-  const liftedEval = (input: Program): Either<PipelineError, Value> => {
-    return mapLeft((evalError: RuntimeFailure) => ({
-      pipelineErrorKind: "evaluation" as const,
-      evalError,
-    }))(evaluateModule(input));
-  };
-
-  return pipe(right(programText), chain(liftedScan), chain(liftedParse), chain(liftedEval));
+  const evalResult = evaluateProgram(parsedModules);
+  if (isLeft(evalResult)) {
+    throw new Error("Bad eval");
+  }
+  return evalResult;
 };

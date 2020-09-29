@@ -1,0 +1,5 @@
+module Main
+{
+  import someObj from Source;
+  printNum(someObj);
+}

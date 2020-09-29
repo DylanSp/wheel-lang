@@ -10,17 +10,12 @@ if (args.length < 1) {
   process.exit(1);
 }
 
-if (args.length > 1) {
-  console.warn("More than 1 argument passed; ignoring all but the first");
-}
-
-const filename = args[0];
 const readFile = promisify(fsReadFile);
 
 try {
   (async (): Promise<void> => {
-    const programText = await readFile(filename, "utf8");
-    const runResult = runProgram(programText);
+    const programTexts = await Promise.all(args.map(async (filename) => await readFile(filename, "utf8")));
+    const runResult = runProgram(programTexts);
 
     if (isLeft(runResult)) {
       switch (runResult.left.pipelineErrorKind) {
@@ -49,7 +44,7 @@ try {
     }
   })();
 } catch (err) {
-  console.error(`Error reading ${filename}`);
+  console.error(`Error reading files`);
   console.error(err);
   process.exit(2);
 }
