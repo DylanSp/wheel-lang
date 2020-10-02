@@ -1,0 +1,5 @@
+module Main
+{
+  import numA from A;
+  printNum(0);
+}
