@@ -65,6 +65,7 @@ class ModuleGraph {
       modulesWithStatus.set(moduleName, "unvisited");
     }
 
+    // basic algorithm: see slide 5 of http://www.cs.nott.ac.uk/~psznza/G5BADS03/graphs2.pdf
     while (Array.from(modulesWithStatus).some(([, status]) => status === "unvisited")) {
       const workingStack: Array<Identifier> = [];
 
