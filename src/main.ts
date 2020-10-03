@@ -10,6 +10,7 @@ if (args.length < 1) {
   process.exit(1);
 }
 
+// TODO use readFileSync - https://nodejs.org/api/fs.html#fs_fs_readfilesync_path_options
 const readFile = promisify(fsReadFile);
 
 try {
