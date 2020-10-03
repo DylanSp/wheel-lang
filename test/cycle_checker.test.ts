@@ -1,5 +1,4 @@
 import "jest";
-import { isNone, isSome } from "fp-ts/lib/Option";
 import { Module } from "../src/parser";
 import { identifierIso } from "../src/types";
 import { isCyclicDependencyPresent } from "../src/cycle_checker";
@@ -37,8 +36,7 @@ describe("Cycle checker", () => {
       const isCyclic = isCyclicDependencyPresent(modules);
 
       // Assert
-      expect(isSome(isCyclic)).toBe(true);
-      // TODO check for detected cycle
+      expect(isCyclic).toBe(true);
     });
 
     it("Detects a simple three-node cycle", () => {
@@ -83,8 +81,7 @@ describe("Cycle checker", () => {
       const isCyclic = isCyclicDependencyPresent(modules);
 
       // Assert
-      expect(isSome(isCyclic)).toBe(true);
-      // TODO check for detected cycle
+      expect(isCyclic).toBe(true);
     });
   });
 
@@ -103,7 +100,7 @@ describe("Cycle checker", () => {
       const isCyclic = isCyclicDependencyPresent(modules);
 
       // Assert
-      expect(isNone(isCyclic)).toBe(true);
+      expect(isCyclic).toBe(false);
     });
 
     it("Detects no cycles in a chain of two modules", () => {
@@ -131,7 +128,7 @@ describe("Cycle checker", () => {
       const isCyclic = isCyclicDependencyPresent(modules);
 
       // Assert
-      expect(isNone(isCyclic)).toBe(true);
+      expect(isCyclic).toBe(false);
     });
 
     it("Detects no cycles in a chain of three modules", () => {
@@ -170,7 +167,7 @@ describe("Cycle checker", () => {
       const isCyclic = isCyclicDependencyPresent(modules);
 
       // Assert
-      expect(isNone(isCyclic)).toBe(true);
+      expect(isCyclic).toBe(false);
     });
 
     it("Detects no cycles in a diamond graph", () => {
@@ -225,7 +222,7 @@ describe("Cycle checker", () => {
       const isCyclic = isCyclicDependencyPresent(modules);
 
       // Assert
-      expect(isNone(isCyclic)).toBe(true);
+      expect(isCyclic).toBe(false);
     });
   });
 });

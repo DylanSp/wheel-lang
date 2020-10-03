@@ -1,4 +1,4 @@
-import { Option, isNone, none, some } from "fp-ts/lib/Option";
+import { isNone } from "fp-ts/lib/Option";
 import { insertAt, lookup } from "fp-ts/lib/Map";
 import { insert } from "fp-ts/lib/Set";
 import { Identifier, eqIdentifier } from "./types";
@@ -50,9 +50,9 @@ class ModuleGraph {
     return importedModuleNames;
   };
 
-  public checkForCycles = (): Option<Array<Module>> => {
+  public checkForCycles = (): boolean => {
     if (this.dependencies.size === 0) {
-      return none;
+      return false;
     }
 
     // unvisited = white
@@ -81,7 +81,7 @@ class ModuleGraph {
         const dependentModules = this.dependencies.get(top)!; // should be defined because all modules are loaded
 
         if (Array.from(dependentModules).some((dependency) => modulesWithStatus.get(dependency) === "working")) {
-          return some([]); // there is a cycle
+          return true;
         }
 
         const possibleUnvisited = Array.from(dependentModules).find(
@@ -97,12 +97,12 @@ class ModuleGraph {
       }
     }
 
-    return none;
+    return false;
   };
 }
 
-// returns None if no cycles present, returns Some with list of modules forming cycle if present
-export const isCyclicDependencyPresent = (modules: Array<Module>): Option<Array<Module>> => {
+// returns true iff a cycle is present
+export const isCyclicDependencyPresent = (modules: Array<Module>): boolean => {
   const moduleGraph = new ModuleGraph(modules);
   return moduleGraph.checkForCycles();
 };
