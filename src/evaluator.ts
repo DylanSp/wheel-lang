@@ -192,15 +192,19 @@ type ImportResult =
   | { exportResultKind: "validExport"; exportedValue: Value };
 
 class ExportedValues {
+  static nativeModuleName = identifierIso.wrap("Native"); // TODO make this top-level constant?
+
   // maps module names to their exports
   // value of None represents an un-evaluated module,
   // value of Some represents an evaluated module
   private exportValues: Map<Identifier, Option<Map<Identifier, Value>>>;
 
   private modules: Array<Module>;
+  private nativeFuncs?: Array<NativeFunctionValue>;
 
-  public constructor(modules: Array<Module>) {
+  public constructor(modules: Array<Module>, nativeFuncs?: Array<NativeFunctionValue>) {
     this.modules = modules;
+    this.nativeFuncs = nativeFuncs;
 
     this.exportValues = new Map<Identifier, Option<Map<Identifier, Value>>>();
     modules
@@ -213,6 +217,20 @@ class ExportedValues {
   }
 
   public getExportedValue = (moduleName: Identifier, exportName: Identifier): ImportResult => {
+    if (moduleName === ExportedValues.nativeModuleName) {
+      const possibleNativeExport = this.nativeFuncs?.find((nativeFunc) => nativeFunc.funcName === exportName);
+      if (possibleNativeExport === undefined) {
+        return {
+          exportResultKind: "noSuchExport",
+        };
+      }
+
+      return {
+        exportResultKind: "validExport",
+        exportedValue: possibleNativeExport,
+      };
+    }
+
     const possibleExports = lookup(eqIdentifier)(moduleName)(this.exportValues);
     const moduleToExport = this.modules.find((module) => module.name === moduleName);
     if (isNone(possibleExports) || moduleToExport === undefined) {
@@ -250,7 +268,7 @@ class ExportedValues {
   };
 }
 
-const defineNativeFunctions = (env: Environment): void => {
+const defineNativeFunctions = (): Array<NativeFunctionValue> => {
   const nativeFuncs: Array<NativeFunctionValue> = [
     {
       funcName: identifierIso.wrap("clock"),
@@ -322,10 +340,7 @@ const defineNativeFunctions = (env: Environment): void => {
     },
   ];
 
-  nativeFuncs.forEach((nativeFunc) => {
-    env.define(nativeFunc.funcName);
-    env.assign(nativeFunc.funcName, nativeFunc);
-  });
+  return nativeFuncs;
 };
 
 // [Value, Map<Identifier, Value>] represents [top-level returned value, exports]
@@ -831,9 +846,7 @@ export const evaluateProgram = (modules: Array<Module>): Either<RuntimeFailure, 
     });
   }
 
-  // TODO bring native functions into scope somehow
-
-  const mainEvalResult = evaluateModule(new ExportedValues(modules), mainModule);
+  const mainEvalResult = evaluateModule(new ExportedValues(modules, defineNativeFunctions()), mainModule);
   if (isLeft(mainEvalResult)) {
     return mainEvalResult;
   }
