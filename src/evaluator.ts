@@ -330,7 +330,7 @@ const defineNativeFunctions = (env: Environment): void => {
 
 // [Value, Map<Identifier, Value>] represents [top-level returned value, exports]
 export const evaluateModule = (
-  exports: ExportedValues,
+  availableExports: ExportedValues, // values exported by other modules
   module: Module,
 ): Either<RuntimeFailure, [Value, Map<Identifier, Value>]> => {
   // utility functions
@@ -767,7 +767,7 @@ export const evaluateModule = (
         }
         case "import": {
           statement.imports.forEach((importName) => {
-            const importResult = exports.getExportedValue(statement.moduleName, importName);
+            const importResult = availableExports.getExportedValue(statement.moduleName, importName);
 
             if (importResult.exportResultKind === "noSuchModule") {
               throw new Error("Import error handling for no such module");
