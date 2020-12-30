@@ -103,7 +103,6 @@ describe("Cycle checker", () => {
       expect(isCyclic).toBe(false);
     });
 
-    // TODO  add test for same modules in different order
     it("Detects no cycles in a chain of two modules", () => {
       // Arrange
       const modules: Array<Module> = [
@@ -122,6 +121,35 @@ describe("Cycle checker", () => {
           name: identifierIso.wrap("Source"),
           body: [],
           exports: [identifierIso.wrap("sourceExport")],
+        },
+      ];
+
+      // Act
+      const isCyclic = isCyclicDependencyPresent(modules);
+
+      // Assert
+      expect(isCyclic).toBe(false);
+    });
+
+    // same modules as previous test, just in different order
+    it("Detects no cycles in a chain of two modules, regardless of order", () => {
+      // Arrange
+      const modules: Array<Module> = [
+        {
+          name: identifierIso.wrap("Source"),
+          body: [],
+          exports: [identifierIso.wrap("sourceExport")],
+        },
+        {
+          name: identifierIso.wrap("Main"),
+          body: [
+            {
+              statementKind: "import",
+              moduleName: identifierIso.wrap("Source"),
+              imports: [identifierIso.wrap("sourceExport")],
+            },
+          ],
+          exports: [],
         },
       ];
 
