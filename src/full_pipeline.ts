@@ -2,6 +2,7 @@ import { Either, isLeft, left, Right } from "fp-ts/lib/Either";
 import { ScanError, Token, scan } from "./scanner";
 import { ParseFailure, parseModule, Module } from "./parser";
 import { RuntimeFailure, Value, evaluateProgram } from "./evaluator";
+import { isCyclicDependencyPresent } from "./cycle_checker";
 
 /**
  * TYPES
@@ -14,7 +15,11 @@ interface PipelineScanError {
 
 interface PipelineParseError {
   pipelineErrorKind: "parse";
-  parseError: ParseFailure;
+  parseErrors: Array<ParseFailure>;
+}
+
+interface PipelineCircularDependencyError {
+  pipelineErrorKind: "circularDep";
 }
 
 interface PipelineEvalError {
@@ -22,9 +27,7 @@ interface PipelineEvalError {
   evalError: RuntimeFailure;
 }
 
-type PipelineError = PipelineScanError | PipelineParseError | PipelineEvalError;
-
-type RunProgram = (programText: string) => Either<PipelineError, Value>;
+type PipelineError = PipelineScanError | PipelineParseError | PipelineCircularDependencyError | PipelineEvalError;
 
 export const runProgram = (moduleTexts: Array<string>): Either<PipelineError, Value> => {
   const scanResults = moduleTexts.map(scan);
@@ -40,18 +43,33 @@ export const runProgram = (moduleTexts: Array<string>): Either<PipelineError, Va
   }
 
   const scannedModules = scanResults.map((result) => (result as Right<Array<Token>>).right);
-  const parsedModules: Array<Module> = [];
-  scannedModules.forEach((scannedModule) => {
-    const parseResult = parseModule(scannedModule);
-    if (isLeft(parseResult)) {
-      throw new Error("Bad parse");
-    }
-    parsedModules.push(parseResult.right);
-  });
+
+  const parseResults = scannedModules.map(parseModule);
+  if (parseResults.some(isLeft)) {
+    const parseErrors = parseResults.filter(isLeft).reduce((prev, current) => {
+      return prev.concat([current.left]);
+    }, [] as Array<ParseFailure>);
+    return left({
+      pipelineErrorKind: "parse",
+      parseErrors,
+    });
+  }
+
+  const parsedModules = parseResults.map((result) => (result as Right<Module>).right);
+
+  const hasDependencyCycle = isCyclicDependencyPresent(parsedModules);
+  if (hasDependencyCycle) {
+    return left({
+      pipelineErrorKind: "circularDep",
+    });
+  }
 
   const evalResult = evaluateProgram(parsedModules);
   if (isLeft(evalResult)) {
-    throw new Error("Bad eval");
+    return left({
+      pipelineErrorKind: "evaluation",
+      evalError: evalResult.left,
+    });
   }
   return evalResult;
 };

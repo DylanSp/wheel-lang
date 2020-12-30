@@ -103,6 +103,7 @@ describe("Cycle checker", () => {
       expect(isCyclic).toBe(false);
     });
 
+    // TODO  add test for same modules in different order
     it("Detects no cycles in a chain of two modules", () => {
       // Arrange
       const modules: Array<Module> = [

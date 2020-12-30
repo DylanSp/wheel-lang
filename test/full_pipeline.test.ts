@@ -4,12 +4,12 @@ import { runProgram } from "../src/full_pipeline";
 
 describe("Full interpretation pipeline", () => {
   describe("Correct programs", () => {
-    it("Evaluates { return 1; } to 1", () => {
+    it("Evaluates module Main { return 1; } to 1", () => {
       // Arrange
-      const programText = "{ return 1; }";
+      const programText = "module Main { return 1; }";
 
       // Act
-      const runResult = runProgram(programText);
+      const runResult = runProgram([programText]);
 
       // Assert
       if (!isRight(runResult)) {
@@ -23,12 +23,12 @@ describe("Full interpretation pipeline", () => {
       expect(runResult.right.value).toBe(1);
     });
 
-    it("Evaluates { let x; x = 2; return x; } to 2", () => {
+    it("Evaluates module Main { let x; x = 2; return x; } to 2", () => {
       // Arrange
-      const programText = "{ let x; x = 2; return x; }";
+      const programText = "module Main { let x; x = 2; return x; }";
 
       // Act
-      const runResult = runProgram(programText);
+      const runResult = runProgram([programText]);
 
       // Assert
       if (!isRight(runResult)) {
@@ -42,12 +42,12 @@ describe("Full interpretation pipeline", () => {
       expect(runResult.right.value).toBe(2);
     });
 
-    it("Evaluates { let x = 2; return x; } to 2", () => {
+    it("Evaluates module Main { let x = 2; return x; } to 2", () => {
       // Arrange
-      const programText = "{ let x = 2; return x; }";
+      const programText = "module Main { let x = 2; return x; }";
 
       // Act
-      const runResult = runProgram(programText);
+      const runResult = runProgram([programText]);
 
       // Assert
       if (!isRight(runResult)) {
@@ -61,12 +61,12 @@ describe("Full interpretation pipeline", () => {
       expect(runResult.right.value).toBe(2);
     });
 
-    it("Evaluates { function f() { return 3; } return f(); } to 3", () => {
+    it("Evaluates module Main { function f() { return 3; } return f(); } to 3", () => {
       // Arrange
-      const programText = "{ function f() { return 3; } return f(); } ";
+      const programText = "module Main { function f() { return 3; } return f(); } ";
 
       // Act
-      const runResult = runProgram(programText);
+      const runResult = runProgram([programText]);
 
       // Assert
       if (!isRight(runResult)) {
@@ -80,12 +80,12 @@ describe("Full interpretation pipeline", () => {
       expect(runResult.right.value).toBe(3);
     });
 
-    it("Evaluates { function f(x) { return x + 1; } return f(4); } to 5", () => {
+    it("Evaluates module Main { function f(x) { return x + 1; } return f(4); } to 5", () => {
       // Arrange
-      const programText = "{ function f(x) { return x + 1; } return f(4); }";
+      const programText = "module Main { function f(x) { return x + 1; } return f(4); }";
 
       // Act
-      const runResult = runProgram(programText);
+      const runResult = runProgram([programText]);
 
       // Assert
       if (!isRight(runResult)) {
@@ -99,12 +99,12 @@ describe("Full interpretation pipeline", () => {
       expect(runResult.right.value).toBe(5);
     });
 
-    it("Evaluates { return 6 + 7; } to 13", () => {
+    it("Evaluates module Main { return 6 + 7; } to 13", () => {
       // Arrange
-      const programText = "{ return 6 + 7; }";
+      const programText = "module Main { return 6 + 7; }";
 
       // Act
-      const runResult = runProgram(programText);
+      const runResult = runProgram([programText]);
 
       // Assert
       if (!isRight(runResult)) {
@@ -118,13 +118,13 @@ describe("Full interpretation pipeline", () => {
       expect(runResult.right.value).toBe(13);
     });
 
-    it("Evaluates { function makeAdder(x) { function adder(y) { return x + y; } return adder; } let addOne; addOne = makeAdder(1); return addOne(2); } to 3", () => {
+    it("Evaluates module Main { function makeAdder(x) { function adder(y) { return x + y; } return adder; } let addOne; addOne = makeAdder(1); return addOne(2); } to 3", () => {
       // Arrange
       const programText =
-        "{ function makeAdder(x) { function adder(y) { return x + y; } return adder; } let addOne; addOne = makeAdder(1); return addOne(2); }";
+        "module Main { function makeAdder(x) { function adder(y) { return x + y; } return adder; } let addOne; addOne = makeAdder(1); return addOne(2); }";
 
       // Act
-      const runResult = runProgram(programText);
+      const runResult = runProgram([programText]);
 
       // Assert
       if (!isRight(runResult)) {
@@ -138,12 +138,12 @@ describe("Full interpretation pipeline", () => {
       expect(runResult.right.value).toBe(3);
     });
 
-    it("Evaluates { if (false) { return 1; } else if (true) { return 2; } else { return 3; } } to 2", () => {
+    it("Evaluates module Main { if (false) { return 1; } else if (true) { return 2; } else { return 3; } } to 2", () => {
       // Arrange
-      const programText = "{ if (false) { return 1; } else if (true) { return 2; } else { return 3; } }";
+      const programText = "module Main { if (false) { return 1; } else if (true) { return 2; } else { return 3; } }";
 
       // Act
-      const runResult = runProgram(programText);
+      const runResult = runProgram([programText]);
 
       // Assert
       if (!isRight(runResult)) {
@@ -157,12 +157,12 @@ describe("Full interpretation pipeline", () => {
       expect(runResult.right.value).toBe(2);
     });
 
-    it("Evaluates { let x = { field: 1 }; x.field = 2; return x.field; } to 2 ", () => {
+    it("Evaluates module Main { let x = { field: 1 }; x.field = 2; return x.field; } to 2 ", () => {
       // Arrange
-      const programText = "{ let x = { field: 1 }; x.field = 2; return x.field; }";
+      const programText = "module Main { let x = { field: 1 }; x.field = 2; return x.field; }";
 
       // Act
-      const runResult = runProgram(programText);
+      const runResult = runProgram([programText]);
 
       // Assert
       if (!isRight(runResult)) {
@@ -183,7 +183,7 @@ describe("Full interpretation pipeline", () => {
       const programText = "{ # }";
 
       // Act
-      const runResult = runProgram(programText);
+      const runResult = runProgram([programText]);
 
       // Assert
       if (!isLeft(runResult)) {
@@ -202,7 +202,7 @@ describe("Full interpretation pipeline", () => {
       const programText = "{ # @ }";
 
       // Act
-      const runResult = runProgram(programText);
+      const runResult = runProgram([programText]);
 
       // Assert
       if (!isLeft(runResult)) {
@@ -219,12 +219,12 @@ describe("Full interpretation pipeline", () => {
   });
 
   describe("Parse errors", () => {
-    it("Reports a parse error on { function; }", () => {
+    it("Reports a parse error on module Main { function; }", () => {
       // Arrange
-      const programText = "{ function; }";
+      const programText = "module Main { function; }";
 
       // Act
-      const runResult = runProgram(programText);
+      const runResult = runProgram([programText]);
 
       // Assert
       if (!isLeft(runResult)) {
@@ -235,17 +235,17 @@ describe("Full interpretation pipeline", () => {
         throw new Error(`${runResult.left.pipelineErrorKind} error reported instead of parse error`);
       }
 
-      expect(runResult.left.parseError.message).toMatch(/Expected identifier/);
+      expect(runResult.left.parseErrors.some((parseErr) => /Expected identifier/.test(parseErr.message))).toBe(true);
     });
   });
 
   describe("Evaluation errors", () => {
-    it("Reports a NotInScope error for { return x; }", () => {
+    it("Reports a NotInScope error for module Main { return x; }", () => {
       // Arrange
-      const programText = "{ return x; }";
+      const programText = "module Main { return x; }";
 
       // Act
-      const runResult = runProgram(programText);
+      const runResult = runProgram([programText]);
 
       // Assert
       if (!isLeft(runResult)) {
@@ -266,3 +266,7 @@ describe("Full interpretation pipeline", () => {
     });
   });
 });
+
+// TODO tests for multiple modules
+
+// TODO tests for circular dependencies

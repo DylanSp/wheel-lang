@@ -25,8 +25,11 @@ try {
           runResult.left.scanErrors.forEach((scanErr) => console.log(scanErr.invalidLexeme));
           break;
         case "parse":
-          console.log("Parse error:");
-          console.log(runResult.left.parseError.message);
+          console.log("Parse error(s):");
+          runResult.left.parseErrors.forEach((parseErr) => console.log(parseErr.message));
+          break;
+        case "circularDep":
+          console.log("Circular dependencies detected");
           break;
         case "evaluation":
           console.log("Evaluation error:");

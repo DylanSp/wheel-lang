@@ -3,6 +3,7 @@ import { insertAt, lookup } from "fp-ts/lib/Map";
 import { insert } from "fp-ts/lib/Set";
 import { Identifier, eqIdentifier } from "./types";
 import { Module, Block } from "./parser";
+import { NATIVE_MODULE_NAME } from "./evaluator";
 
 class ModuleGraph {
   private dependencies: Map<Identifier, Set<Identifier>>; // map of module names to what module names import the key module
@@ -18,15 +19,17 @@ class ModuleGraph {
     // load importing modules into dependencies
     modules.forEach((module) => {
       const importedModuleNames = this.getImportList(module.body);
-      importedModuleNames.forEach((importedModuleName) => {
-        const exportingModule = lookup(eqIdentifier)(importedModuleName)(this.dependencies);
-        if (isNone(exportingModule)) {
-          throw new Error("Programming error, imported module was not previously loaded");
-        }
+      importedModuleNames
+        .filter((name) => name != NATIVE_MODULE_NAME)
+        .forEach((importedModuleName) => {
+          const exportingModule = lookup(eqIdentifier)(importedModuleName)(this.dependencies);
+          if (isNone(exportingModule)) {
+            throw new Error("Programming error, imported module was not previously loaded");
+          }
 
-        const newImports = insert(eqIdentifier)(module.name)(exportingModule.value);
-        this.dependencies = insertAt(eqIdentifier)(importedModuleName, newImports)(this.dependencies);
-      });
+          const newImports = insert(eqIdentifier)(module.name)(exportingModule.value);
+          this.dependencies = insertAt(eqIdentifier)(importedModuleName, newImports)(this.dependencies);
+        });
     });
   }
 
@@ -76,10 +79,10 @@ class ModuleGraph {
       workingStack.push(startingModuleName);
 
       while (workingStack.length !== 0) {
-        const top = workingStack[0];
+        const top = workingStack[workingStack.length - 1];
+
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const dependentModules = this.dependencies.get(top)!; // should be defined because all modules are loaded
-
         if (Array.from(dependentModules).some((dependency) => modulesWithStatus.get(dependency) === "working")) {
           return true;
         }
