@@ -175,6 +175,26 @@ describe("Full interpretation pipeline", () => {
 
       expect(runResult.right.value).toBe(2);
     });
+
+    it("Evaluates module Source { let someNum = 1; } export someNum; module Main { import someNum from Source; return someNum; } to 1", () => {
+      // Arrange
+      const sourceModuleText = "module Source { let someNum = 1; } export someNum;";
+      const mainModuleText = "module Main { import someNum from Source; return someNum; }";
+
+      // Act
+      const runResult = runProgram([sourceModuleText, mainModuleText]);
+
+      // Assert
+      if (!isRight(runResult)) {
+        throw new Error("Program failed, should have succeeded");
+      }
+
+      if (runResult.right.valueKind !== "number") {
+        throw new Error("Program did not return number");
+      }
+
+      expect(runResult.right.value).toBe(1);
+    });
   });
 
   describe("Scan errors", () => {
@@ -239,6 +259,25 @@ describe("Full interpretation pipeline", () => {
     });
   });
 
+  describe("Circular dependency errors", () => {
+    it("Reports a circular dependency error on modules with circular dependencies", () => {
+      // Arrange
+      const aModuleText = "module A { import numB from B; printNum(numB); numA = 1; } export numA;";
+      const bModuleText = "module B { import numA from A; printNum(numA); numB = 2; } export numB;";
+      const mainModuleText = "module Main { import numA from A; printNum(0); }";
+
+      // Act
+      const runResult = runProgram([aModuleText, bModuleText, mainModuleText]);
+
+      // Assert
+      if (!isLeft(runResult)) {
+        throw new Error("Program succeeded, should have failed");
+      }
+
+      expect(runResult.left.pipelineErrorKind).toBe("circularDep");
+    });
+  });
+
   describe("Evaluation errors", () => {
     it("Reports a NotInScope error for module Main { return x; }", () => {
       // Arrange
@@ -266,7 +305,3 @@ describe("Full interpretation pipeline", () => {
     });
   });
 });
-
-// TODO tests for multiple modules
-
-// TODO tests for circular dependencies
