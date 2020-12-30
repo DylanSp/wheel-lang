@@ -191,9 +191,9 @@ type ImportResult =
   | { exportResultKind: "noSuchExport" }
   | { exportResultKind: "validExport"; exportedValue: Value };
 
-class ExportedValues {
-  static nativeModuleName = identifierIso.wrap("Native"); // TODO make this top-level constant?
+export const NATIVE_MODULE_NAME = identifierIso.wrap("Native");
 
+class ExportedValues {
   // maps module names to their exports
   // value of None represents an un-evaluated module,
   // value of Some represents an evaluated module
@@ -217,7 +217,7 @@ class ExportedValues {
   }
 
   public getExportedValue = (moduleName: Identifier, exportName: Identifier): ImportResult => {
-    if (moduleName === ExportedValues.nativeModuleName) {
+    if (moduleName === NATIVE_MODULE_NAME) {
       const possibleNativeExport = this.nativeFuncs?.find((nativeFunc) => nativeFunc.funcName === exportName);
       if (possibleNativeExport === undefined) {
         return {
