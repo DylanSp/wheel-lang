@@ -39,6 +39,7 @@ export type Token =
   | ImportToken
   | ExportToken
   | FromToken
+  | DoubleQuoteToken
   | NumberToken
   | BooleanToken
   | IdentifierToken;
@@ -173,6 +174,10 @@ interface ExportToken {
 
 interface FromToken {
   tokenKind: "from";
+}
+
+interface DoubleQuoteToken {
+  tokenKind: "doubleQuote";
 }
 
 export interface NumberToken {
@@ -343,6 +348,12 @@ export const scan: Scan = (input: string) => {
       case "!":
         tokens.push({
           tokenKind: "exclamationPoint",
+        });
+        position += 1;
+        break;
+      case '"':
+        tokens.push({
+          tokenKind: "doubleQuote",
         });
         position += 1;
         break;

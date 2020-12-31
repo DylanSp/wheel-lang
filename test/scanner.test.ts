@@ -39,6 +39,7 @@ describe("Scanner", () => {
         ["import", "import"],
         ["export", "export"],
         ["from", "from"],
+        ['"', "doubleQuote"],
       ])('Recognizes "%s"', (input, tokenKind) => {
         // Act
         const scanResult = scan(input);
