@@ -94,6 +94,16 @@ interface NoMainError {
   runtimeErrorKind: "noMain";
 }
 
+interface NoSuchModuleError {
+  runtimeErrorKind: "noSuchModule";
+  moduleName: Identifier;
+}
+
+interface NoSuchExportError {
+  runtimeErrorKind: "noSuchExport";
+  exportName: Identifier;
+}
+
 class RuntimeError extends Error {
   constructor(public readonly message: string, public readonly underlyingFailure: RuntimeFailure) {
     super(message);
@@ -108,7 +118,9 @@ export type RuntimeFailure =
   | UnassignedVariableError
   | NativeFunctionReturnedFunctionError
   | NotObjectError
-  | NoMainError;
+  | NoMainError
+  | NoSuchModuleError
+  | NoSuchExportError;
 
 interface NumberValue {
   valueKind: "number";
@@ -785,9 +797,15 @@ export const evaluateModule = (
             const importResult = availableExports.getExportedValue(statement.moduleName, importName);
 
             if (importResult.exportResultKind === "noSuchModule") {
-              throw new Error("Import error handling for no such module");
+              throw new RuntimeError(`${statement.moduleName} does not exist`, {
+                runtimeErrorKind: "noSuchModule",
+                moduleName: statement.moduleName,
+              });
             } else if (importResult.exportResultKind === "noSuchExport") {
-              throw new Error("Import error handling for no such export");
+              throw new RuntimeError(`${importName} is not exported from ${statement.moduleName}`, {
+                runtimeErrorKind: "noSuchExport",
+                exportName: importName,
+              });
             }
 
             env.define(importName);

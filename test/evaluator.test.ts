@@ -5834,5 +5834,94 @@ describe("Evaluator", () => {
         expect(evalResult.left.nonObjectType).toBe("number");
       });
     });
+
+    describe("NoSuchModule errors", () => {
+      it("Recognizes a NoSuchModule error for { import someNum from Nonexistent; } (importing from nonexistent module)", () => {
+        // Arrange
+        const ast: Block = [
+          {
+            statementKind: "import",
+            imports: [identifierIso.wrap("someNum")],
+            moduleName: identifierIso.wrap("Nonexistent"),
+          },
+        ];
+
+        // Act
+        const evalResult = evaluateProgram(wrapBlock(ast));
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "noSuchModule") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NoSuchModule error`);
+        }
+
+        expect(evalResult.left.moduleName).toBe("Nonexistent");
+      });
+    });
+
+    describe("NoSuchExport errors", () => {
+      it("Recognizes a NoSuchExport error for { import notAFunc from Native; } (importing nonexistent native function from Native)", () => {
+        // Arrange
+        const ast: Block = [
+          {
+            statementKind: "import",
+            imports: [identifierIso.wrap("notAFunc")],
+            moduleName: NATIVE_MODULE_NAME,
+          },
+        ];
+
+        // Act
+        const evalResult = evaluateProgram(wrapBlock(ast));
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "noSuchExport") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NoSuchExport error`);
+        }
+
+        expect(evalResult.left.exportName).toBe("notAFunc");
+      });
+
+      it("Recognizes a NoSuchExport error for module Source {} module Main { import notAFunc from Source; } (importing nonexistent function from existing module)", () => {
+        // Arrange
+        const sourceModule: Module = {
+          name: identifierIso.wrap("Source"),
+          body: [],
+          exports: [],
+        };
+
+        const mainModule: Module = {
+          name: testModuleName,
+          body: [
+            {
+              statementKind: "import",
+              imports: [identifierIso.wrap("notAFunc")],
+              moduleName: identifierIso.wrap("Source"),
+            },
+          ],
+          exports: [],
+        };
+
+        // Act
+        const evalResult = evaluateProgram([sourceModule, mainModule]);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "noSuchExport") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NoSuchExport error`);
+        }
+
+        expect(evalResult.left.exportName).toBe("notAFunc");
+      });
+    });
   });
 });
