@@ -138,9 +138,10 @@ describe("Full interpretation pipeline", () => {
       expect(runResult.right.value).toBe(3);
     });
 
-    it("Evaluates module Main { if (false) { return 1; } else if (true) { return 2; } else { return 3; } } to 2", () => {
+    it("Evaluates module Main { while (false) { return 0; } if (false) { return 1; } else if (true) { return 2; } else { return 3; } } to 2", () => {
       // Arrange
-      const programText = "module Main { if (false) { return 1; } else if (true) { return 2; } else { return 3; } }";
+      const programText =
+        "module Main { while (false) { return 0; } if (false) { return 1; } else if (true) { return 2; } else { return 3; } }";
 
       // Act
       const runResult = runProgram([programText]);

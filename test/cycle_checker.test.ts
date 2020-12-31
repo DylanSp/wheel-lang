@@ -86,6 +86,17 @@ describe("Cycle checker", () => {
   });
 
   describe("Module graphs without cycles", () => {
+    it("Detects no cycles if input array is empty", () => {
+      // Arrange
+      const modules: Array<Module> = [];
+
+      // Act
+      const isCyclic = isCyclicDependencyPresent(modules);
+
+      // Assert
+      expect(isCyclic).toBe(false);
+    });
+
     it("Detects no cycles in a single-module graph", () => {
       // Arrange
       const modules: Array<Module> = [
