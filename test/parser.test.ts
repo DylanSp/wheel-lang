@@ -1863,6 +1863,60 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
+      it('Parses { x = "str"; }', () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "string",
+            value: "str",
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "stringLit",
+              value: "str",
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
       it("Parses { x = !f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
