@@ -1,0 +1,5 @@
+module Main
+{
+  import someNum from Source;
+  return someNum;
+}

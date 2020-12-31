@@ -1,8 +1,8 @@
-import { Either, right, mapLeft, chain } from "fp-ts/lib/Either";
-import { pipe } from "fp-ts/lib/pipeable";
+import { Either, isLeft, left, Right } from "fp-ts/lib/Either";
 import { ScanError, Token, scan } from "./scanner";
-import { ParseFailure, Program, parse } from "./parser";
-import { RuntimeFailure, Value, evaluate } from "./evaluator";
+import { ParseFailure, parseModule, Module } from "./parser";
+import { RuntimeFailure, Value, evaluateProgram } from "./evaluator";
+import { isCyclicDependencyPresent } from "./cycle_checker";
 
 /**
  * TYPES
@@ -15,7 +15,11 @@ interface PipelineScanError {
 
 interface PipelineParseError {
   pipelineErrorKind: "parse";
-  parseError: ParseFailure;
+  parseErrors: Array<ParseFailure>;
+}
+
+interface PipelineCircularDependencyError {
+  pipelineErrorKind: "circularDep";
 }
 
 interface PipelineEvalError {
@@ -23,31 +27,49 @@ interface PipelineEvalError {
   evalError: RuntimeFailure;
 }
 
-type PipelineError = PipelineScanError | PipelineParseError | PipelineEvalError;
+type PipelineError = PipelineScanError | PipelineParseError | PipelineCircularDependencyError | PipelineEvalError;
 
-type RunProgram = (programText: string) => Either<PipelineError, Value>;
+export const runProgram = (moduleTexts: Array<string>): Either<PipelineError, Value> => {
+  const scanResults = moduleTexts.map(scan);
 
-export const runProgram: RunProgram = (programText) => {
-  const liftedScan = (input: string): Either<PipelineError, Array<Token>> => {
-    return mapLeft((scanErrors: Array<ScanError>) => ({
-      pipelineErrorKind: "scan" as const,
+  if (scanResults.some(isLeft)) {
+    const scanErrors = scanResults.filter(isLeft).reduce((prev, current) => {
+      return prev.concat(current.left);
+    }, [] as Array<ScanError>);
+    return left({
+      pipelineErrorKind: "scan",
       scanErrors,
-    }))(scan(input));
-  };
+    });
+  }
 
-  const liftedParse = (input: Array<Token>): Either<PipelineError, Program> => {
-    return mapLeft((parseError: ParseFailure) => ({
-      pipelineErrorKind: "parse" as const,
-      parseError,
-    }))(parse(input));
-  };
+  const scannedModules = scanResults.map((result) => (result as Right<Array<Token>>).right);
 
-  const liftedEval = (input: Program): Either<PipelineError, Value> => {
-    return mapLeft((evalError: RuntimeFailure) => ({
-      pipelineErrorKind: "evaluation" as const,
-      evalError,
-    }))(evaluate(input));
-  };
+  const parseResults = scannedModules.map(parseModule);
+  if (parseResults.some(isLeft)) {
+    const parseErrors = parseResults.filter(isLeft).reduce((prev, current) => {
+      return prev.concat([current.left]);
+    }, [] as Array<ParseFailure>);
+    return left({
+      pipelineErrorKind: "parse",
+      parseErrors,
+    });
+  }
 
-  return pipe(right(programText), chain(liftedScan), chain(liftedParse), chain(liftedEval));
+  const parsedModules = parseResults.map((result) => (result as Right<Module>).right);
+
+  const hasDependencyCycle = isCyclicDependencyPresent(parsedModules);
+  if (hasDependencyCycle) {
+    return left({
+      pipelineErrorKind: "circularDep",
+    });
+  }
+
+  const evalResult = evaluateProgram(parsedModules);
+  if (isLeft(evalResult)) {
+    return left({
+      pipelineErrorKind: "evaluation",
+      evalError: evalResult.left,
+    });
+  }
+  return evalResult;
 };

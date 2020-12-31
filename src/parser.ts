@@ -7,7 +7,11 @@ import { Identifier } from "./types";
  * TYPES
  */
 
-export type Program = Block;
+export interface Module {
+  name: Identifier;
+  body: Block;
+  exports: Array<Identifier>;
+}
 
 export type Block = Array<Statement>;
 
@@ -19,7 +23,8 @@ type Statement =
   | IfStatement
   | WhileStatement
   | SetStatement
-  | ExpressionStatement;
+  | ExpressionStatement
+  | ImportStatement;
 
 interface FunctionDeclaration {
   statementKind: "funcDecl";
@@ -67,6 +72,12 @@ interface SetStatement {
 interface ExpressionStatement {
   statementKind: "expression";
   expression: Expression;
+}
+
+interface ImportStatement {
+  statementKind: "import";
+  moduleName: Identifier;
+  imports: Array<Identifier>;
 }
 
 export type Expression =
@@ -156,14 +167,54 @@ class ParseError extends Error {
   }
 }
 
-type Parse = (input: Array<Token>) => Either<ParseFailure, Program>;
-
-export const parse: Parse = (input) => {
+export const parseModule = (input: Array<Token>): Either<ParseFailure, Module> => {
   let position = 0;
 
   /** Grammar entrypoint */
-  const parseProgram = (): Program => {
-    return parseBlock();
+  const parseTopLevel = (): Module => {
+    if (input[position]?.tokenKind !== "module") {
+      throw new ParseError('Expected "module"');
+    }
+    position += 1; // move past "module"
+
+    if (input[position]?.tokenKind !== "identifier") {
+      throw new ParseError("Expected identifier");
+    }
+    const moduleName = (input[position] as IdentifierToken).name; // cast should always succeed
+    position += 1; // move past module name
+
+    const body = parseBlock();
+
+    const exports: Array<Identifier> = [];
+    if (input[position]?.tokenKind === "export") {
+      position += 1; // move past "export"
+
+      while (input[position]?.tokenKind === "identifier") {
+        exports.push((input[position] as IdentifierToken).name); // cast should always succeed
+        position += 1;
+
+        if (input[position]?.tokenKind === "semicolon") {
+          break;
+        }
+
+        if (input[position]?.tokenKind !== "comma") {
+          throw new ParseError("Expected ,");
+        }
+
+        position += 1; // move past comma
+      }
+
+      if (input[position]?.tokenKind !== "semicolon") {
+        throw new ParseError("Expected ;");
+      }
+      position += 1;
+    }
+
+    return {
+      name: moduleName,
+      body,
+      exports,
+    };
   };
 
   const parseBlock = (): Block => {
@@ -362,6 +413,49 @@ export const parse: Parse = (input) => {
             condition,
             body,
           });
+          break;
+        }
+        case "import": {
+          position += 1; // move past "import"
+
+          const imports: Array<Identifier> = [];
+          while (input[position]?.tokenKind === "identifier") {
+            imports.push((input[position] as IdentifierToken).name);
+            position += 1;
+
+            if (input[position]?.tokenKind === "from") {
+              break;
+            }
+
+            if (input[position]?.tokenKind !== "comma") {
+              throw new ParseError("Expected ,");
+            }
+
+            position += 1; // move past comma
+          }
+
+          if (input[position]?.tokenKind !== "from") {
+            throw new ParseError('Expected "from"');
+          }
+          position += 1; // move past "from"
+
+          if (input[position]?.tokenKind !== "identifier") {
+            throw new ParseError("Expected identifier");
+          }
+          const moduleName = (input[position] as IdentifierToken).name; // cast should always succeed
+          position += 1; // move past module name
+
+          if (input[position]?.tokenKind !== "semicolon") {
+            throw new ParseError("Expected ;");
+          }
+          position += 1; // move past semicolon
+
+          statements.push({
+            statementKind: "import",
+            moduleName,
+            imports,
+          });
+
           break;
         }
         case "number":
@@ -702,7 +796,7 @@ export const parse: Parse = (input) => {
 
   /** Converting thrown parse errors to Left case of Either<ParseFailure, Program> */
   try {
-    const parseResult = parseProgram();
+    const parseResult = parseTopLevel();
     if (position !== input.length) {
       throw new ParseError("Expected end of input");
     }
