@@ -7341,5 +7341,166 @@ describe("Parser", () => {
 
       expect(parseResult.left.message).toMatch(/Expected ;/);
     });
+
+    it("Expects a comma between imported identifiers", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "import",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("import1"),
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("import2"),
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected ,/);
+    });
+
+    it('Expects "from" after a list of imports', () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "import",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("import"),
+        },
+        {
+          tokenKind: "comma",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected "from"/);
+    });
+
+    it('Expects identifier after "from" in import statement ', () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "import",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("import"),
+        },
+        {
+          tokenKind: "from",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected identifier/);
+    });
+
+    it("Expects semicolon at end of import statement", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "import",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("import"),
+        },
+        {
+          tokenKind: "from",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("SomeModule"),
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected ;/);
+    });
   });
 });
