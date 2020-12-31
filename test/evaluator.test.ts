@@ -3904,6 +3904,243 @@ describe("Evaluator", () => {
       });
     });
 
+    describe("Multi-module programs", () => {
+      it("Evaluates module Source { let someNum = 1; } export someNum; module Main { import someNum from Source; return someNum; } to 1 (simple module use)", () => {
+        // Arrange
+        const sourceModule: Module = {
+          name: identifierIso.wrap("Source"),
+          body: [
+            {
+              statementKind: "varDecl",
+              variableName: identifierIso.wrap("someNum"),
+            },
+            {
+              statementKind: "assignment",
+              variableName: identifierIso.wrap("someNum"),
+              variableValue: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+            },
+          ],
+          exports: [identifierIso.wrap("someNum")],
+        };
+
+        const mainModule: Module = {
+          name: testModuleName,
+          body: [
+            {
+              statementKind: "import",
+              imports: [identifierIso.wrap("someNum")],
+              moduleName: identifierIso.wrap("Source"),
+            },
+            {
+              statementKind: "return",
+              returnedValue: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("someNum"),
+              },
+            },
+          ],
+          exports: [],
+        };
+
+        // Act
+        const evalResult = evaluateProgram([sourceModule, mainModule]);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(1);
+      });
+
+      it("Evaluates module Source { let num1 = 1; let num2 = 2; } export num1, num2; module Main { import num1, num2 from Source; return num1 + num2; } to 3 (multiple imports from same module)", () => {
+        // Arrange
+        const sourceModule: Module = {
+          name: identifierIso.wrap("Source"),
+          body: [
+            {
+              statementKind: "varDecl",
+              variableName: identifierIso.wrap("num1"),
+            },
+            {
+              statementKind: "assignment",
+              variableName: identifierIso.wrap("num1"),
+              variableValue: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+            },
+            {
+              statementKind: "varDecl",
+              variableName: identifierIso.wrap("num2"),
+            },
+            {
+              statementKind: "assignment",
+              variableName: identifierIso.wrap("num2"),
+              variableValue: {
+                expressionKind: "numberLit",
+                value: 2,
+              },
+            },
+          ],
+          exports: [identifierIso.wrap("num1"), identifierIso.wrap("num2")],
+        };
+
+        const mainModule: Module = {
+          name: testModuleName,
+          body: [
+            {
+              statementKind: "import",
+              imports: [identifierIso.wrap("num1"), identifierIso.wrap("num2")],
+              moduleName: identifierIso.wrap("Source"),
+            },
+            {
+              statementKind: "return",
+              returnedValue: {
+                expressionKind: "binOp",
+                binOp: "add",
+                leftOperand: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("num1"),
+                },
+                rightOperand: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("num2"),
+                },
+              },
+            },
+          ],
+          exports: [],
+        };
+
+        // Act
+        const evalResult = evaluateProgram([sourceModule, mainModule]);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(3);
+      });
+
+      it("Only logs *once* from module Source { import printNum from Native; printNum(0); let num1 = 1; let num2 = 2; } export num1, num2; module Main { import num1, num2 from Source; return num1 + num2; } to 3 (imported modules are only evaluated once, even if imported multiple times)", () => {
+        // Arrange
+        const sourceModule: Module = {
+          name: identifierIso.wrap("Source"),
+          body: [
+            {
+              statementKind: "import",
+              imports: [identifierIso.wrap("printNum")],
+              moduleName: NATIVE_MODULE_NAME,
+            },
+            {
+              statementKind: "expression",
+              expression: {
+                expressionKind: "funcCall",
+                callee: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("printNum"),
+                },
+                args: [
+                  {
+                    expressionKind: "numberLit",
+                    value: 0,
+                  },
+                ],
+              },
+            },
+            {
+              statementKind: "varDecl",
+              variableName: identifierIso.wrap("num1"),
+            },
+            {
+              statementKind: "assignment",
+              variableName: identifierIso.wrap("num1"),
+              variableValue: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+            },
+            {
+              statementKind: "varDecl",
+              variableName: identifierIso.wrap("num2"),
+            },
+            {
+              statementKind: "assignment",
+              variableName: identifierIso.wrap("num2"),
+              variableValue: {
+                expressionKind: "numberLit",
+                value: 2,
+              },
+            },
+          ],
+          exports: [identifierIso.wrap("num1"), identifierIso.wrap("num2")],
+        };
+
+        const mainModule: Module = {
+          name: testModuleName,
+          body: [
+            {
+              statementKind: "import",
+              imports: [identifierIso.wrap("num1"), identifierIso.wrap("num2")],
+              moduleName: identifierIso.wrap("Source"),
+            },
+            {
+              statementKind: "return",
+              returnedValue: {
+                expressionKind: "binOp",
+                binOp: "add",
+                leftOperand: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("num1"),
+                },
+                rightOperand: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("num2"),
+                },
+              },
+            },
+          ],
+          exports: [],
+        };
+
+        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
+          /* intentional no-op */
+        });
+
+        // Act
+        const evalResult = evaluateProgram([sourceModule, mainModule]);
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numeric value");
+        }
+
+        expect(evalResult.right.value).toBe(3);
+
+        expect(consoleLogSpy).toHaveBeenCalledTimes(1);
+
+        // Cleanup
+        consoleLogSpy.mockRestore();
+      });
+    });
+
     describe("Other complex programs", () => {
       it("Evaluates { let x; x = 1; function f() { let x; x = 2; return x; } return x + f(); } to 3 (checking that local variables shadow variables in outer scopes)", () => {
         // Arrange
@@ -4687,6 +4924,41 @@ describe("Evaluator", () => {
         }
 
         expect(evalResult.left.outOfScopeIdentifier).toBe("x");
+      });
+
+      it("Recognizes a NotInScope error for module Source { } export nonexistent; module Main { import nonexistent from Source; }", () => {
+        // Arrange
+        const sourceModule: Module = {
+          name: identifierIso.wrap("Source"),
+          body: [],
+          exports: [identifierIso.wrap("nonexistent")],
+        };
+
+        const mainModule: Module = {
+          name: testModuleName,
+          body: [
+            {
+              statementKind: "import",
+              imports: [identifierIso.wrap("nonexistent")],
+              moduleName: identifierIso.wrap("Source"),
+            },
+          ],
+          exports: [],
+        };
+
+        // Act
+        const evalResult = evaluateProgram([sourceModule, mainModule]);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "notInScope") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
+        }
+
+        expect(evalResult.left.outOfScopeIdentifier).toBe("nonexistent");
       });
     });
 
@@ -5763,7 +6035,47 @@ describe("Evaluator", () => {
         }
 
         if (evalResult.left.runtimeErrorKind !== "unassignedVariable") {
-          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of ArityMismatch error`);
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of UnassignedVariable error`);
+        }
+
+        expect(evalResult.left.unassignedIdentifier).toBe("x");
+      });
+
+      it("Recognizes an UnassignedVariable error for module Source { let x; } export x; module Main { import x from Source; } (exported variable not assigned a value)", () => {
+        // Arrange
+        const sourceModule: Module = {
+          name: identifierIso.wrap("Source"),
+          body: [
+            {
+              statementKind: "varDecl",
+              variableName: identifierIso.wrap("x"),
+            },
+          ],
+          exports: [identifierIso.wrap("x")],
+        };
+
+        const mainModule: Module = {
+          name: testModuleName,
+          body: [
+            {
+              statementKind: "import",
+              imports: [identifierIso.wrap("x")],
+              moduleName: identifierIso.wrap("Source"),
+            },
+          ],
+          exports: [],
+        };
+
+        // Act
+        const evalResult = evaluateProgram([sourceModule, mainModule]);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "unassignedVariable") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of UnassignedVariable error`);
         }
 
         expect(evalResult.left.unassignedIdentifier).toBe("x");
@@ -5921,6 +6233,75 @@ describe("Evaluator", () => {
         }
 
         expect(evalResult.left.exportName).toBe("notAFunc");
+      });
+    });
+
+    describe("Other modularization errors", () => {
+      it("Returns a NotInScope error for module Source { let someVar = nonexistent; } export someVar; module Main { import someVar from Source; } (error evaluating imported module)", () => {
+        // Arrange
+        const sourceModule: Module = {
+          name: identifierIso.wrap("Source"),
+          body: [
+            {
+              statementKind: "varDecl",
+              variableName: identifierIso.wrap("someVar"),
+            },
+            {
+              statementKind: "assignment",
+              variableName: identifierIso.wrap("someVar"),
+              variableValue: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("nonexistent"),
+              },
+            },
+          ],
+          exports: [identifierIso.wrap("someVar")],
+        };
+
+        const mainModule: Module = {
+          name: testModuleName,
+          body: [
+            {
+              statementKind: "import",
+              imports: [identifierIso.wrap("someVar")],
+              moduleName: identifierIso.wrap("Source"),
+            },
+          ],
+          exports: [],
+        };
+
+        // Act
+        const evalResult = evaluateProgram([sourceModule, mainModule]);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        if (evalResult.left.runtimeErrorKind !== "notInScope") {
+          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of NotInScope error`);
+        }
+
+        expect(evalResult.left.outOfScopeIdentifier).toBe("nonexistent");
+      });
+
+      it("Returns a NoMain error for module Source {} (no Main module)", () => {
+        // Arrange
+        const sourceModule: Module = {
+          name: identifierIso.wrap("Source"),
+          body: [],
+          exports: [],
+        };
+
+        // Act
+        const evalResult = evaluateProgram([sourceModule]);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        expect(evalResult.left.runtimeErrorKind).toBe("noMain");
       });
     });
   });
