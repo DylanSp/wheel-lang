@@ -3929,6 +3929,102 @@ describe("Evaluator", () => {
         // Cleanup
         promptSpy.mockRestore();
       });
+
+      it('Given input of "test", evaluates { import readString from Native; let readResult = readString(); return readResult; } to "test"', () => {
+        // Arrange
+        const ast: Block = [
+          {
+            statementKind: "import",
+            moduleName: NATIVE_MODULE_NAME,
+            imports: [identifierIso.wrap("readString")],
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("readResult"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("readResult"),
+            variableValue: {
+              expressionKind: "funcCall",
+              args: [],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("readString"),
+              },
+            },
+          },
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("readResult"),
+            },
+          },
+        ];
+        const promptSpy = jest.spyOn(readlineSync, "prompt").mockImplementation(() => "test");
+
+        // Act
+        const evalResult = evaluateProgram(wrapBlock(ast));
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "string") {
+          throw new Error("Evaluated to non-string value");
+        }
+
+        expect(evalResult.right.value).toBe("test");
+
+        // Cleanup
+        promptSpy.mockRestore();
+      });
+
+      it('Prints "test" with console.log when evaluating { import printString from Native; printString("test"); }', () => {
+        // Arrange
+        const str = "test";
+        const ast: Block = [
+          {
+            statementKind: "import",
+            moduleName: NATIVE_MODULE_NAME,
+            imports: [identifierIso.wrap("printString")],
+          },
+          {
+            statementKind: "expression",
+            expression: {
+              expressionKind: "funcCall",
+              args: [
+                {
+                  expressionKind: "stringLit",
+                  value: str,
+                },
+              ],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("printString"),
+              },
+            },
+          },
+        ];
+        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
+          /* intentional no-op */
+        });
+
+        // Act
+        const evalResult = evaluateProgram(wrapBlock(ast));
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(consoleLogSpy).toBeCalledWith(str);
+
+        // Cleanup
+        consoleLogSpy.mockRestore();
+      });
     });
 
     describe("Multi-module programs", () => {

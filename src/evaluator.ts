@@ -323,6 +323,13 @@ const defineNativeFunctions = (): Array<NativeFunctionValue> => {
       body: (boolVal: BooleanValue): void => console.log(boolVal.isTrue),
     },
     {
+      funcName: identifierIso.wrap("printString"),
+      valueKind: "nativeFunc",
+      argTypes: ["string"],
+      returnType: "null",
+      body: (strVal: StringValue): void => console.log(strVal.value),
+    },
+    {
       funcName: identifierIso.wrap("readNum"),
       valueKind: "nativeFunc",
       argTypes: [],
@@ -368,6 +375,13 @@ const defineNativeFunctions = (): Array<NativeFunctionValue> => {
 
         return result;
       },
+    },
+    {
+      funcName: identifierIso.wrap("readString"),
+      valueKind: "nativeFunc",
+      argTypes: [],
+      returnType: "string",
+      body: (): string => prompt(),
     },
   ];
 
