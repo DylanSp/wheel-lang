@@ -41,7 +41,8 @@ export type Token =
   | FromToken
   | NumberToken
   | BooleanToken
-  | IdentifierToken;
+  | IdentifierToken
+  | StringToken;
 
 interface LeftBrace {
   tokenKind: "leftBrace";
@@ -188,6 +189,11 @@ export interface BooleanToken {
 export interface IdentifierToken {
   tokenKind: "identifier";
   name: Identifier;
+}
+
+export interface StringToken {
+  tokenKind: "string";
+  value: string;
 }
 
 export interface ScanError {
@@ -345,6 +351,25 @@ export const scan: Scan = (input: string) => {
           tokenKind: "exclamationPoint",
         });
         position += 1;
+        break;
+      case '"':
+        position += 1; // advance past starting quote
+        const endingQuoteRelativePosition = input.substring(position).indexOf('"');
+
+        if (endingQuoteRelativePosition === -1) {
+          errors.push({
+            invalidLexeme: 'unmatched "',
+          });
+          position = input.length; // advance to end to stop scanning
+        } else {
+          const value = input.substr(position, endingQuoteRelativePosition);
+          tokens.push({
+            tokenKind: "string",
+            value,
+          });
+          position = position + endingQuoteRelativePosition + 1;
+        }
+
         break;
       default:
         // check for whitespace; if present, skip past it

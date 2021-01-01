@@ -189,8 +189,27 @@ const makeObjectValue = (fields: Map<Identifier, Value>): ObjectValue => ({
   fields,
 });
 
+interface StringValue {
+  valueKind: "string";
+  value: string;
+}
+
+const makeStringValue = (value: string): StringValue => {
+  return {
+    valueKind: "string",
+    value,
+  };
+};
+
 type ValueKind = Value["valueKind"];
-export type Value = NumberValue | BooleanValue | ClosureValue | NativeFunctionValue | NullValue | ObjectValue;
+export type Value =
+  | NumberValue
+  | BooleanValue
+  | ClosureValue
+  | NativeFunctionValue
+  | NullValue
+  | ObjectValue
+  | StringValue;
 
 class Return extends Error {
   constructor(public readonly possibleValue: Value) {
@@ -304,6 +323,13 @@ const defineNativeFunctions = (): Array<NativeFunctionValue> => {
       body: (boolVal: BooleanValue): void => console.log(boolVal.isTrue),
     },
     {
+      funcName: identifierIso.wrap("printString"),
+      valueKind: "nativeFunc",
+      argTypes: ["string"],
+      returnType: "null",
+      body: (strVal: StringValue): void => console.log(strVal.value),
+    },
+    {
       funcName: identifierIso.wrap("readNum"),
       valueKind: "nativeFunc",
       argTypes: [],
@@ -349,6 +375,13 @@ const defineNativeFunctions = (): Array<NativeFunctionValue> => {
 
         return result;
       },
+    },
+    {
+      funcName: identifierIso.wrap("readString"),
+      valueKind: "nativeFunc",
+      argTypes: [],
+      returnType: "string",
+      body: (): string => prompt(),
     },
   ];
 
@@ -465,6 +498,9 @@ export const evaluateModule = (
       }
       case "nullLit": {
         return makeNullValue();
+      }
+      case "stringLit": {
+        return makeStringValue(expr.value);
       }
       case "binOp": {
         const lhsValue = evaluateExpr(env, expr.leftOperand);
@@ -689,6 +725,8 @@ export const evaluateModule = (
           return makeNumberValue(possibleResult as number);
         case "boolean":
           return makeBooleanValue(possibleResult as boolean);
+        case "string":
+          return makeStringValue(possibleResult as string);
         case "closure":
         case "nativeFunc":
           throw new RuntimeError("Native function returned a closure/nativeFunc", {

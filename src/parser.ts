@@ -1,6 +1,6 @@
 import { Either, right, left } from "fp-ts/lib/Either";
 import { none, Option, some, isSome } from "fp-ts/lib/Option";
-import { IdentifierToken, Token, NumberToken, BooleanToken } from "./scanner";
+import { IdentifierToken, Token, NumberToken, BooleanToken, StringToken } from "./scanner";
 import { Identifier } from "./types";
 
 /**
@@ -87,6 +87,7 @@ export type Expression =
   | BooleanLiteral
   | ObjectLiteral
   | NullLiteral
+  | StringLiteral
   | FunctionCall
   | VariableRef
   | Getter;
@@ -138,6 +139,11 @@ interface ObjectField {
 
 interface NullLiteral {
   expressionKind: "nullLit";
+}
+
+interface StringLiteral {
+  expressionKind: "stringLit";
+  value: string;
 }
 
 interface FunctionCall {
@@ -459,7 +465,8 @@ export const parseModule = (input: Array<Token>): Either<ParseFailure, Module> =
           break;
         }
         case "number":
-        case "boolean": {
+        case "boolean":
+        case "string": {
           const expression = parseLogicalExpr();
 
           if (input[position]?.tokenKind !== "semicolon") {
@@ -739,6 +746,13 @@ export const parseModule = (input: Array<Token>): Either<ParseFailure, Module> =
       position += 1;
       return {
         expressionKind: "nullLit",
+      };
+    } else if (input[position]?.tokenKind === "string") {
+      const strToken = input[position] as StringToken; // cast should always succeed
+      position += 1;
+      return {
+        expressionKind: "stringLit",
+        value: strToken.value,
       };
     } else if (input[position]?.tokenKind === "leftBrace") {
       position += 1; // move past opening brace

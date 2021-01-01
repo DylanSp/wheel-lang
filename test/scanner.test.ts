@@ -377,6 +377,30 @@ describe("Scanner", () => {
       });
     });
 
+    describe("Strings", () => {
+      it("Scans a simple string", () => {
+        // Arrange
+        const inputVal = "str";
+        const input = `"${inputVal}"`;
+
+        // Act
+        const scanResult = scan(input);
+
+        // Assert
+        if (!isRight(scanResult)) {
+          throw new Error("Scan failed, should have succeeded");
+        }
+
+        expect(scanResult.right).toHaveLength(1);
+
+        if (scanResult.right[0].tokenKind !== "string") {
+          throw new Error(`${input} not recognized as string`);
+        }
+
+        expect(scanResult.right[0].value).toBe(inputVal);
+      });
+    });
+
     describe("Multiple tokens", () => {
       it("Recognizes whitespace as a separator", () => {
         // Arrange
@@ -468,13 +492,27 @@ describe("Scanner", () => {
 
       // Assert
       if (!isLeft(scanResult)) {
-        // use this instead of expect(), so we get type narrowing on scanResult
         throw new Error("Scan succeeded, should have failed");
       }
 
       const invalidLexemes = scanResult.left.map((error) => error.invalidLexeme);
       expect(invalidLexemes).toContain(bad1);
       expect(invalidLexemes).toContain(bad2);
+    });
+
+    it("Reports error for unclosed string", () => {
+      // Arrange
+      const input = '"unclosed';
+
+      // Act
+      const scanResult = scan(input);
+
+      // Assert
+      if (!isLeft(scanResult)) {
+        throw new Error("Scan succeeded, should have failed");
+      }
+
+      expect(scanResult.left[0].invalidLexeme).toMatch(/unmatched "/);
     });
   });
 });
