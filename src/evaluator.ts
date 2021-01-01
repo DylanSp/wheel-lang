@@ -189,8 +189,27 @@ const makeObjectValue = (fields: Map<Identifier, Value>): ObjectValue => ({
   fields,
 });
 
+interface StringValue {
+  valueKind: "string";
+  value: string;
+}
+
+const makeStringValue = (value: string): StringValue => {
+  return {
+    valueKind: "string",
+    value,
+  };
+};
+
 type ValueKind = Value["valueKind"];
-export type Value = NumberValue | BooleanValue | ClosureValue | NativeFunctionValue | NullValue | ObjectValue;
+export type Value =
+  | NumberValue
+  | BooleanValue
+  | ClosureValue
+  | NativeFunctionValue
+  | NullValue
+  | ObjectValue
+  | StringValue;
 
 class Return extends Error {
   constructor(public readonly possibleValue: Value) {
@@ -466,6 +485,9 @@ export const evaluateModule = (
       case "nullLit": {
         return makeNullValue();
       }
+      case "stringLit": {
+        return makeStringValue(expr.value);
+      }
       case "binOp": {
         const lhsValue = evaluateExpr(env, expr.leftOperand);
         const rhsValue = evaluateExpr(env, expr.rightOperand);
@@ -689,6 +711,8 @@ export const evaluateModule = (
           return makeNumberValue(possibleResult as number);
         case "boolean":
           return makeBooleanValue(possibleResult as boolean);
+        case "string":
+          return makeStringValue(possibleResult as string);
         case "closure":
         case "nativeFunc":
           throw new RuntimeError("Native function returned a closure/nativeFunc", {

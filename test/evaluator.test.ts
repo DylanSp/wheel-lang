@@ -149,6 +149,33 @@ describe("Evaluator", () => {
         expect(evalResult.right.valueKind).toBe("null");
       });
 
+      it('Evaluates { return "test" } to "test" (evaluating string literals)', () => {
+        // Arrange
+        const ast: Block = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "stringLit",
+              value: "test",
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluateProgram(wrapBlock(ast));
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "string") {
+          throw new Error("Evaluated to non-string value");
+        }
+
+        expect(evalResult.right.value).toBe("test");
+      });
+
       it("Evaluates { return 1 + 2; } to 3 (evaluating addition)", () => {
         // Arrange
         const ast: Block = [
