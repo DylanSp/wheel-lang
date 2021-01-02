@@ -4122,7 +4122,7 @@ describe("Evaluator", () => {
           throw new Error("Evaluation failed, should have succeeded");
         }
 
-        expect(consoleLogSpy).toBeCalledWith(str);
+        expect(consoleLogSpy).toBeCalledWith(`"${str}"`);
 
         // Cleanup
         consoleLogSpy.mockRestore();

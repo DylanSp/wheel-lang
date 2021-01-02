@@ -381,7 +381,7 @@ const defineNativeFunctions = (): Array<NativeFunctionValue> => {
       valueKind: "nativeFunc",
       argTypes: ["string"],
       returnType: "null",
-      body: (strVal: StringValue): void => console.log(strVal.value),
+      body: (strVal: StringValue): void => console.log(`"${strVal.value}"`),
     },
     {
       funcName: identifierIso.wrap("printObj"),
