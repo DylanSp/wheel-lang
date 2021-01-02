@@ -428,30 +428,12 @@ export const evaluateModule = (
     }
 
     if (lhsValue.valueKind === "null") {
-      if (rhsValue.valueKind === "null") {
-        return true;
-      } else if (rhsValue.valueKind === "object") {
-        return false;
-      } else {
-        throw new RuntimeError("Trying to compare non-object to null", {
-          runtimeErrorKind: "typeMismatch",
-          expectedTypes: ["null", "object"],
-          actualType: rhsValue.valueKind,
-        });
-      }
+      return rhsValue.valueKind === "null";
     }
 
     if (rhsValue.valueKind === "null") {
       // null == null already handled above
-      if (lhsValue.valueKind === "object") {
-        return false;
-      } else {
-        throw new RuntimeError("Trying to compare non-object to null", {
-          runtimeErrorKind: "typeMismatch",
-          expectedTypes: ["null", "object"],
-          actualType: lhsValue.valueKind,
-        });
-      }
+      return false;
     }
 
     if (lhsValue.valueKind === "object" && rhsValue.valueKind === "object") {

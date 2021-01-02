@@ -1056,6 +1056,108 @@ describe("Evaluator", () => {
         expect(evalResult.right.isTrue).toBe(false);
       });
 
+      it("Evaluates { return 1 == null; } to false (comparison of null to number)", () => {
+        // Arrange
+        const ast: Block = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+              rightOperand: {
+                expressionKind: "nullLit",
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluateProgram(wrapBlock(ast));
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+      });
+
+      it("Evalutes { return null == false; } to false (comparison of null to boolean)", () => {
+        // Arrange
+        const ast: Block = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "nullLit",
+              },
+              rightOperand: {
+                expressionKind: "numberLit",
+                value: 1,
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluateProgram(wrapBlock(ast));
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+      });
+
+      it('Evaluates { return "" == null; } to false (comparison of null to string)', () => {
+        // Arrange
+        const ast: Block = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "stringLit",
+                value: "",
+              },
+              rightOperand: {
+                expressionKind: "nullLit",
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluateProgram(wrapBlock(ast));
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+      });
+
       it("Evaluates { return; } to null (evaluating top-level empty returns)", () => {
         // Arrange
         const ast: Block = [
@@ -5916,78 +6018,6 @@ describe("Evaluator", () => {
         expect(evalResult.left.expectedTypes).toContain("boolean");
         expect(evalResult.left.expectedTypes).toContain("number");
         expect(evalResult.left.actualType).toBe("nativeFunc");
-      });
-
-      it("Recognizes a TypeMismatch error for { return 1 == null; } (comparison of null on LHS to non-object)", () => {
-        // Arrange
-        const ast: Block = [
-          {
-            statementKind: "return",
-            returnedValue: {
-              expressionKind: "binOp",
-              binOp: "equals",
-              leftOperand: {
-                expressionKind: "numberLit",
-                value: 1,
-              },
-              rightOperand: {
-                expressionKind: "nullLit",
-              },
-            },
-          },
-        ];
-
-        // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
-
-        // Assert
-        if (!isLeft(evalResult)) {
-          throw new Error("Evaluation succeeded, should have failed");
-        }
-
-        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-        }
-
-        expect(evalResult.left.expectedTypes).toContain("object");
-        expect(evalResult.left.expectedTypes).toContain("null");
-        expect(evalResult.left.actualType).toBe("number");
-      });
-
-      it("Recognizes a TypeMismatch error for { return null == 1; } (comparison of null on RHS to non-object)", () => {
-        // Arrange
-        const ast: Block = [
-          {
-            statementKind: "return",
-            returnedValue: {
-              expressionKind: "binOp",
-              binOp: "equals",
-              leftOperand: {
-                expressionKind: "nullLit",
-              },
-              rightOperand: {
-                expressionKind: "numberLit",
-                value: 1,
-              },
-            },
-          },
-        ];
-
-        // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
-
-        // Assert
-        if (!isLeft(evalResult)) {
-          throw new Error("Evaluation succeeded, should have failed");
-        }
-
-        if (evalResult.left.runtimeErrorKind !== "typeMismatch") {
-          throw new Error(`Detected ${evalResult.left.runtimeErrorKind} error instead of TypeMismatch error`);
-        }
-
-        expect(evalResult.left.expectedTypes).toContain("object");
-        expect(evalResult.left.expectedTypes).toContain("null");
-        expect(evalResult.left.actualType).toBe("number");
       });
     });
 
