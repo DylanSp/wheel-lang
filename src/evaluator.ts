@@ -299,6 +299,7 @@ class ExportedValues {
   };
 }
 
+// standalone function so it can be called recursively (for nested objects)
 const objectToString = (objVal: ObjectValue): string => {
   let str = "";
 
