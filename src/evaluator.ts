@@ -299,6 +299,61 @@ class ExportedValues {
   };
 }
 
+// standalone function so it can be called recursively (for nested objects)
+const objectToString = (objVal: ObjectValue): string => {
+  let str = "";
+
+  str += "{";
+  if (objVal.fields.size > 0) {
+    str += " ";
+  }
+
+  const fields = Array.from(objVal.fields);
+  fields.sort(([fieldId1], [fieldId2]) => ordIdentifier.compare(fieldId1, fieldId2));
+
+  const allFields: Array<string> = [];
+  fields.forEach(([fieldName, fieldValue]) => {
+    let fieldStr = "";
+    fieldStr += fieldName;
+    fieldStr += ": ";
+    switch (fieldValue.valueKind) {
+      case "number":
+        fieldStr += fieldValue.value;
+        break;
+      case "boolean":
+        fieldStr += fieldValue.isTrue;
+        break;
+      case "string":
+        fieldStr += '"';
+        fieldStr += fieldValue.value;
+        fieldStr += '"';
+        break;
+      case "null":
+        fieldStr += "null";
+        break;
+      case "object":
+        fieldStr += objectToString(fieldValue);
+        break;
+      case "closure":
+        fieldStr += "<closure>";
+        break;
+      case "nativeFunc":
+        fieldStr += "<native function>";
+        break;
+    }
+    allFields.push(fieldStr);
+  });
+
+  str += allFields.join(", ");
+
+  if (objVal.fields.size > 0) {
+    str += " ";
+  }
+  str += "}";
+
+  return str;
+};
+
 const defineNativeFunctions = (): Array<NativeFunctionValue> => {
   const nativeFuncs: Array<NativeFunctionValue> = [
     {
@@ -327,7 +382,14 @@ const defineNativeFunctions = (): Array<NativeFunctionValue> => {
       valueKind: "nativeFunc",
       argTypes: ["string"],
       returnType: "null",
-      body: (strVal: StringValue): void => console.log(strVal.value),
+      body: (strVal: StringValue): void => console.log(`"${strVal.value}"`),
+    },
+    {
+      funcName: identifierIso.wrap("printObj"),
+      valueKind: "nativeFunc",
+      argTypes: ["object"],
+      returnType: "null",
+      body: (objVal: ObjectValue): void => console.log(objectToString(objVal)),
     },
     {
       funcName: identifierIso.wrap("readNum"),
