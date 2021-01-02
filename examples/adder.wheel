@@ -1,3 +1,4 @@
+module Main
 {
   function f(x, y)
   {

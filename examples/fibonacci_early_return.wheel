@@ -1,3 +1,4 @@
+module Main
 {
   function fibonacci(n)
   {

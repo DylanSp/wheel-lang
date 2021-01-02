@@ -1,4 +1,7 @@
+module Main
 {
+  import readNum, printNum from Native;
+
   let x = readNum();
   if (x.isValid)
   {
