@@ -4127,6 +4127,323 @@ describe("Evaluator", () => {
         // Cleanup
         consoleLogSpy.mockRestore();
       });
+
+      it('Prints "{}" with console.log when evaluating { import printObj from Native; printObj({}); }', () => {
+        // Arrange
+        const ast: Block = [
+          {
+            statementKind: "import",
+            moduleName: NATIVE_MODULE_NAME,
+            imports: [identifierIso.wrap("printObj")],
+          },
+          {
+            statementKind: "expression",
+            expression: {
+              expressionKind: "funcCall",
+              args: [
+                {
+                  expressionKind: "objectLit",
+                  fields: [],
+                },
+              ],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("printObj"),
+              },
+            },
+          },
+        ];
+        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
+          /* intentional no-op */
+        });
+
+        // Act
+        const evalResult = evaluateProgram(wrapBlock(ast));
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(consoleLogSpy).toBeCalledWith("{}");
+
+        // Cleanup
+        consoleLogSpy.mockRestore();
+      });
+
+      it('Prints "{ field: 1 }" with console.log when evaluating { import printObj from Native; let obj = { field: 1 }; printObj(obj); }', () => {
+        // Arrange
+        const ast: Block = [
+          {
+            statementKind: "import",
+            moduleName: NATIVE_MODULE_NAME,
+            imports: [identifierIso.wrap("printObj")],
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("obj"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("obj"),
+            variableValue: {
+              expressionKind: "objectLit",
+              fields: [
+                {
+                  fieldName: identifierIso.wrap("field"),
+                  fieldValue: {
+                    expressionKind: "numberLit",
+                    value: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            statementKind: "expression",
+            expression: {
+              expressionKind: "funcCall",
+              args: [
+                {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("obj"),
+                },
+              ],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("printObj"),
+              },
+            },
+          },
+        ];
+        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
+          /* intentional no-op */
+        });
+
+        // Act
+        const evalResult = evaluateProgram(wrapBlock(ast));
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(consoleLogSpy).toBeCalledWith("{ field: 1 }");
+
+        // Cleanup
+        consoleLogSpy.mockRestore();
+      });
+
+      it('Prints "{ fieldA: 1, fieldB: true }" with console.log when evaluating { import printObj from Native; let obj = { fieldA: 1, fieldB: true }; printObj(obj); }', () => {
+        // Arrange
+        const ast: Block = [
+          {
+            statementKind: "import",
+            moduleName: NATIVE_MODULE_NAME,
+            imports: [identifierIso.wrap("printObj")],
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("obj"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("obj"),
+            variableValue: {
+              expressionKind: "objectLit",
+              fields: [
+                {
+                  fieldName: identifierIso.wrap("fieldA"),
+                  fieldValue: {
+                    expressionKind: "numberLit",
+                    value: 1,
+                  },
+                },
+                {
+                  fieldName: identifierIso.wrap("fieldB"),
+                  fieldValue: {
+                    expressionKind: "booleanLit",
+                    isTrue: true,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            statementKind: "expression",
+            expression: {
+              expressionKind: "funcCall",
+              args: [
+                {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("obj"),
+                },
+              ],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("printObj"),
+              },
+            },
+          },
+        ];
+        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
+          /* intentional no-op */
+        });
+
+        // Act
+        const evalResult = evaluateProgram(wrapBlock(ast));
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(consoleLogSpy).toBeCalledWith("{ fieldA: 1, fieldB: true }");
+
+        // Cleanup
+        consoleLogSpy.mockRestore();
+      });
+
+      it('Prints "{ fieldA: 1, fieldB: true }" with console.log when evaluating { import printObj from Native; let obj = { fieldB: true, fieldA: 1 }; printObj(obj); } (sorts object fields alphabetically by field name when printing)', () => {
+        // Arrange
+        const ast: Block = [
+          {
+            statementKind: "import",
+            moduleName: NATIVE_MODULE_NAME,
+            imports: [identifierIso.wrap("printObj")],
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("obj"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("obj"),
+            variableValue: {
+              expressionKind: "objectLit",
+              fields: [
+                {
+                  fieldName: identifierIso.wrap("fieldB"),
+                  fieldValue: {
+                    expressionKind: "booleanLit",
+                    isTrue: true,
+                  },
+                },
+                {
+                  fieldName: identifierIso.wrap("fieldA"),
+                  fieldValue: {
+                    expressionKind: "numberLit",
+                    value: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            statementKind: "expression",
+            expression: {
+              expressionKind: "funcCall",
+              args: [
+                {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("obj"),
+                },
+              ],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("printObj"),
+              },
+            },
+          },
+        ];
+        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
+          /* intentional no-op */
+        });
+
+        // Act
+        const evalResult = evaluateProgram(wrapBlock(ast));
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(consoleLogSpy).toBeCalledWith("{ fieldA: 1, fieldB: true }");
+
+        // Cleanup
+        consoleLogSpy.mockRestore();
+      });
+
+      it('Prints "{ field: { nested: "value" } }" with console.log when evaluating { import printObj from Native; let obj = { field: { nested: "value" } }; printObj(obj); }', () => {
+        // Arrange
+        const ast: Block = [
+          {
+            statementKind: "import",
+            moduleName: NATIVE_MODULE_NAME,
+            imports: [identifierIso.wrap("printObj")],
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("obj"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("obj"),
+            variableValue: {
+              expressionKind: "objectLit",
+              fields: [
+                {
+                  fieldName: identifierIso.wrap("field"),
+                  fieldValue: {
+                    expressionKind: "objectLit",
+                    fields: [
+                      {
+                        fieldName: identifierIso.wrap("nested"),
+                        fieldValue: {
+                          expressionKind: "stringLit",
+                          value: "value",
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            statementKind: "expression",
+            expression: {
+              expressionKind: "funcCall",
+              args: [
+                {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("obj"),
+                },
+              ],
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("printObj"),
+              },
+            },
+          },
+        ];
+        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
+          /* intentional no-op */
+        });
+
+        // Act
+        const evalResult = evaluateProgram(wrapBlock(ast));
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        expect(consoleLogSpy).toBeCalledWith('{ field: { nested: "value" } }');
+
+        // Cleanup
+        consoleLogSpy.mockRestore();
+      });
     });
 
     describe("Multi-module programs", () => {
