@@ -6773,6 +6773,31 @@ describe("Evaluator", () => {
 
         expect(evalResult.left.runtimeErrorKind).toBe("noMain");
       });
+
+      it("Returns a MultipleMains error for module Main {} module Main {}", () => {
+        // Arrange
+        const mainModule1: Module = {
+          name: testModuleName,
+          body: [],
+          exports: [],
+        };
+
+        const mainModule2: Module = {
+          name: testModuleName,
+          body: [],
+          exports: [],
+        };
+
+        // Act
+        const evalResult = evaluateProgram([mainModule1, mainModule2]);
+
+        // Assert
+        if (!isLeft(evalResult)) {
+          throw new Error("Evaluation succeeded, should have failed");
+        }
+
+        expect(evalResult.left.runtimeErrorKind).toBe("multipleMains");
+      });
     });
   });
 });

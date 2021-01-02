@@ -104,6 +104,10 @@ interface NoSuchExportError {
   exportName: Identifier;
 }
 
+interface MultipleMainsError {
+  runtimeErrorKind: "multipleMains";
+}
+
 class RuntimeError extends Error {
   constructor(public readonly message: string, public readonly underlyingFailure: RuntimeFailure) {
     super(message);
@@ -120,7 +124,8 @@ export type RuntimeFailure =
   | NotObjectError
   | NoMainError
   | NoSuchModuleError
-  | NoSuchExportError;
+  | NoSuchExportError
+  | MultipleMainsError;
 
 interface NumberValue {
   valueKind: "number";
@@ -939,14 +944,20 @@ export const evaluateModule = (
 };
 
 export const evaluateProgram = (modules: Array<Module>): Either<RuntimeFailure, Value> => {
-  const mainModule = modules.find((module) => module.name === identifierIso.wrap("Main")); // TODO constant-ify Main
-  if (mainModule === undefined) {
+  const mainModules = modules.filter((module) => module.name === identifierIso.wrap("Main")); // TODO constant-ify Main
+  if (mainModules.length < 1) {
     return left({
       runtimeErrorKind: "noMain",
     });
   }
 
-  const mainEvalResult = evaluateModule(new ExportedValues(modules, defineNativeFunctions()), mainModule);
+  if (mainModules.length > 1) {
+    return left({
+      runtimeErrorKind: "multipleMains",
+    });
+  }
+
+  const mainEvalResult = evaluateModule(new ExportedValues(modules, defineNativeFunctions()), mainModules[0]);
   if (isLeft(mainEvalResult)) {
     return mainEvalResult;
   }
