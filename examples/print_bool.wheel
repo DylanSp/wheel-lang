@@ -1,3 +1,6 @@
+module Main
 {
+  import printBool from Native;
+  
   printBool(true);
 }

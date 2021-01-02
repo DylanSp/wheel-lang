@@ -1,3 +1,4 @@
+module Main
 {
   let accumulator = 0;
   let a = 0;
