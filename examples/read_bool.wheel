@@ -1,6 +1,7 @@
 module Main
 {
-  import readBool, printBool, printNum from Native;
+  import readBool from StdReader;
+  import printBool, printNum from Native;
   
   let b = readBool();
   if (b.isValid)

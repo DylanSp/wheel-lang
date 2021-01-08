@@ -1,4 +1,5 @@
-import { readFileSync } from "fs";
+import { readdirSync, readFileSync } from "fs";
+import { join } from "path";
 import { isLeft } from "fp-ts/lib/Either";
 import { runProgram } from "./full_pipeline";
 
@@ -10,7 +11,13 @@ if (args.length < 1) {
 }
 
 try {
-  const programTexts = args.map((filename) => readFileSync(filename, "utf8"));
+  const stdlibTexts = readdirSync(join(__dirname, "..", "wheel_stdlib")).map((filename) =>
+    readFileSync(join(__dirname, "..", "wheel_stdlib", filename), "utf8"),
+  );
+
+  const userProgramTexts = args.map((filename) => readFileSync(filename, "utf8"));
+  const programTexts = stdlibTexts.concat(userProgramTexts);
+
   const runResult = runProgram(programTexts);
 
   if (isLeft(runResult)) {

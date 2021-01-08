@@ -359,6 +359,7 @@ const objectToString = (objVal: ObjectValue): string => {
   return str;
 };
 
+// TODO define type alias for Map<Identifier, Value>, since it's used in a few places to represent an object's contents?
 const defineNativeFunctions = (): Array<NativeFunctionValue> => {
   const nativeFuncs: Array<NativeFunctionValue> = [
     {
@@ -397,20 +398,24 @@ const defineNativeFunctions = (): Array<NativeFunctionValue> => {
       body: (objVal: ObjectValue): void => console.log(objectToString(objVal)),
     },
     {
-      funcName: identifierIso.wrap("readNum"),
+      funcName: identifierIso.wrap("parseNum"),
       valueKind: "nativeFunc",
-      argTypes: [],
+      argTypes: ["string"],
       returnType: "object",
-      body: (): Map<Identifier, Value> => {
-        const rawInput = prompt();
-        const parsed = parseFloat(rawInput);
+      body: (str: StringValue): Map<Identifier, Value> => {
+        console.log(`str:`);
+        console.log(str);
+
+        const parsed = parseFloat(str.value);
+
+        console.log(`parsed: ${parsed}`);
+
         let result = new Map<Identifier, Value>();
         const validityIdent = identifierIso.wrap("isValid");
         const valueIdent = identifierIso.wrap("value");
 
         if (isNaN(parsed)) {
           result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(false))(result);
-          result = insertAt(eqIdentifier)<Value>(valueIdent, makeNumberValue(0))(result);
         } else {
           result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(true))(result);
           result = insertAt(eqIdentifier)<Value>(valueIdent, makeNumberValue(parsed))(result);
@@ -419,25 +424,23 @@ const defineNativeFunctions = (): Array<NativeFunctionValue> => {
       },
     },
     {
-      funcName: identifierIso.wrap("readBool"),
+      funcName: identifierIso.wrap("parseBool"),
       valueKind: "nativeFunc",
-      argTypes: [],
+      argTypes: ["boolean"],
       returnType: "object",
-      body: (): Map<Identifier, Value> => {
-        const rawInput = prompt();
+      body: (str: StringValue): Map<Identifier, Value> => {
         let result = new Map<Identifier, Value>();
         const validityIdent = identifierIso.wrap("isValid");
         const valueIdent = identifierIso.wrap("value");
 
-        if (rawInput === "true") {
+        if (str.value === "true") {
           result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(true))(result);
           result = insertAt(eqIdentifier)<Value>(valueIdent, makeBooleanValue(true))(result);
-        } else if (rawInput === "false") {
+        } else if (str.value === "false") {
           result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(true))(result);
           result = insertAt(eqIdentifier)<Value>(valueIdent, makeBooleanValue(false))(result);
         } else {
           result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(false))(result);
-          result = insertAt(eqIdentifier)<Value>(valueIdent, makeBooleanValue(false))(result);
         }
 
         return result;
