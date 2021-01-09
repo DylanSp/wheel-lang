@@ -359,6 +359,7 @@ const objectToString = (objVal: ObjectValue): string => {
   return str;
 };
 
+// TODO define type alias for Map<Identifier, Value>, since it's used in a few places to represent an object's contents?
 const defineNativeFunctions = (): Array<NativeFunctionValue> => {
   const nativeFuncs: Array<NativeFunctionValue> = [
     {
@@ -397,49 +398,23 @@ const defineNativeFunctions = (): Array<NativeFunctionValue> => {
       body: (objVal: ObjectValue): void => console.log(objectToString(objVal)),
     },
     {
-      funcName: identifierIso.wrap("readNum"),
+      funcName: identifierIso.wrap("parseNum"),
       valueKind: "nativeFunc",
-      argTypes: [],
+      argTypes: ["string"],
       returnType: "object",
-      body: (): Map<Identifier, Value> => {
-        const rawInput = prompt();
-        const parsed = parseFloat(rawInput);
+      body: (str: StringValue): Map<Identifier, Value> => {
+        const parsed = parseFloat(str.value);
+
         let result = new Map<Identifier, Value>();
         const validityIdent = identifierIso.wrap("isValid");
         const valueIdent = identifierIso.wrap("value");
 
         if (isNaN(parsed)) {
           result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(false))(result);
-          result = insertAt(eqIdentifier)<Value>(valueIdent, makeNumberValue(0))(result);
         } else {
           result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(true))(result);
           result = insertAt(eqIdentifier)<Value>(valueIdent, makeNumberValue(parsed))(result);
         }
-        return result;
-      },
-    },
-    {
-      funcName: identifierIso.wrap("readBool"),
-      valueKind: "nativeFunc",
-      argTypes: [],
-      returnType: "object",
-      body: (): Map<Identifier, Value> => {
-        const rawInput = prompt();
-        let result = new Map<Identifier, Value>();
-        const validityIdent = identifierIso.wrap("isValid");
-        const valueIdent = identifierIso.wrap("value");
-
-        if (rawInput === "true") {
-          result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(true))(result);
-          result = insertAt(eqIdentifier)<Value>(valueIdent, makeBooleanValue(true))(result);
-        } else if (rawInput === "false") {
-          result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(true))(result);
-          result = insertAt(eqIdentifier)<Value>(valueIdent, makeBooleanValue(false))(result);
-        } else {
-          result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(false))(result);
-          result = insertAt(eqIdentifier)<Value>(valueIdent, makeBooleanValue(false))(result);
-        }
-
         return result;
       },
     },
@@ -528,6 +503,8 @@ export const evaluateModule = (
       return lhsValue.value === rhsValue.value;
     } else if (lhsValue.valueKind === "boolean" && rhsValue.valueKind === "boolean") {
       return lhsValue.isTrue === rhsValue.isTrue;
+    } else if (lhsValue.valueKind === "string" && rhsValue.valueKind === "string") {
+      return lhsValue.value === rhsValue.value;
     } else {
       throw new RuntimeError("Trying to compare values of different types", {
         runtimeErrorKind: "typeMismatch",

@@ -1,0 +1,17 @@
+module Main
+{
+  import printString, printBool from Native;
+  import readBool from StdReader;
+
+  let possibleBool = readBool();
+
+  if (possibleBool.isValid)
+  {
+    printString("Valid");
+    printBool(possibleBool.value);
+  }
+  else
+  {
+    printString("Invalid");
+  }
+}
