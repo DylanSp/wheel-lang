@@ -1158,6 +1158,76 @@ describe("Evaluator", () => {
         expect(evalResult.right.isTrue).toBe(false);
       });
 
+      it('Evaluates { return "A" == "B"; } to false (evaluating equals operator with strings', () => {
+        // Arrange
+        const ast: Block = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "equals",
+              leftOperand: {
+                expressionKind: "stringLit",
+                value: "A",
+              },
+              rightOperand: {
+                expressionKind: "stringLit",
+                value: "B",
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluateProgram(wrapBlock(ast));
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+      });
+
+      it('Evaluates { return "C" /= "C"; } to false (evaluating not-equals operator with strings', () => {
+        // Arrange
+        const ast: Block = [
+          {
+            statementKind: "return",
+            returnedValue: {
+              expressionKind: "binOp",
+              binOp: "notEqual",
+              leftOperand: {
+                expressionKind: "stringLit",
+                value: "C",
+              },
+              rightOperand: {
+                expressionKind: "stringLit",
+                value: "C",
+              },
+            },
+          },
+        ];
+
+        // Act
+        const evalResult = evaluateProgram(wrapBlock(ast));
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "boolean") {
+          throw new Error("Evaluated to non-boolean value");
+        }
+
+        expect(evalResult.right.isTrue).toBe(false);
+      });
+
       it("Evaluates { return; } to null (evaluating top-level empty returns)", () => {
         // Arrange
         const ast: Block = [

@@ -526,6 +526,8 @@ export const evaluateModule = (
       return lhsValue.value === rhsValue.value;
     } else if (lhsValue.valueKind === "boolean" && rhsValue.valueKind === "boolean") {
       return lhsValue.isTrue === rhsValue.isTrue;
+    } else if (lhsValue.valueKind === "string" && rhsValue.valueKind === "string") {
+      return lhsValue.value === rhsValue.value;
     } else {
       throw new RuntimeError("Trying to compare values of different types", {
         runtimeErrorKind: "typeMismatch",
