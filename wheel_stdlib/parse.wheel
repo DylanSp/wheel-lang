@@ -1,0 +1,19 @@
+module StdParser
+{
+  function parseBool(str)
+  {
+    if (str == "true")
+    {
+      return { isValid: true, value: true };
+    }
+    else if (str == "false")
+    {
+      return { isValid: true, value: false };
+    }
+    else
+    {
+      return { isValid: false };
+    }
+  }
+}
+export parseBool;

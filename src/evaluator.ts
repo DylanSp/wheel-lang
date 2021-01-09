@@ -419,29 +419,6 @@ const defineNativeFunctions = (): Array<NativeFunctionValue> => {
       },
     },
     {
-      funcName: identifierIso.wrap("parseBool"),
-      valueKind: "nativeFunc",
-      argTypes: ["boolean"],
-      returnType: "object",
-      body: (str: StringValue): Map<Identifier, Value> => {
-        let result = new Map<Identifier, Value>();
-        const validityIdent = identifierIso.wrap("isValid");
-        const valueIdent = identifierIso.wrap("value");
-
-        if (str.value === "true") {
-          result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(true))(result);
-          result = insertAt(eqIdentifier)<Value>(valueIdent, makeBooleanValue(true))(result);
-        } else if (str.value === "false") {
-          result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(true))(result);
-          result = insertAt(eqIdentifier)<Value>(valueIdent, makeBooleanValue(false))(result);
-        } else {
-          result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(false))(result);
-        }
-
-        return result;
-      },
-    },
-    {
       funcName: identifierIso.wrap("readString"),
       valueKind: "nativeFunc",
       argTypes: [],
