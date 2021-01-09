@@ -403,12 +403,7 @@ const defineNativeFunctions = (): Array<NativeFunctionValue> => {
       argTypes: ["string"],
       returnType: "object",
       body: (str: StringValue): Map<Identifier, Value> => {
-        console.log(`str:`);
-        console.log(str);
-
         const parsed = parseFloat(str.value);
-
-        console.log(`parsed: ${parsed}`);
 
         let result = new Map<Identifier, Value>();
         const validityIdent = identifierIso.wrap("isValid");
