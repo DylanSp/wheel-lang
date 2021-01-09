@@ -3683,355 +3683,6 @@ describe("Evaluator", () => {
         consoleLogSpy.mockRestore();
       });
 
-      it('Given input of "1.2", evaluates { import readNum from Native; let readResult = readNum(); if (readResult.isValid) { return readResult.value; } else { return 0; } } to 1.2', () => {
-        // Arrange
-        const ast: Block = [
-          {
-            statementKind: "import",
-            moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("readNum")],
-          },
-          {
-            statementKind: "varDecl",
-            variableName: identifierIso.wrap("readResult"),
-          },
-          {
-            statementKind: "assignment",
-            variableName: identifierIso.wrap("readResult"),
-            variableValue: {
-              expressionKind: "funcCall",
-              args: [],
-              callee: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("readNum"),
-              },
-            },
-          },
-          {
-            statementKind: "if",
-            condition: {
-              expressionKind: "get",
-              object: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("readResult"),
-              },
-              field: identifierIso.wrap("isValid"),
-            },
-            trueBody: [
-              {
-                statementKind: "return",
-                returnedValue: {
-                  expressionKind: "get",
-                  object: {
-                    expressionKind: "variableRef",
-                    variableName: identifierIso.wrap("readResult"),
-                  },
-                  field: identifierIso.wrap("value"),
-                },
-              },
-            ],
-            falseBody: [
-              {
-                statementKind: "return",
-                returnedValue: {
-                  expressionKind: "numberLit",
-                  value: 0,
-                },
-              },
-            ],
-          },
-        ];
-        const inputValue = 1.2;
-        const promptSpy = jest.spyOn(readlineSync, "prompt").mockImplementation(() => inputValue.toString());
-
-        // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
-
-        // Assert
-        if (!isRight(evalResult)) {
-          throw new Error("Evaluation failed, should have succeeded");
-        }
-
-        if (evalResult.right.valueKind !== "number") {
-          throw new Error("Evaluated to non-numeric value");
-        }
-
-        expect(evalResult.right.value).toBe(inputValue);
-
-        // Cleanup
-        promptSpy.mockRestore();
-      });
-
-      it('Given input of "notANumber", evaluates { import readNum from Native; let readResult = readNum(); return readResult.isValid; } to false', () => {
-        // Arrange
-        const ast: Block = [
-          {
-            statementKind: "import",
-            moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("readNum")],
-          },
-          {
-            statementKind: "varDecl",
-            variableName: identifierIso.wrap("readResult"),
-          },
-          {
-            statementKind: "assignment",
-            variableName: identifierIso.wrap("readResult"),
-            variableValue: {
-              expressionKind: "funcCall",
-              args: [],
-              callee: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("readNum"),
-              },
-            },
-          },
-          {
-            statementKind: "return",
-            returnedValue: {
-              expressionKind: "get",
-              object: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("readResult"),
-              },
-              field: identifierIso.wrap("isValid"),
-            },
-          },
-        ];
-        const promptSpy = jest.spyOn(readlineSync, "prompt").mockImplementation(() => "notANumber");
-
-        // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
-
-        // Assert
-        if (!isRight(evalResult)) {
-          throw new Error("Evaluation failed, should have succeeded");
-        }
-
-        if (evalResult.right.valueKind !== "boolean") {
-          throw new Error("Evaluated to non-boolean value");
-        }
-
-        expect(evalResult.right.isTrue).toBe(false);
-
-        // Cleanup
-        promptSpy.mockRestore();
-      });
-
-      it('Given input of "true", evaluates { import readBool from Native; let readResult = readBool(); if (readResult.isValid) { return readResult.value; } else { return 0; } } to true', () => {
-        // Arrange
-        const ast: Block = [
-          {
-            statementKind: "import",
-            moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("readBool")],
-          },
-          {
-            statementKind: "varDecl",
-            variableName: identifierIso.wrap("readResult"),
-          },
-          {
-            statementKind: "assignment",
-            variableName: identifierIso.wrap("readResult"),
-            variableValue: {
-              expressionKind: "funcCall",
-              args: [],
-              callee: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("readBool"),
-              },
-            },
-          },
-          {
-            statementKind: "if",
-            condition: {
-              expressionKind: "get",
-              object: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("readResult"),
-              },
-              field: identifierIso.wrap("isValid"),
-            },
-            trueBody: [
-              {
-                statementKind: "return",
-                returnedValue: {
-                  expressionKind: "get",
-                  object: {
-                    expressionKind: "variableRef",
-                    variableName: identifierIso.wrap("readResult"),
-                  },
-                  field: identifierIso.wrap("value"),
-                },
-              },
-            ],
-            falseBody: [
-              {
-                statementKind: "return",
-                returnedValue: {
-                  expressionKind: "numberLit",
-                  value: 0,
-                },
-              },
-            ],
-          },
-        ];
-        const inputValue = true;
-        const promptSpy = jest.spyOn(readlineSync, "prompt").mockImplementation(() => inputValue.toString());
-
-        // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
-
-        // Assert
-        if (!isRight(evalResult)) {
-          throw new Error("Evaluation failed, should have succeeded");
-        }
-
-        if (evalResult.right.valueKind !== "boolean") {
-          throw new Error("Evaluated to non-boolean value");
-        }
-
-        expect(evalResult.right.isTrue).toBe(inputValue);
-
-        // Cleanup
-        promptSpy.mockRestore();
-      });
-
-      it('Given input of "false", evaluates { import readBool from Native; let readResult = readBool(); if (readResult.isValid) { return readResult.value; } else { return 0; } } to false', () => {
-        // Arrange
-        const ast: Block = [
-          {
-            statementKind: "import",
-            moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("readBool")],
-          },
-          {
-            statementKind: "varDecl",
-            variableName: identifierIso.wrap("readResult"),
-          },
-          {
-            statementKind: "assignment",
-            variableName: identifierIso.wrap("readResult"),
-            variableValue: {
-              expressionKind: "funcCall",
-              args: [],
-              callee: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("readBool"),
-              },
-            },
-          },
-          {
-            statementKind: "if",
-            condition: {
-              expressionKind: "get",
-              object: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("readResult"),
-              },
-              field: identifierIso.wrap("isValid"),
-            },
-            trueBody: [
-              {
-                statementKind: "return",
-                returnedValue: {
-                  expressionKind: "get",
-                  object: {
-                    expressionKind: "variableRef",
-                    variableName: identifierIso.wrap("readResult"),
-                  },
-                  field: identifierIso.wrap("value"),
-                },
-              },
-            ],
-            falseBody: [
-              {
-                statementKind: "return",
-                returnedValue: {
-                  expressionKind: "numberLit",
-                  value: 0,
-                },
-              },
-            ],
-          },
-        ];
-        const inputValue = false;
-        const promptSpy = jest.spyOn(readlineSync, "prompt").mockImplementation(() => inputValue.toString());
-
-        // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
-
-        // Assert
-        if (!isRight(evalResult)) {
-          throw new Error("Evaluation failed, should have succeeded");
-        }
-
-        if (evalResult.right.valueKind !== "boolean") {
-          throw new Error("Evaluated to non-boolean value");
-        }
-
-        expect(evalResult.right.isTrue).toBe(inputValue);
-
-        // Cleanup
-        promptSpy.mockRestore();
-      });
-
-      it('Given input of "notABool", evaluates { import readBool from Native; let readResult = readBool(); return readResult.isValid; } to false', () => {
-        // Arrange
-        const ast: Block = [
-          {
-            statementKind: "import",
-            moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("readBool")],
-          },
-          {
-            statementKind: "varDecl",
-            variableName: identifierIso.wrap("readResult"),
-          },
-          {
-            statementKind: "assignment",
-            variableName: identifierIso.wrap("readResult"),
-            variableValue: {
-              expressionKind: "funcCall",
-              args: [],
-              callee: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("readBool"),
-              },
-            },
-          },
-          {
-            statementKind: "return",
-            returnedValue: {
-              expressionKind: "get",
-              object: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("readResult"),
-              },
-              field: identifierIso.wrap("isValid"),
-            },
-          },
-        ];
-        const promptSpy = jest.spyOn(readlineSync, "prompt").mockImplementation(() => "notABool");
-
-        // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
-
-        // Assert
-        if (!isRight(evalResult)) {
-          throw new Error("Evaluation failed, should have succeeded");
-        }
-
-        if (evalResult.right.valueKind !== "boolean") {
-          throw new Error("Evaluated to non-boolean value");
-        }
-
-        expect(evalResult.right.isTrue).toBe(false);
-
-        // Cleanup
-        promptSpy.mockRestore();
-      });
-
       it('Given input of "test", evaluates { import readString from Native; let readResult = readString(); return readResult; } to "test"', () => {
         // Arrange
         const ast: Block = [
@@ -4443,6 +4094,279 @@ describe("Evaluator", () => {
 
         // Cleanup
         consoleLogSpy.mockRestore();
+      });
+
+      it('Evaluates{ import parseNum from Native; let str = "1"; let result = parseNum(str); } if (result.isValid) { return result.value; } else { return 0; } } to 1 (parseNum on integers)', () => {
+        // Arrange
+        const ast: Block = [
+          {
+            statementKind: "import",
+            imports: [identifierIso.wrap("parseNum")],
+            moduleName: NATIVE_MODULE_NAME,
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("str"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("str"),
+            variableValue: {
+              expressionKind: "stringLit",
+              value: "1",
+            },
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("result"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("result"),
+            variableValue: {
+              expressionKind: "funcCall",
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("parseNum"),
+              },
+              args: [
+                {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("str"),
+                },
+              ],
+            },
+          },
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("result"),
+              },
+              field: identifierIso.wrap("isValid"),
+            },
+            trueBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "get",
+                  object: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("result"),
+                  },
+                  field: identifierIso.wrap("value"),
+                },
+              },
+            ],
+            falseBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 0,
+                },
+              },
+            ],
+          },
+        ];
+
+        // Act
+        const evalResult = evaluateProgram(wrapBlock(ast));
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numberic value");
+        }
+
+        expect(evalResult.right.value).toBe(1);
+      });
+
+      it('Evaluates{ import parseNum from Native; let str = "2.5"; let result = parseNum(str); } if (result.isValid) { return result.value; } else { return 0; } } to 2.3 (parseNum on decimals)', () => {
+        // Arrange
+        const ast: Block = [
+          {
+            statementKind: "import",
+            imports: [identifierIso.wrap("parseNum")],
+            moduleName: NATIVE_MODULE_NAME,
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("str"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("str"),
+            variableValue: {
+              expressionKind: "stringLit",
+              value: "2.5",
+            },
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("result"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("result"),
+            variableValue: {
+              expressionKind: "funcCall",
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("parseNum"),
+              },
+              args: [
+                {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("str"),
+                },
+              ],
+            },
+          },
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("result"),
+              },
+              field: identifierIso.wrap("isValid"),
+            },
+            trueBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "get",
+                  object: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("result"),
+                  },
+                  field: identifierIso.wrap("value"),
+                },
+              },
+            ],
+            falseBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 0,
+                },
+              },
+            ],
+          },
+        ];
+
+        // Act
+        const evalResult = evaluateProgram(wrapBlock(ast));
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numberic value");
+        }
+
+        expect(evalResult.right.value).toBe(2.5);
+      });
+
+      it('Evaluates{ import parseNum from Native; let str = "test"; let result = parseNum(str); } if (result.isValid) { return result.value; } else { return 0; } } to 0 (parseNum on non-numbers)', () => {
+        // Arrange
+        const ast: Block = [
+          {
+            statementKind: "import",
+            imports: [identifierIso.wrap("parseNum")],
+            moduleName: NATIVE_MODULE_NAME,
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("str"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("str"),
+            variableValue: {
+              expressionKind: "stringLit",
+              value: "test",
+            },
+          },
+          {
+            statementKind: "varDecl",
+            variableName: identifierIso.wrap("result"),
+          },
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("result"),
+            variableValue: {
+              expressionKind: "funcCall",
+              callee: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("parseNum"),
+              },
+              args: [
+                {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("str"),
+                },
+              ],
+            },
+          },
+          {
+            statementKind: "if",
+            condition: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("result"),
+              },
+              field: identifierIso.wrap("isValid"),
+            },
+            trueBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "get",
+                  object: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("result"),
+                  },
+                  field: identifierIso.wrap("value"),
+                },
+              },
+            ],
+            falseBody: [
+              {
+                statementKind: "return",
+                returnedValue: {
+                  expressionKind: "numberLit",
+                  value: 0,
+                },
+              },
+            ],
+          },
+        ];
+
+        // Act
+        const evalResult = evaluateProgram(wrapBlock(ast));
+
+        // Assert
+        if (!isRight(evalResult)) {
+          throw new Error("Evaluation failed, should have succeeded");
+        }
+
+        if (evalResult.right.valueKind !== "number") {
+          throw new Error("Evaluated to non-numberic value");
+        }
+
+        expect(evalResult.right.value).toBe(0);
       });
     });
 
