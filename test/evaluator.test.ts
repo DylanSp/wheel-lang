@@ -1790,13 +1790,13 @@ describe("Evaluator", () => {
         expect(evalResult.right.valueKind).toBe("null");
       });
 
-      it("Evaluates { import printNum from Native; function f() {  printNum(1); return; } f(); return 2; } to 2 (Evaluates programs with standalone function calls)", () => {
+      it("Evaluates { import print from Native; function f() {  print(1); return; } f(); return 2; } to 2 (Evaluates programs with standalone function calls)", () => {
         // Arrange
         const ast: Block = [
           {
             statementKind: "import",
             moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("printNum")],
+            imports: [identifierIso.wrap("print")],
           },
           {
             statementKind: "funcDecl",
@@ -1815,7 +1815,7 @@ describe("Evaluator", () => {
                   ],
                   callee: {
                     expressionKind: "variableRef",
-                    variableName: identifierIso.wrap("printNum"),
+                    variableName: identifierIso.wrap("print"),
                   },
                 },
               },
@@ -1866,13 +1866,13 @@ describe("Evaluator", () => {
         consoleLogSpy.mockRestore();
       });
 
-      it("Evaluates { import printNum from Native; function f() { printNum(3); } f(); return 4; } to 4 (Evaluates programs with function calls with no explicit return)", () => {
+      it("Evaluates { import print from Native; function f() { print(3); } f(); return 4; } to 4 (Evaluates programs with function calls with no explicit return)", () => {
         // Arrange
         const ast: Block = [
           {
             statementKind: "import",
             moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("printNum")],
+            imports: [identifierIso.wrap("print")],
           },
           {
             statementKind: "funcDecl",
@@ -1891,7 +1891,7 @@ describe("Evaluator", () => {
                   ],
                   callee: {
                     expressionKind: "variableRef",
-                    variableName: identifierIso.wrap("printNum"),
+                    variableName: identifierIso.wrap("print"),
                   },
                 },
               },
@@ -3665,14 +3665,14 @@ describe("Evaluator", () => {
         jest.useRealTimers();
       });
 
-      it('Prints "1" with console.log when evaluating { import printNum from Native; printNum(1); }', () => {
+      it('Prints "1" with console.log when evaluating { import print from Native; print(1); }', () => {
         // Arrange
         const num = 1;
         const ast: Block = [
           {
             statementKind: "import",
             moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("printNum")],
+            imports: [identifierIso.wrap("print")],
           },
           {
             statementKind: "expression",
@@ -3686,7 +3686,7 @@ describe("Evaluator", () => {
               ],
               callee: {
                 expressionKind: "variableRef",
-                variableName: identifierIso.wrap("printNum"),
+                variableName: identifierIso.wrap("print"),
               },
             },
           },
@@ -3709,14 +3709,14 @@ describe("Evaluator", () => {
         consoleLogSpy.mockRestore();
       });
 
-      it('Prints "true" with console.log when evaluating { import printBool from Native; printBool(true); }', () => {
+      it('Prints "true" with console.log when evaluating { import print from Native; print(true); }', () => {
         // Arrange
         const bool = true;
         const ast: Block = [
           {
             statementKind: "import",
             moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("printBool")],
+            imports: [identifierIso.wrap("print")],
           },
           {
             statementKind: "expression",
@@ -3730,7 +3730,7 @@ describe("Evaluator", () => {
               ],
               callee: {
                 expressionKind: "variableRef",
-                variableName: identifierIso.wrap("printBool"),
+                variableName: identifierIso.wrap("print"),
               },
             },
           },
@@ -3805,14 +3805,14 @@ describe("Evaluator", () => {
         promptSpy.mockRestore();
       });
 
-      it('Prints "test" with console.log when evaluating { import printString from Native; printString("test"); }', () => {
+      it('Prints "test" with console.log when evaluating { import print from Native; print("test"); }', () => {
         // Arrange
         const str = "test";
         const ast: Block = [
           {
             statementKind: "import",
             moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("printString")],
+            imports: [identifierIso.wrap("print")],
           },
           {
             statementKind: "expression",
@@ -3826,7 +3826,7 @@ describe("Evaluator", () => {
               ],
               callee: {
                 expressionKind: "variableRef",
-                variableName: identifierIso.wrap("printString"),
+                variableName: identifierIso.wrap("print"),
               },
             },
           },
@@ -3849,13 +3849,13 @@ describe("Evaluator", () => {
         consoleLogSpy.mockRestore();
       });
 
-      it('Prints "{}" with console.log when evaluating { import printObj from Native; printObj({}); }', () => {
+      it('Prints "{}" with console.log when evaluating { import print from Native; print({}); }', () => {
         // Arrange
         const ast: Block = [
           {
             statementKind: "import",
             moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("printObj")],
+            imports: [identifierIso.wrap("print")],
           },
           {
             statementKind: "expression",
@@ -3869,7 +3869,7 @@ describe("Evaluator", () => {
               ],
               callee: {
                 expressionKind: "variableRef",
-                variableName: identifierIso.wrap("printObj"),
+                variableName: identifierIso.wrap("print"),
               },
             },
           },
@@ -3892,13 +3892,13 @@ describe("Evaluator", () => {
         consoleLogSpy.mockRestore();
       });
 
-      it('Prints "{ field: 1 }" with console.log when evaluating { import printObj from Native; let obj = { field: 1 }; printObj(obj); }', () => {
+      it('Prints "{ field: 1 }" with console.log when evaluating { import print from Native; let obj = { field: 1 }; print(obj); }', () => {
         // Arrange
         const ast: Block = [
           {
             statementKind: "import",
             moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("printObj")],
+            imports: [identifierIso.wrap("print")],
           },
           {
             statementKind: "varDecl",
@@ -3932,7 +3932,7 @@ describe("Evaluator", () => {
               ],
               callee: {
                 expressionKind: "variableRef",
-                variableName: identifierIso.wrap("printObj"),
+                variableName: identifierIso.wrap("print"),
               },
             },
           },
@@ -3955,13 +3955,13 @@ describe("Evaluator", () => {
         consoleLogSpy.mockRestore();
       });
 
-      it('Prints "{ fieldA: 1, fieldB: true }" with console.log when evaluating { import printObj from Native; let obj = { fieldA: 1, fieldB: true }; printObj(obj); }', () => {
+      it('Prints "{ fieldA: 1, fieldB: true }" with console.log when evaluating { import print from Native; let obj = { fieldA: 1, fieldB: true }; print(obj); }', () => {
         // Arrange
         const ast: Block = [
           {
             statementKind: "import",
             moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("printObj")],
+            imports: [identifierIso.wrap("print")],
           },
           {
             statementKind: "varDecl",
@@ -4002,7 +4002,7 @@ describe("Evaluator", () => {
               ],
               callee: {
                 expressionKind: "variableRef",
-                variableName: identifierIso.wrap("printObj"),
+                variableName: identifierIso.wrap("print"),
               },
             },
           },
@@ -4025,13 +4025,13 @@ describe("Evaluator", () => {
         consoleLogSpy.mockRestore();
       });
 
-      it('Prints "{ fieldA: 1, fieldB: true }" with console.log when evaluating { import printObj from Native; let obj = { fieldB: true, fieldA: 1 }; printObj(obj); } (sorts object fields alphabetically by field name when printing)', () => {
+      it('Prints "{ fieldA: 1, fieldB: true }" with console.log when evaluating { import print from Native; let obj = { fieldB: true, fieldA: 1 }; print(obj); } (sorts object fields alphabetically by field name when printing)', () => {
         // Arrange
         const ast: Block = [
           {
             statementKind: "import",
             moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("printObj")],
+            imports: [identifierIso.wrap("print")],
           },
           {
             statementKind: "varDecl",
@@ -4072,7 +4072,7 @@ describe("Evaluator", () => {
               ],
               callee: {
                 expressionKind: "variableRef",
-                variableName: identifierIso.wrap("printObj"),
+                variableName: identifierIso.wrap("print"),
               },
             },
           },
@@ -4095,13 +4095,13 @@ describe("Evaluator", () => {
         consoleLogSpy.mockRestore();
       });
 
-      it('Prints "{ field: { nested: "value" } }" with console.log when evaluating { import printObj from Native; let obj = { field: { nested: "value" } }; printObj(obj); }', () => {
+      it('Prints "{ field: { nested: "value" } }" with console.log when evaluating { import print from Native; let obj = { field: { nested: "value" } }; print(obj); }', () => {
         // Arrange
         const ast: Block = [
           {
             statementKind: "import",
             moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("printObj")],
+            imports: [identifierIso.wrap("print")],
           },
           {
             statementKind: "varDecl",
@@ -4143,7 +4143,7 @@ describe("Evaluator", () => {
               ],
               callee: {
                 expressionKind: "variableRef",
-                variableName: identifierIso.wrap("printObj"),
+                variableName: identifierIso.wrap("print"),
               },
             },
           },
@@ -4571,14 +4571,14 @@ describe("Evaluator", () => {
         expect(evalResult.right.value).toBe(3);
       });
 
-      it("Only logs *once* from module Source { import printNum from Native; printNum(0); let num1 = 1; let num2 = 2; } export num1, num2; module Main { import num1, num2 from Source; return num1 + num2; } to 3 (imported modules are only evaluated once, even if imported multiple times)", () => {
+      it("Only logs *once* from module Source { import print from Native; print(0); let num1 = 1; let num2 = 2; } export num1, num2; module Main { import num1, num2 from Source; return num1 + num2; } to 3 (imported modules are only evaluated once, even if imported multiple times)", () => {
         // Arrange
         const sourceModule: Module = {
           name: identifierIso.wrap("Source"),
           body: [
             {
               statementKind: "import",
-              imports: [identifierIso.wrap("printNum")],
+              imports: [identifierIso.wrap("print")],
               moduleName: NATIVE_MODULE_NAME,
             },
             {
@@ -4587,7 +4587,7 @@ describe("Evaluator", () => {
                 expressionKind: "funcCall",
                 callee: {
                   expressionKind: "variableRef",
-                  variableName: identifierIso.wrap("printNum"),
+                  variableName: identifierIso.wrap("print"),
                 },
                 args: [
                   {

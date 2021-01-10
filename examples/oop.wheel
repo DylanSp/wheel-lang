@@ -1,6 +1,6 @@
 module Main
 {
-  import printString from Native;
+  import print from Native;
 
   class Dog
   {
@@ -11,7 +11,7 @@ module Main
 
     printName()
     {
-      printString(this.name);
+      print(this.name);
     }
   }
 

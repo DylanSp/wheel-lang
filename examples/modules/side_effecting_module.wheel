@@ -1,7 +1,7 @@
 module Source
 {
-  import printNum from Native;
-  printNum(0);
+  import print from Native;
+  print(0);
 
   let num1 = 1;
   let num2 = 2;

@@ -1,15 +1,15 @@
 module Main
 {
   import readNum from StdReader;
-  import printNum from Native;
+  import print from Native;
 
   let x = readNum();
   if (x.isValid)
   {
-    return printNum(x.value);
+    return print(x.value);
   }
   else
   {
-    return printNum(0);
+    return print(0);
   }
 }

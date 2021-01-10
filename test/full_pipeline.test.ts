@@ -263,9 +263,9 @@ describe("Full interpretation pipeline", () => {
   describe("Circular dependency errors", () => {
     it("Reports a circular dependency error on modules with circular dependencies", () => {
       // Arrange
-      const aModuleText = "module A { import numB from B; printNum(numB); numA = 1; } export numA;";
-      const bModuleText = "module B { import numA from A; printNum(numA); numB = 2; } export numB;";
-      const mainModuleText = "module Main { import numA from A; printNum(0); }";
+      const aModuleText = "module A { import numB from B; print(numB); numA = 1; } export numA;";
+      const bModuleText = "module B { import numA from A; print(numA); numB = 2; } export numB;";
+      const mainModuleText = "module Main { import numA from A; print(0); }";
 
       // Act
       const runResult = runProgram([aModuleText, bModuleText, mainModuleText]);

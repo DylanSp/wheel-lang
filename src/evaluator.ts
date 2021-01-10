@@ -171,7 +171,7 @@ const makeClosureValue = (
 interface NativeFunctionValue {
   valueKind: "nativeFunc";
   funcName: Identifier;
-  argTypes: Array<ValueKind>;
+  argCount: number;
   body: Function;
   returnType: ValueKind;
 }
@@ -365,42 +365,45 @@ const defineNativeFunctions = (): Array<NativeFunctionValue> => {
     {
       funcName: identifierIso.wrap("clock"),
       valueKind: "nativeFunc",
-      argTypes: [],
+      argCount: 0,
       returnType: "number",
       body: (): number => Date.now(),
     },
     {
-      funcName: identifierIso.wrap("printNum"),
+      funcName: identifierIso.wrap("print"),
       valueKind: "nativeFunc",
-      argTypes: ["number"],
+      argCount: 1,
       returnType: "null",
-      body: (numVal: NumberValue): void => console.log(numVal.value),
-    },
-    {
-      funcName: identifierIso.wrap("printBool"),
-      valueKind: "nativeFunc",
-      argTypes: ["boolean"],
-      returnType: "null",
-      body: (boolVal: BooleanValue): void => console.log(boolVal.isTrue),
-    },
-    {
-      funcName: identifierIso.wrap("printString"),
-      valueKind: "nativeFunc",
-      argTypes: ["string"],
-      returnType: "null",
-      body: (strVal: StringValue): void => console.log(`"${strVal.value}"`),
-    },
-    {
-      funcName: identifierIso.wrap("printObj"),
-      valueKind: "nativeFunc",
-      argTypes: ["object"],
-      returnType: "null",
-      body: (objVal: ObjectValue): void => console.log(objectToString(objVal)),
+      body: (value: Value): void => {
+        switch (value.valueKind) {
+          case "boolean":
+            console.log(value.isTrue);
+            break;
+          case "number":
+            console.log(value.value);
+            break;
+          case "string":
+            console.log(`"${value.value}"`);
+            break;
+          case "object":
+            console.log(objectToString(value));
+            break;
+          case "null":
+            console.log("null");
+            break;
+          case "closure":
+            console.log("<closure>");
+            break;
+          case "nativeFunc":
+            console.log("<native function>");
+            break;
+        }
+      },
     },
     {
       funcName: identifierIso.wrap("parseNum"),
       valueKind: "nativeFunc",
-      argTypes: ["string"],
+      argCount: 1,
       returnType: "object",
       body: (str: StringValue): Map<Identifier, Value> => {
         const parsed = parseFloat(str.value);
@@ -421,7 +424,7 @@ const defineNativeFunctions = (): Array<NativeFunctionValue> => {
     {
       funcName: identifierIso.wrap("readString"),
       valueKind: "nativeFunc",
-      argTypes: [],
+      argCount: 0,
       returnType: "string",
       body: (): string => prompt(),
     },
@@ -737,10 +740,11 @@ export const evaluateModule = (
       }
     } else {
       // native function
-      if (func.argTypes.length !== args.length) {
+
+      if (func.argCount !== args.length) {
         throw new RuntimeError("Wrong number of arguments when applying function", {
           runtimeErrorKind: "arityMismatch",
-          expectedNumArgs: func.argTypes.length,
+          expectedNumArgs: func.argCount,
           actualNumArgs: args.length,
         });
       }

@@ -1,0 +1,32 @@
+module Main
+{
+  import print from Native;
+  import LinkedList from StdCollections;
+
+  let list = LinkedList();
+  print("Empty list");
+  list.print();
+
+  list.pushEnd(0);
+  list.pushEnd(1);
+  list.pushEnd(2);
+  print("list should be [0, 1, 2]");
+  list.print();
+
+  list.pushStart(-1);
+  list.pushStart(-2);
+  print("list should be [-2, -1, 0, 1, 2]");
+  list.print();
+
+  let poppedFromStart = list.popStart();
+  print("Popped value, should be -2:");
+  print(poppedFromStart);
+  print("list should be [-1, 0, 1, 2]");
+  list.print();
+
+  let poppedFromEnd = list.popEnd();
+  print("Popped value, should be 2:");
+  print(poppedFromEnd);
+  print("list should be [-1, 0, 1]");
+  list.print();
+}

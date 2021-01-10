@@ -1,6 +1,6 @@
 module StdCollections
 {
-  import printNum, printString from Native;
+  import print from Native;
 
   class LinkedListNode
   {
@@ -12,7 +12,7 @@ module StdCollections
     }
   }
 
-  class NumLinkedList
+  class LinkedList
   {
     constructor()
     {
@@ -124,10 +124,10 @@ module StdCollections
 
     print()
     {
-      printString("[");
-      this.forEach(printNum);
-      printString("]");
+      print("[");
+      this.forEach(print);
+      print("]");
     }
   }
 }
-export NumLinkedList;
+export LinkedList;

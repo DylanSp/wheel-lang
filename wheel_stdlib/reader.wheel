@@ -1,13 +1,11 @@
 module StdReader
 {
-  import parseNum, readString, printString from Native;
+  import parseNum, readString from Native;
   import parseBool from StdParser;
 
   function readNum() 
   {
-    let str = readString();
-    printString(str);
-    return parseNum(str);
+    return parseNum(readString());
   }
 
   function readBool()
