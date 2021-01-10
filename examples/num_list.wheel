@@ -1,0 +1,32 @@
+module Main
+{
+  import printNum, printString from Native;
+  import NumLinkedList from StdCollections;
+
+  let list = NumLinkedList();
+  printString("Empty list");
+  list.print();
+
+  list.pushEnd(0);
+  list.pushEnd(1);
+  list.pushEnd(2);
+  printString("list should be [0, 1, 2]");
+  list.print();
+
+  list.pushStart(-1);
+  list.pushStart(-2);
+  printString("list should be [-2, -1, 0, 1, 2]");
+  list.print();
+
+  let poppedFromStart = list.popStart();
+  printString("Popped value, should be -2:");
+  printNum(poppedFromStart);
+  printString("list should be [-1, 0, 1, 2]");
+  list.print();
+
+  let poppedFromEnd = list.popEnd();
+  printString("Popped value, should be 2:");
+  printNum(poppedFromEnd);
+  printString("list should be [-1, 0, 1]");
+  list.print();
+}
