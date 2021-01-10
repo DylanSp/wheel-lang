@@ -987,6 +987,13 @@ export const parseModule = (input: Array<Token>): Either<ParseFailure, Module> =
       position += 1; // move past right brace
 
       return objectLit;
+    } else if (input[position]?.tokenKind === "this") {
+      position += 1;
+
+      return {
+        expressionKind: "variableRef",
+        variableName: identifierIso.wrap("this"),
+      };
     } else if (input[position]?.tokenKind !== "identifier") {
       throw new ParseError("Expected identifier");
     } else {
