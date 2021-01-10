@@ -490,6 +490,8 @@ export const parseModule = (input: Array<Token>): Either<ParseFailure, Module> =
         case "class": {
           position += 1; // move past "class"
 
+          let constructorDeclared = false;
+
           if (input[position]?.tokenKind !== "identifier") {
             throw new ParseError("Expected identifier");
           }
@@ -509,6 +511,11 @@ export const parseModule = (input: Array<Token>): Either<ParseFailure, Module> =
 
           while (input[position]?.tokenKind === "constructor" || input[position]?.tokenKind === "identifier") {
             if (input[position]?.tokenKind === "constructor") {
+              if (constructorDeclared) {
+                throw new ParseError("Expected at most one constructor");
+              }
+              constructorDeclared = true;
+
               position += 1; // move past "constructor"
 
               if (input[position]?.tokenKind !== "leftParen") {

@@ -9431,5 +9431,77 @@ describe("Parser", () => {
 
       expect(parseResult.left.message).toMatch(/Expected }/);
     });
+
+    it("Expects at most one constructor in class declaration", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "class",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("TestClass"),
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "constructor",
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+        {
+          tokenKind: "constructor",
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected at most one constructor/);
+    });
   });
 });
