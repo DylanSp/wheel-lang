@@ -749,6 +749,9 @@ export const evaluateModule = (
         });
       }
 
+      // TODO check argument types so errors from native functions don't spill out to user output?
+      // TODO how to store argTypes for polymorphic native funcs like print()?
+
       const possibleResult = func.body(...args);
       switch (func.returnType) {
         case "number":
