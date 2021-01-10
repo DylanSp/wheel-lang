@@ -1,0 +1,7 @@
+module Main
+{
+  import print from Native;
+  import args from Args;
+
+  args.forEach(print);
+}
