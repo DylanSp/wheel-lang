@@ -600,13 +600,51 @@ export const parseModule = (input: Array<Token>): Either<ParseFailure, Module> =
 
               constructor.argNames = args;
               constructor.body = parseBlock();
+            } else {
+              const methodName = (input[position] as IdentifierToken).name; // cast should always succeed
+              position += 1; // move past identifier
+
+              if (input[position]?.tokenKind !== "leftParen") {
+                throw new ParseError("Expected (");
+              }
+              position += 1; // move past left paren
+
+              const args: Array<Identifier> = [];
+              while (input[position]?.tokenKind === "identifier") {
+                args.push((input[position] as IdentifierToken).name);
+                position += 1;
+
+                if (input[position]?.tokenKind === "rightParen") {
+                  break;
+                }
+
+                if (input[position]?.tokenKind !== "comma") {
+                  throw new ParseError("Expected ,");
+                }
+
+                position += 1; // move past comma
+              }
+
+              if (input[position]?.tokenKind !== "rightParen") {
+                throw new ParseError("Expected )");
+              }
+              position += 1; // move past right paren
+
+              const body = parseBlock();
+
+              const method: Method = {
+                methodName,
+                argNames: args,
+                body,
+              };
+              methods.push(method);
             }
           }
 
           if (input[position]?.tokenKind !== "rightBrace") {
             throw new ParseError("Expected }");
           }
-          position += 1; // move past left brace
+          position += 1; // move past right brace
 
           statements.push({
             statementKind: "classDecl",

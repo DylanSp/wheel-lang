@@ -6026,7 +6026,7 @@ describe("Parser", () => {
     });
 
     describe("Class declarations", () => {
-      it("Parses a class declaration with empty constructor and no methods", () => {
+      it("Parses a class declaration with no explicit constructor and no methods", () => {
         // Arrange
         const tokens: Array<Token> = [
           {
@@ -6429,9 +6429,666 @@ describe("Parser", () => {
         ];
         expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
+
+      it("Parses a class declaration with empty constructor and one method with no arguments", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SampleClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("sampleMethod"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("someFunc"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          console.error(parseResult.left.message);
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SampleClass"),
+            constructor: {
+              argNames: [],
+              body: [],
+            },
+            methods: [
+              {
+                methodName: identifierIso.wrap("sampleMethod"),
+                argNames: [],
+                body: [
+                  {
+                    statementKind: "expression",
+                    expression: {
+                      expressionKind: "funcCall",
+                      callee: {
+                        expressionKind: "variableRef",
+                        variableName: identifierIso.wrap("someFunc"),
+                      },
+                      args: [],
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ];
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it("Parses a class declaration with empty constructor and one method with one argument", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SampleClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("sampleMethod"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("sampleArg"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SampleClass"),
+            constructor: {
+              argNames: [],
+              body: [],
+            },
+            methods: [
+              {
+                methodName: identifierIso.wrap("sampleMethod"),
+                argNames: [identifierIso.wrap("sampleArg")],
+                body: [],
+              },
+            ],
+          },
+        ];
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it("Parses a class declaration with empty constructor and one method with multiple arguments", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SampleClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("sampleMethod"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg1"),
+          },
+          {
+            tokenKind: "comma",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg2"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SampleClass"),
+            constructor: {
+              argNames: [],
+              body: [],
+            },
+            methods: [
+              {
+                methodName: identifierIso.wrap("sampleMethod"),
+                argNames: [identifierIso.wrap("arg1"), identifierIso.wrap("arg2")],
+                body: [],
+              },
+            ],
+          },
+        ];
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it("Parses a class declaration with empty constructor and multiple methods", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SampleClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("method1"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("method2"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SampleClass"),
+            constructor: {
+              argNames: [],
+              body: [],
+            },
+            methods: [
+              {
+                methodName: identifierIso.wrap("method1"),
+                argNames: [],
+                body: [],
+              },
+              {
+                methodName: identifierIso.wrap("method2"),
+                argNames: [],
+                body: [],
+              },
+            ],
+          },
+        ];
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it("Parses a class declaration with constructor before method", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SomeClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "constructor",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("someMethod"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SomeClass"),
+            constructor: {
+              argNames: [],
+              body: [],
+            },
+            methods: [
+              {
+                methodName: identifierIso.wrap("someMethod"),
+                argNames: [],
+                body: [],
+              },
+            ],
+          },
+        ];
+
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it("Parses a class declaration with method before constructor", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SomeClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("someMethod"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "constructor",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SomeClass"),
+            constructor: {
+              argNames: [],
+              body: [],
+            },
+            methods: [
+              {
+                methodName: identifierIso.wrap("someMethod"),
+                argNames: [],
+                body: [],
+              },
+            ],
+          },
+        ];
+
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it("Parses a class declaration with constructor between methods", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SomeClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("method1"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "constructor",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("method2"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SomeClass"),
+            constructor: {
+              argNames: [],
+              body: [],
+            },
+            methods: [
+              {
+                methodName: identifierIso.wrap("method1"),
+                argNames: [],
+                body: [],
+              },
+              {
+                methodName: identifierIso.wrap("method2"),
+                argNames: [],
+                body: [],
+              },
+            ],
+          },
+        ];
+
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
     });
   });
 
+  // TODO reject multiple constructors
   describe("Parse errors", () => {
     it('Expects a module to begin with "module"', () => {
       // Arrange
