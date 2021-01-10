@@ -1,22 +1,20 @@
 module Main
 {
-  function getPlusOne (this)
+  import printString from Native;
+
+  class Dog
   {
-    function inner()
+    constructor(name)
     {
-      return this.x + 1;
+      this.name = name;
     }
 
-    return inner;
+    printName()
+    {
+      printString(this.name);
+    }
   }
 
-  let obj =
-  { 
-    x: 1,
-    getPlusOne: null
-  };
-
-  obj.getPlusOne = getPlusOne(obj);
-
-  return obj.getPlusOne();
+  let dog = Dog("Fido");
+  dog.printName();
 }

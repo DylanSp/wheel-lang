@@ -3,6 +3,7 @@ import { ScanError, Token, scan } from "./scanner";
 import { ParseFailure, parseModule, Module } from "./parser";
 import { RuntimeFailure, Value, evaluateProgram } from "./evaluator";
 import { isCyclicDependencyPresent } from "./cycle_checker";
+import { desugar } from "./desugar";
 
 /**
  * TYPES
@@ -56,15 +57,16 @@ export const runProgram = (moduleTexts: Array<string>): Either<PipelineError, Va
   }
 
   const parsedModules = parseResults.map((result) => (result as Right<Module>).right);
+  const desugaredModules = parsedModules.map(desugar);
 
-  const hasDependencyCycle = isCyclicDependencyPresent(parsedModules);
+  const hasDependencyCycle = isCyclicDependencyPresent(desugaredModules);
   if (hasDependencyCycle) {
     return left({
       pipelineErrorKind: "circularDep",
     });
   }
 
-  const evalResult = evaluateProgram(parsedModules);
+  const evalResult = evaluateProgram(desugaredModules);
   if (isLeft(evalResult)) {
     return left({
       pipelineErrorKind: "evaluation",
