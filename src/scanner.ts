@@ -18,6 +18,9 @@ export type Token =
   | ElseKeyword
   | WhileKeyword
   | NullKeyword
+  | ClassKeyword
+  | ConstructorKeyword
+  | ThisKeyword
   | Semicolon
   | Colon
   | Comma
@@ -90,6 +93,18 @@ interface WhileKeyword {
 
 interface NullKeyword {
   tokenKind: "null";
+}
+
+interface ClassKeyword {
+  tokenKind: "class";
+}
+
+interface ConstructorKeyword {
+  tokenKind: "constructor";
+}
+
+interface ThisKeyword {
+  tokenKind: "this";
 }
 
 interface Semicolon {
@@ -471,6 +486,24 @@ export const scan: Scan = (input: string) => {
             "from",
             {
               tokenKind: "from",
+            },
+          ],
+          [
+            "class",
+            {
+              tokenKind: "class",
+            },
+          ],
+          [
+            "constructor",
+            {
+              tokenKind: "constructor",
+            },
+          ],
+          [
+            "this",
+            {
+              tokenKind: "this",
             },
           ],
         ];
