@@ -1,6 +1,6 @@
 module Main
 {
-  import printString from Native;
+  import print from Native;
 
-  printString("test");
+  print("test");
 }

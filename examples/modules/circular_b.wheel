@@ -2,7 +2,7 @@ module B
 {
   import numA from A;
 
-  printNum(numA);
+  print(numA);
   numB = 2;
 }
 export numB;
