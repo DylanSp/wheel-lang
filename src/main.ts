@@ -1,22 +1,55 @@
 import { readdirSync, readFileSync } from "fs";
 import { join } from "path";
 import { isLeft } from "fp-ts/lib/Either";
+import yargs from "yargs";
 import { runProgram } from "./full_pipeline";
 
-const args = process.argv.slice(2); // ignore "node", JS filename
+const rawArgs = process.argv.slice(2); // ignore "node", JS filename
 
-if (args.length < 1) {
-  console.error("Usage: node dist/main.js [filename]");
-  process.exit(1);
-}
+const processedArgs = yargs(rawArgs)
+  .options({
+    files: { alias: "f", type: "array" },
+    args: { alias: "a", type: "array" },
+  })
+  .demandOption("files").argv;
+
+const stringifiedArgs = {
+  files: processedArgs.files.map((fileName) => fileName.toString()),
+  args: processedArgs.args?.map((arg) => arg.toString()),
+};
+
+const createArgsText = (args: Array<string> | undefined): Array<string> => {
+  const modulePrologue = `
+    module Args
+    {
+      import LinkedList from StdCollections;
+
+      let args = LinkedList();
+    `;
+
+  const argInitializationText: Array<string> = [];
+  args?.forEach((arg) => {
+    argInitializationText.push(`
+      args.pushEnd("${arg}");
+    `);
+  });
+
+  const moduleEpilogue = `
+    }
+    export args;
+    `;
+
+  return [modulePrologue + argInitializationText.join("\n") + moduleEpilogue];
+};
 
 try {
   const stdlibTexts = readdirSync(join(__dirname, "..", "wheel_stdlib")).map((filename) =>
     readFileSync(join(__dirname, "..", "wheel_stdlib", filename), "utf8"),
   );
 
-  const userProgramTexts = args.map((filename) => readFileSync(filename, "utf8"));
-  const programTexts = stdlibTexts.concat(userProgramTexts);
+  const userProgramTexts = stringifiedArgs.files.map((filename) => readFileSync(filename, "utf8"));
+  const argsText = createArgsText(stringifiedArgs.args);
+  const programTexts = stdlibTexts.concat(argsText).concat(userProgramTexts);
 
   const runResult = runProgram(programTexts);
 
