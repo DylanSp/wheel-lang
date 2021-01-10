@@ -7296,7 +7296,6 @@ describe("Parser", () => {
     });
   });
 
-  // TODO reject multiple constructors
   describe("Parse errors", () => {
     it('Expects a module to begin with "module"', () => {
       // Arrange
