@@ -39,6 +39,9 @@ describe("Scanner", () => {
         ["import", "import"],
         ["export", "export"],
         ["from", "from"],
+        ["class", "class"],
+        ["constructor", "constructor"],
+        ["this", "this"],
       ])('Recognizes "%s"', (input, tokenKind) => {
         // Act
         const scanResult = scan(input);
