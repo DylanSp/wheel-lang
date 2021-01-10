@@ -17,7 +17,7 @@ export interface Module {
 
 export type Block = Array<Statement>;
 
-type Statement =
+export type Statement =
   | FunctionDeclaration
   | ReturnStatement
   | VariableDeclaration
