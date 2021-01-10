@@ -371,6 +371,7 @@ export const parseModule = (input: Array<Token>): Either<ParseFailure, Module> =
 
           break;
         }
+        case "this":
         case "identifier": {
           const expression = parsePotentialCall();
 
@@ -412,68 +413,6 @@ export const parseModule = (input: Array<Token>): Either<ParseFailure, Module> =
           } else {
             throw new ParseError("Expected = or ;");
           }
-
-          break;
-        }
-        case "this": {
-          // assumed to be a setter on "this"
-          position += 1; // move past "this"
-
-          if (input[position]?.tokenKind !== "period") {
-            throw new Error("Expected .");
-          }
-          position += 1; // move past period
-
-          if (input[position]?.tokenKind !== "identifier") {
-            throw new Error("Expected identifier");
-          }
-          const fieldName = input[position] as IdentifierToken; // cast should always succeed
-          position += 1; // move past identifier
-
-          const inProgressSetter: Omit<SetStatement, "value"> = {
-            statementKind: "set",
-            object: {
-              expressionKind: "variableRef",
-              variableName: identifierIso.wrap("this"),
-            },
-            field: fieldName.name,
-          };
-
-          while (input[position]?.tokenKind === "period") {
-            position += 1; // move past period
-
-            if (input[position]?.tokenKind !== "identifier") {
-              throw new ParseError("Expected identifier");
-            }
-
-            const ident = (input[position] as IdentifierToken).name; // cast should always succeed
-
-            position += 1; // move past identifier
-
-            inProgressSetter.object = {
-              expressionKind: "get",
-              object: inProgressSetter.object,
-              field: inProgressSetter.field,
-            };
-            inProgressSetter.field = ident;
-          }
-
-          if (input[position]?.tokenKind !== "singleEquals") {
-            throw new Error("Expected =");
-          }
-          position += 1; // move past "="
-
-          const thisSetter: SetStatement = {
-            ...inProgressSetter,
-            value: parseLogicalExpr(),
-          };
-
-          if (input[position]?.tokenKind !== "semicolon") {
-            throw new ParseError("Expected ;");
-          }
-          position += 1; // move past semicolon
-
-          statements.push(thisSetter);
 
           break;
         }
