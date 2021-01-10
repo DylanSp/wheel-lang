@@ -6024,6 +6024,412 @@ describe("Parser", () => {
         expect(parseResult.right).toEqual(desiredModule);
       });
     });
+
+    describe("Class declarations", () => {
+      it("Parses a class declaration with empty constructor and no methods", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SampleClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SampleClass"),
+            constructor: {
+              argNames: [],
+              body: [],
+            },
+            methods: [],
+          },
+        ];
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it("Parses a class declaration with no-argument constructor and no methods", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SampleClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "constructor",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "this",
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("field"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 1,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          console.error(parseResult.left.message);
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SampleClass"),
+            constructor: {
+              argNames: [],
+              body: [
+                {
+                  statementKind: "set",
+                  object: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("this"),
+                  },
+                  field: identifierIso.wrap("field"),
+                  value: {
+                    expressionKind: "numberLit",
+                    value: 1,
+                  },
+                },
+              ],
+            },
+            methods: [],
+          },
+        ];
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it("Parses a class declaration with single-argument constructor and no methods", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SampleClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "constructor",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("name"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "this",
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("name"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("name"),
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SampleClass"),
+            constructor: {
+              argNames: [identifierIso.wrap("name")],
+              body: [
+                {
+                  statementKind: "set",
+                  object: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("this"),
+                  },
+                  field: identifierIso.wrap("name"),
+                  value: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("name"),
+                  },
+                },
+              ],
+            },
+            methods: [],
+          },
+        ];
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it("Parses a class declaration with multiple-argument constructor and no methods", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SampleClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "constructor",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("name"),
+          },
+          {
+            tokenKind: "comma",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("age"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "this",
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("name"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("name"),
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "this",
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("age"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("age"),
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SampleClass"),
+            constructor: {
+              argNames: [identifierIso.wrap("name"), identifierIso.wrap("age")],
+              body: [
+                {
+                  statementKind: "set",
+                  object: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("this"),
+                  },
+                  field: identifierIso.wrap("name"),
+                  value: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("name"),
+                  },
+                },
+                {
+                  statementKind: "set",
+                  object: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("this"),
+                  },
+                  field: identifierIso.wrap("age"),
+                  value: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("age"),
+                  },
+                },
+              ],
+            },
+            methods: [],
+          },
+        ];
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+    });
   });
 
   describe("Parse errors", () => {
