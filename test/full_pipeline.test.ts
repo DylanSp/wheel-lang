@@ -1,6 +1,18 @@
 import "jest";
 import { isRight, isLeft } from "fp-ts/lib/Either";
 import { runProgram } from "../src/full_pipeline";
+import { NativeFunctionImplementations, Value } from "../src/evaluator";
+import { Identifier } from "../src/types";
+
+const nativeFunctionsTestImplementations: NativeFunctionImplementations = {
+  clock: () => 0,
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  print: () => {},
+  parseNum: () => new Map<Identifier, Value>(),
+  readString: () => "",
+};
+
+const runTestProgram = runProgram(nativeFunctionsTestImplementations);
 
 describe("Full interpretation pipeline", () => {
   describe("Correct programs", () => {
@@ -9,7 +21,7 @@ describe("Full interpretation pipeline", () => {
       const programText = "module Main { return 1; }";
 
       // Act
-      const runResult = runProgram([programText]);
+      const runResult = runTestProgram([programText]);
 
       // Assert
       if (!isRight(runResult)) {
@@ -28,7 +40,7 @@ describe("Full interpretation pipeline", () => {
       const programText = "module Main { let x; x = 2; return x; }";
 
       // Act
-      const runResult = runProgram([programText]);
+      const runResult = runTestProgram([programText]);
 
       // Assert
       if (!isRight(runResult)) {
@@ -47,7 +59,7 @@ describe("Full interpretation pipeline", () => {
       const programText = "module Main { let x = 2; return x; }";
 
       // Act
-      const runResult = runProgram([programText]);
+      const runResult = runTestProgram([programText]);
 
       // Assert
       if (!isRight(runResult)) {
@@ -66,7 +78,7 @@ describe("Full interpretation pipeline", () => {
       const programText = "module Main { function f() { return 3; } return f(); } ";
 
       // Act
-      const runResult = runProgram([programText]);
+      const runResult = runTestProgram([programText]);
 
       // Assert
       if (!isRight(runResult)) {
@@ -85,7 +97,7 @@ describe("Full interpretation pipeline", () => {
       const programText = "module Main { function f(x) { return x + 1; } return f(4); }";
 
       // Act
-      const runResult = runProgram([programText]);
+      const runResult = runTestProgram([programText]);
 
       // Assert
       if (!isRight(runResult)) {
@@ -104,7 +116,7 @@ describe("Full interpretation pipeline", () => {
       const programText = "module Main { return 6 + 7; }";
 
       // Act
-      const runResult = runProgram([programText]);
+      const runResult = runTestProgram([programText]);
 
       // Assert
       if (!isRight(runResult)) {
@@ -124,7 +136,7 @@ describe("Full interpretation pipeline", () => {
         "module Main { function makeAdder(x) { function adder(y) { return x + y; } return adder; } let addOne; addOne = makeAdder(1); return addOne(2); }";
 
       // Act
-      const runResult = runProgram([programText]);
+      const runResult = runTestProgram([programText]);
 
       // Assert
       if (!isRight(runResult)) {
@@ -144,7 +156,7 @@ describe("Full interpretation pipeline", () => {
         "module Main { while (false) { return 0; } if (false) { return 1; } else if (true) { return 2; } else { return 3; } }";
 
       // Act
-      const runResult = runProgram([programText]);
+      const runResult = runTestProgram([programText]);
 
       // Assert
       if (!isRight(runResult)) {
@@ -163,7 +175,7 @@ describe("Full interpretation pipeline", () => {
       const programText = "module Main { let x = { field: 1 }; x.field = 2; return x.field; }";
 
       // Act
-      const runResult = runProgram([programText]);
+      const runResult = runTestProgram([programText]);
 
       // Assert
       if (!isRight(runResult)) {
@@ -183,7 +195,7 @@ describe("Full interpretation pipeline", () => {
       const mainModuleText = "module Main { import someNum from Source; return someNum; }";
 
       // Act
-      const runResult = runProgram([sourceModuleText, mainModuleText]);
+      const runResult = runTestProgram([sourceModuleText, mainModuleText]);
 
       // Assert
       if (!isRight(runResult)) {
@@ -204,7 +216,7 @@ describe("Full interpretation pipeline", () => {
       const programText = "{ # }";
 
       // Act
-      const runResult = runProgram([programText]);
+      const runResult = runTestProgram([programText]);
 
       // Assert
       if (!isLeft(runResult)) {
@@ -223,7 +235,7 @@ describe("Full interpretation pipeline", () => {
       const programText = "{ # @ }";
 
       // Act
-      const runResult = runProgram([programText]);
+      const runResult = runTestProgram([programText]);
 
       // Assert
       if (!isLeft(runResult)) {
@@ -245,7 +257,7 @@ describe("Full interpretation pipeline", () => {
       const programText = "module Main { function; }";
 
       // Act
-      const runResult = runProgram([programText]);
+      const runResult = runTestProgram([programText]);
 
       // Assert
       if (!isLeft(runResult)) {
@@ -268,7 +280,7 @@ describe("Full interpretation pipeline", () => {
       const mainModuleText = "module Main { import numA from A; print(0); }";
 
       // Act
-      const runResult = runProgram([aModuleText, bModuleText, mainModuleText]);
+      const runResult = runTestProgram([aModuleText, bModuleText, mainModuleText]);
 
       // Assert
       if (!isLeft(runResult)) {
@@ -285,7 +297,7 @@ describe("Full interpretation pipeline", () => {
       const programText = "module Main { return x; }";
 
       // Act
-      const runResult = runProgram([programText]);
+      const runResult = runTestProgram([programText]);
 
       // Assert
       if (!isLeft(runResult)) {

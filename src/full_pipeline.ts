@@ -1,7 +1,7 @@
 import { Either, isLeft, left, Right } from "fp-ts/lib/Either";
 import { ScanError, Token, scan } from "./scanner";
 import { ParseFailure, parseModule, Module } from "./parser";
-import { RuntimeFailure, Value, evaluateProgram } from "./evaluator";
+import { RuntimeFailure, Value, evaluateProgram, NativeFunctionImplementations } from "./evaluator";
 import { isCyclicDependencyPresent } from "./cycle_checker";
 import { desugar } from "./desugar";
 
@@ -30,7 +30,9 @@ interface PipelineEvalError {
 
 type PipelineError = PipelineScanError | PipelineParseError | PipelineCircularDependencyError | PipelineEvalError;
 
-export const runProgram = (moduleTexts: Array<string>): Either<PipelineError, Value> => {
+export const runProgram = (nativeFunctions: NativeFunctionImplementations) => (
+  moduleTexts: Array<string>,
+): Either<PipelineError, Value> => {
   const scanResults = moduleTexts.map(scan);
 
   if (scanResults.some(isLeft)) {
@@ -66,7 +68,7 @@ export const runProgram = (moduleTexts: Array<string>): Either<PipelineError, Va
     });
   }
 
-  const evalResult = evaluateProgram(desugaredModules);
+  const evalResult = evaluateProgram(nativeFunctions)(desugaredModules);
   if (isLeft(evalResult)) {
     return left({
       pipelineErrorKind: "evaluation",

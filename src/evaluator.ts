@@ -2,7 +2,6 @@ import { zip } from "fp-ts/lib/Array";
 import { Either, right, left, isLeft } from "fp-ts/lib/Either";
 import { lookup, member, insertAt, toArray } from "fp-ts/lib/Map";
 import { isNone, Option, some, isSome, none } from "fp-ts/lib/Option";
-import { prompt } from "readline-sync";
 import { Identifier, eqIdentifier, identifierIso, ordIdentifier } from "./types";
 import { Expression, Block, Module } from "./parser";
 
@@ -184,7 +183,7 @@ const makeNullValue = (): NullValue => ({
   valueKind: "null",
 });
 
-interface ObjectValue {
+export interface ObjectValue {
   valueKind: "object";
   fields: Map<Identifier, Value>;
 }
@@ -194,7 +193,7 @@ const makeObjectValue = (fields: Map<Identifier, Value>): ObjectValue => ({
   fields,
 });
 
-interface StringValue {
+export interface StringValue {
   valueKind: "string";
   value: string;
 }
@@ -304,107 +303,38 @@ class ExportedValues {
   };
 }
 
-// standalone function so it can be called recursively (for nested objects)
-const objectToString = (objVal: ObjectValue): string => {
-  let str = "";
-
-  str += "{";
-  if (objVal.fields.size > 0) {
-    str += " ";
-  }
-
-  const fields = Array.from(objVal.fields);
-  fields.sort(([fieldId1], [fieldId2]) => ordIdentifier.compare(fieldId1, fieldId2));
-
-  const allFields: Array<string> = [];
-  fields.forEach(([fieldName, fieldValue]) => {
-    let fieldStr = "";
-    fieldStr += fieldName;
-    fieldStr += ": ";
-    switch (fieldValue.valueKind) {
-      case "number":
-        fieldStr += fieldValue.value;
-        break;
-      case "boolean":
-        fieldStr += fieldValue.isTrue;
-        break;
-      case "string":
-        fieldStr += '"';
-        fieldStr += fieldValue.value;
-        fieldStr += '"';
-        break;
-      case "null":
-        fieldStr += "null";
-        break;
-      case "object":
-        fieldStr += objectToString(fieldValue);
-        break;
-      case "closure":
-        fieldStr += "<closure>";
-        break;
-      case "nativeFunc":
-        fieldStr += "<native function>";
-        break;
-    }
-    allFields.push(fieldStr);
-  });
-
-  str += allFields.join(", ");
-
-  if (objVal.fields.size > 0) {
-    str += " ";
-  }
-  str += "}";
-
-  return str;
-};
-
 // TODO define type alias for Map<Identifier, Value>, since it's used in a few places to represent an object's contents?
-const defineNativeFunctions = (): Array<NativeFunctionValue> => {
+
+export interface NativeFunctionImplementations {
+  clock: () => number;
+  print: (value: Value) => void;
+  parseNum: (str: StringValue) => Map<Identifier, Value>;
+  readString: () => string;
+}
+
+const defineNativeFunctions = (implementations: NativeFunctionImplementations): Array<NativeFunctionValue> => {
   const nativeFuncs: Array<NativeFunctionValue> = [
     {
       funcName: identifierIso.wrap("clock"),
       valueKind: "nativeFunc",
       argCount: 0,
       returnType: "number",
-      body: (): number => Date.now(),
+      body: implementations.clock,
     },
     {
       funcName: identifierIso.wrap("print"),
       valueKind: "nativeFunc",
       argCount: 1,
       returnType: "null",
-      body: (value: Value): void => {
-        switch (value.valueKind) {
-          case "boolean":
-            console.log(value.isTrue);
-            break;
-          case "number":
-            console.log(value.value);
-            break;
-          case "string":
-            console.log(`"${value.value}"`);
-            break;
-          case "object":
-            console.log(objectToString(value));
-            break;
-          case "null":
-            console.log("null");
-            break;
-          case "closure":
-            console.log("<closure>");
-            break;
-          case "nativeFunc":
-            console.log("<native function>");
-            break;
-        }
-      },
+      body: implementations.print,
     },
     {
       funcName: identifierIso.wrap("parseNum"),
       valueKind: "nativeFunc",
       argCount: 1,
       returnType: "object",
+      body: implementations.parseNum,
+      /*
       body: (str: StringValue): Map<Identifier, Value> => {
         const parsed = parseFloat(str.value);
 
@@ -420,13 +350,14 @@ const defineNativeFunctions = (): Array<NativeFunctionValue> => {
         }
         return result;
       },
+      */
     },
     {
       funcName: identifierIso.wrap("readString"),
       valueKind: "nativeFunc",
       argCount: 0,
       returnType: "string",
-      body: (): string => prompt(),
+      body: implementations.readString,
     },
   ];
 
@@ -927,7 +858,9 @@ export const evaluateModule = (
   }
 };
 
-export const evaluateProgram = (modules: Array<Module>): Either<RuntimeFailure, Value> => {
+export const evaluateProgram = (nativeFunctions: NativeFunctionImplementations) => (
+  modules: Array<Module>,
+): Either<RuntimeFailure, Value> => {
   const mainModules = modules.filter((module) => module.name === identifierIso.wrap("Main")); // TODO constant-ify Main
   if (mainModules.length < 1) {
     return left({
@@ -941,7 +874,10 @@ export const evaluateProgram = (modules: Array<Module>): Either<RuntimeFailure, 
     });
   }
 
-  const mainEvalResult = evaluateModule(new ExportedValues(modules, defineNativeFunctions()), mainModules[0]);
+  const mainEvalResult = evaluateModule(
+    new ExportedValues(modules, defineNativeFunctions(nativeFunctions)),
+    mainModules[0],
+  );
   if (isLeft(mainEvalResult)) {
     return mainEvalResult;
   }
