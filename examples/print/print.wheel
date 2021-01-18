@@ -1,6 +1,8 @@
 module Main
 {
   import print from Native;
-
+  
+  print(true);
+  print(1);
   print("test");
 }

@@ -3,6 +3,8 @@ import { join } from "path";
 import { isLeft } from "fp-ts/lib/Either";
 import yargs from "yargs";
 import { runProgram } from "./full_pipeline";
+import { NativeFunctionImplementations } from "./evaluator";
+import { clock, defineReadString, parseNum, print } from "./main_native_implementations";
 
 const rawArgs = process.argv.slice(2); // ignore "node", JS filename
 
@@ -51,7 +53,14 @@ try {
   const argsText = createArgsText(stringifiedArgs.args);
   const programTexts = stdlibTexts.concat(argsText).concat(userProgramTexts);
 
-  const runResult = runProgram(programTexts);
+  const implementations: NativeFunctionImplementations = {
+    clock,
+    print,
+    parseNum,
+    readString: defineReadString(),
+  };
+
+  const runResult = runProgram(implementations)(programTexts);
 
   if (isLeft(runResult)) {
     switch (runResult.left.pipelineErrorKind) {

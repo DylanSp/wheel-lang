@@ -1,0 +1,12 @@
+module Main
+{
+  import print, readString from Native;
+  
+  let input1 = readString();
+  print(input1);
+
+  print("----");
+
+  let input2 = readString();
+  print(input2);
+}

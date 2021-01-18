@@ -1,7 +1,7 @@
 module Main
 {
   let input;
-  input = 10;
+  input = 5;
 
   function factorial(n)
   {

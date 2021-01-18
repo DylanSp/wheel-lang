@@ -6,10 +6,11 @@ module Main
   let x = readNum();
   if (x.isValid)
   {
-    return print(x.value);
+    print("Valid");
+    print(x.value);
   }
   else
   {
-    return print(0);
+    print("Invalid");
   }
 }

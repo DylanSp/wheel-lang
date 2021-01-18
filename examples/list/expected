@@ -1,0 +1,35 @@
+"Empty list"
+"["
+"]"
+"list should be [0, 1, 2]"
+"["
+0
+1
+2
+"]"
+"list should be [-2, -1, 0, 1, 2]"
+"["
+-2
+-1
+0
+1
+2
+"]"
+"Popped value, should be -2:"
+-2
+"list should be [-1, 0, 1, 2]"
+"["
+-1
+0
+1
+2
+"]"
+"Popped value, should be 2:"
+2
+"list should be [-1, 0, 1]"
+"["
+-1
+0
+1
+"]"
+Successful evaluation.

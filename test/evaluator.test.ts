@@ -1,8 +1,7 @@
 import "jest";
 import { isRight, isLeft } from "fp-ts/lib/Either";
-import readlineSync from "readline-sync";
-import { evaluateProgram, NATIVE_MODULE_NAME } from "../src/evaluator";
-import { identifierIso } from "../src/types";
+import { evaluateProgram, NativeFunctionImplementations, NATIVE_MODULE_NAME, Value } from "../src/evaluator";
+import { Identifier, identifierIso } from "../src/types";
 import { Block, Module } from "../src/parser";
 
 const testModuleName = identifierIso.wrap("Main");
@@ -15,6 +14,16 @@ const wrapBlock = (block: Block): Array<Module> => {
     },
   ];
 };
+
+const nativeFunctionsTestImplementations: NativeFunctionImplementations = {
+  clock: () => 0,
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  print: () => {},
+  parseNum: () => new Map<Identifier, Value>(),
+  readString: () => "",
+};
+
+const evaluateTestProgram = evaluateProgram(nativeFunctionsTestImplementations);
 
 describe("Evaluator", () => {
   describe("Successful evaluations", () => {
@@ -32,7 +41,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -59,7 +68,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -86,7 +95,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -113,7 +122,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -139,7 +148,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -162,7 +171,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -197,7 +206,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -232,7 +241,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -267,7 +276,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -302,7 +311,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -333,7 +342,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -372,7 +381,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -415,7 +424,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -458,7 +467,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -501,7 +510,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -536,7 +545,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -571,7 +580,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -602,7 +611,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -645,7 +654,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -680,7 +689,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -715,7 +724,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -750,7 +759,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -785,7 +794,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -820,7 +829,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -855,7 +864,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -890,7 +899,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -925,7 +934,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -958,7 +967,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1000,7 +1009,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1042,7 +1051,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1076,7 +1085,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1110,7 +1119,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1144,7 +1153,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1179,7 +1188,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1214,7 +1223,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1237,7 +1246,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1252,7 +1261,7 @@ describe("Evaluator", () => {
         const ast: Block = [];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1289,7 +1298,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1328,7 +1337,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1379,7 +1388,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1430,7 +1439,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1489,7 +1498,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1536,7 +1545,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1607,7 +1616,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1669,7 +1678,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1739,7 +1748,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1780,7 +1789,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1843,12 +1852,9 @@ describe("Evaluator", () => {
             },
           },
         ];
-        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
-          /* intentional no-op */
-        });
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1861,9 +1867,6 @@ describe("Evaluator", () => {
         }
 
         expect(evalResult.right.value).toBe(2);
-
-        // Cleanup
-        consoleLogSpy.mockRestore();
       });
 
       it("Evaluates { import print from Native; function f() { print(3); } f(); return 4; } to 4 (Evaluates programs with function calls with no explicit return)", () => {
@@ -1916,12 +1919,9 @@ describe("Evaluator", () => {
             },
           },
         ];
-        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
-          /* intentional no-op */
-        });
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -1933,9 +1933,6 @@ describe("Evaluator", () => {
         }
 
         expect(evalResult.right.value).toBe(4);
-
-        // Cleanup
-        consoleLogSpy.mockRestore();
       });
     });
 
@@ -1989,7 +1986,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -2082,7 +2079,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -2129,7 +2126,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -2174,7 +2171,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -2239,7 +2236,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -2321,7 +2318,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -2359,7 +2356,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -2459,7 +2456,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -2563,7 +2560,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -2616,7 +2613,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -2679,7 +2676,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -2742,7 +2739,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -2821,7 +2818,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -2873,7 +2870,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -2939,7 +2936,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -2970,7 +2967,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -3013,7 +3010,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -3064,7 +3061,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -3115,7 +3112,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -3173,7 +3170,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -3238,7 +3235,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -3303,7 +3300,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -3338,7 +3335,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -3381,7 +3378,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -3432,7 +3429,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -3483,7 +3480,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -3541,7 +3538,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -3606,7 +3603,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -3618,825 +3615,6 @@ describe("Evaluator", () => {
         }
 
         expect(evalResult.right.isTrue).toBe(false);
-      });
-    });
-
-    describe("Native functions", () => {
-      it("Evaluates { import clock from Native; return clock(); } to the current time as a number using Date.now()", () => {
-        // Arrange
-        const ast: Block = [
-          {
-            statementKind: "import",
-            moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("clock")],
-          },
-          {
-            statementKind: "return",
-            returnedValue: {
-              expressionKind: "funcCall",
-              args: [],
-              callee: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("clock"),
-              },
-            },
-          },
-        ];
-
-        jest.useFakeTimers("modern");
-        const time = 5;
-        jest.setSystemTime(time);
-
-        // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
-
-        // Assert
-        if (!isRight(evalResult)) {
-          throw new Error("Evaluation failed, should have succeeded");
-        }
-
-        if (evalResult.right.valueKind !== "number") {
-          throw new Error("Evaluated to non-numeric value");
-        }
-
-        expect(evalResult.right.value).toBe(time);
-
-        // Cleanup
-        jest.useRealTimers();
-      });
-
-      it('Prints "1" with console.log when evaluating { import print from Native; print(1); }', () => {
-        // Arrange
-        const num = 1;
-        const ast: Block = [
-          {
-            statementKind: "import",
-            moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("print")],
-          },
-          {
-            statementKind: "expression",
-            expression: {
-              expressionKind: "funcCall",
-              args: [
-                {
-                  expressionKind: "numberLit",
-                  value: num,
-                },
-              ],
-              callee: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("print"),
-              },
-            },
-          },
-        ];
-        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
-          /* intentional no-op */
-        });
-
-        // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
-
-        // Assert
-        if (!isRight(evalResult)) {
-          throw new Error("Evaluation failed, should have succeeded");
-        }
-
-        expect(consoleLogSpy).toBeCalledWith(num);
-
-        // Cleanup
-        consoleLogSpy.mockRestore();
-      });
-
-      it('Prints "true" with console.log when evaluating { import print from Native; print(true); }', () => {
-        // Arrange
-        const bool = true;
-        const ast: Block = [
-          {
-            statementKind: "import",
-            moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("print")],
-          },
-          {
-            statementKind: "expression",
-            expression: {
-              expressionKind: "funcCall",
-              args: [
-                {
-                  expressionKind: "booleanLit",
-                  isTrue: bool,
-                },
-              ],
-              callee: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("print"),
-              },
-            },
-          },
-        ];
-        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
-          /* intentional no-op */
-        });
-
-        // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
-
-        // Assert
-        if (!isRight(evalResult)) {
-          throw new Error("Evaluation failed, should have succeeded");
-        }
-
-        expect(consoleLogSpy).toBeCalledWith(bool);
-
-        // Cleanup
-        consoleLogSpy.mockRestore();
-      });
-
-      it('Given input of "test", evaluates { import readString from Native; let readResult = readString(); return readResult; } to "test"', () => {
-        // Arrange
-        const ast: Block = [
-          {
-            statementKind: "import",
-            moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("readString")],
-          },
-          {
-            statementKind: "varDecl",
-            variableName: identifierIso.wrap("readResult"),
-          },
-          {
-            statementKind: "assignment",
-            variableName: identifierIso.wrap("readResult"),
-            variableValue: {
-              expressionKind: "funcCall",
-              args: [],
-              callee: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("readString"),
-              },
-            },
-          },
-          {
-            statementKind: "return",
-            returnedValue: {
-              expressionKind: "variableRef",
-              variableName: identifierIso.wrap("readResult"),
-            },
-          },
-        ];
-        const promptSpy = jest.spyOn(readlineSync, "prompt").mockImplementation(() => "test");
-
-        // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
-
-        // Assert
-        if (!isRight(evalResult)) {
-          throw new Error("Evaluation failed, should have succeeded");
-        }
-
-        if (evalResult.right.valueKind !== "string") {
-          throw new Error("Evaluated to non-string value");
-        }
-
-        expect(evalResult.right.value).toBe("test");
-
-        // Cleanup
-        promptSpy.mockRestore();
-      });
-
-      it('Prints "test" with console.log when evaluating { import print from Native; print("test"); }', () => {
-        // Arrange
-        const str = "test";
-        const ast: Block = [
-          {
-            statementKind: "import",
-            moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("print")],
-          },
-          {
-            statementKind: "expression",
-            expression: {
-              expressionKind: "funcCall",
-              args: [
-                {
-                  expressionKind: "stringLit",
-                  value: str,
-                },
-              ],
-              callee: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("print"),
-              },
-            },
-          },
-        ];
-        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
-          /* intentional no-op */
-        });
-
-        // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
-
-        // Assert
-        if (!isRight(evalResult)) {
-          throw new Error("Evaluation failed, should have succeeded");
-        }
-
-        expect(consoleLogSpy).toBeCalledWith(`"${str}"`);
-
-        // Cleanup
-        consoleLogSpy.mockRestore();
-      });
-
-      it('Prints "{}" with console.log when evaluating { import print from Native; print({}); }', () => {
-        // Arrange
-        const ast: Block = [
-          {
-            statementKind: "import",
-            moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("print")],
-          },
-          {
-            statementKind: "expression",
-            expression: {
-              expressionKind: "funcCall",
-              args: [
-                {
-                  expressionKind: "objectLit",
-                  fields: [],
-                },
-              ],
-              callee: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("print"),
-              },
-            },
-          },
-        ];
-        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
-          /* intentional no-op */
-        });
-
-        // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
-
-        // Assert
-        if (!isRight(evalResult)) {
-          throw new Error("Evaluation failed, should have succeeded");
-        }
-
-        expect(consoleLogSpy).toBeCalledWith("{}");
-
-        // Cleanup
-        consoleLogSpy.mockRestore();
-      });
-
-      it('Prints "{ field: 1 }" with console.log when evaluating { import print from Native; let obj = { field: 1 }; print(obj); }', () => {
-        // Arrange
-        const ast: Block = [
-          {
-            statementKind: "import",
-            moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("print")],
-          },
-          {
-            statementKind: "varDecl",
-            variableName: identifierIso.wrap("obj"),
-          },
-          {
-            statementKind: "assignment",
-            variableName: identifierIso.wrap("obj"),
-            variableValue: {
-              expressionKind: "objectLit",
-              fields: [
-                {
-                  fieldName: identifierIso.wrap("field"),
-                  fieldValue: {
-                    expressionKind: "numberLit",
-                    value: 1,
-                  },
-                },
-              ],
-            },
-          },
-          {
-            statementKind: "expression",
-            expression: {
-              expressionKind: "funcCall",
-              args: [
-                {
-                  expressionKind: "variableRef",
-                  variableName: identifierIso.wrap("obj"),
-                },
-              ],
-              callee: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("print"),
-              },
-            },
-          },
-        ];
-        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
-          /* intentional no-op */
-        });
-
-        // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
-
-        // Assert
-        if (!isRight(evalResult)) {
-          throw new Error("Evaluation failed, should have succeeded");
-        }
-
-        expect(consoleLogSpy).toBeCalledWith("{ field: 1 }");
-
-        // Cleanup
-        consoleLogSpy.mockRestore();
-      });
-
-      it('Prints "{ fieldA: 1, fieldB: true }" with console.log when evaluating { import print from Native; let obj = { fieldA: 1, fieldB: true }; print(obj); }', () => {
-        // Arrange
-        const ast: Block = [
-          {
-            statementKind: "import",
-            moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("print")],
-          },
-          {
-            statementKind: "varDecl",
-            variableName: identifierIso.wrap("obj"),
-          },
-          {
-            statementKind: "assignment",
-            variableName: identifierIso.wrap("obj"),
-            variableValue: {
-              expressionKind: "objectLit",
-              fields: [
-                {
-                  fieldName: identifierIso.wrap("fieldA"),
-                  fieldValue: {
-                    expressionKind: "numberLit",
-                    value: 1,
-                  },
-                },
-                {
-                  fieldName: identifierIso.wrap("fieldB"),
-                  fieldValue: {
-                    expressionKind: "booleanLit",
-                    isTrue: true,
-                  },
-                },
-              ],
-            },
-          },
-          {
-            statementKind: "expression",
-            expression: {
-              expressionKind: "funcCall",
-              args: [
-                {
-                  expressionKind: "variableRef",
-                  variableName: identifierIso.wrap("obj"),
-                },
-              ],
-              callee: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("print"),
-              },
-            },
-          },
-        ];
-        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
-          /* intentional no-op */
-        });
-
-        // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
-
-        // Assert
-        if (!isRight(evalResult)) {
-          throw new Error("Evaluation failed, should have succeeded");
-        }
-
-        expect(consoleLogSpy).toBeCalledWith("{ fieldA: 1, fieldB: true }");
-
-        // Cleanup
-        consoleLogSpy.mockRestore();
-      });
-
-      it('Prints "{ fieldA: 1, fieldB: true }" with console.log when evaluating { import print from Native; let obj = { fieldB: true, fieldA: 1 }; print(obj); } (sorts object fields alphabetically by field name when printing)', () => {
-        // Arrange
-        const ast: Block = [
-          {
-            statementKind: "import",
-            moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("print")],
-          },
-          {
-            statementKind: "varDecl",
-            variableName: identifierIso.wrap("obj"),
-          },
-          {
-            statementKind: "assignment",
-            variableName: identifierIso.wrap("obj"),
-            variableValue: {
-              expressionKind: "objectLit",
-              fields: [
-                {
-                  fieldName: identifierIso.wrap("fieldB"),
-                  fieldValue: {
-                    expressionKind: "booleanLit",
-                    isTrue: true,
-                  },
-                },
-                {
-                  fieldName: identifierIso.wrap("fieldA"),
-                  fieldValue: {
-                    expressionKind: "numberLit",
-                    value: 1,
-                  },
-                },
-              ],
-            },
-          },
-          {
-            statementKind: "expression",
-            expression: {
-              expressionKind: "funcCall",
-              args: [
-                {
-                  expressionKind: "variableRef",
-                  variableName: identifierIso.wrap("obj"),
-                },
-              ],
-              callee: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("print"),
-              },
-            },
-          },
-        ];
-        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
-          /* intentional no-op */
-        });
-
-        // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
-
-        // Assert
-        if (!isRight(evalResult)) {
-          throw new Error("Evaluation failed, should have succeeded");
-        }
-
-        expect(consoleLogSpy).toBeCalledWith("{ fieldA: 1, fieldB: true }");
-
-        // Cleanup
-        consoleLogSpy.mockRestore();
-      });
-
-      it('Prints "{ field: { nested: "value" } }" with console.log when evaluating { import print from Native; let obj = { field: { nested: "value" } }; print(obj); }', () => {
-        // Arrange
-        const ast: Block = [
-          {
-            statementKind: "import",
-            moduleName: NATIVE_MODULE_NAME,
-            imports: [identifierIso.wrap("print")],
-          },
-          {
-            statementKind: "varDecl",
-            variableName: identifierIso.wrap("obj"),
-          },
-          {
-            statementKind: "assignment",
-            variableName: identifierIso.wrap("obj"),
-            variableValue: {
-              expressionKind: "objectLit",
-              fields: [
-                {
-                  fieldName: identifierIso.wrap("field"),
-                  fieldValue: {
-                    expressionKind: "objectLit",
-                    fields: [
-                      {
-                        fieldName: identifierIso.wrap("nested"),
-                        fieldValue: {
-                          expressionKind: "stringLit",
-                          value: "value",
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-          {
-            statementKind: "expression",
-            expression: {
-              expressionKind: "funcCall",
-              args: [
-                {
-                  expressionKind: "variableRef",
-                  variableName: identifierIso.wrap("obj"),
-                },
-              ],
-              callee: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("print"),
-              },
-            },
-          },
-        ];
-        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
-          /* intentional no-op */
-        });
-
-        // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
-
-        // Assert
-        if (!isRight(evalResult)) {
-          throw new Error("Evaluation failed, should have succeeded");
-        }
-
-        expect(consoleLogSpy).toBeCalledWith('{ field: { nested: "value" } }');
-
-        // Cleanup
-        consoleLogSpy.mockRestore();
-      });
-
-      it('Evaluates{ import parseNum from Native; let str = "1"; let result = parseNum(str); } if (result.isValid) { return result.value; } else { return 0; } } to 1 (parseNum on integers)', () => {
-        // Arrange
-        const ast: Block = [
-          {
-            statementKind: "import",
-            imports: [identifierIso.wrap("parseNum")],
-            moduleName: NATIVE_MODULE_NAME,
-          },
-          {
-            statementKind: "varDecl",
-            variableName: identifierIso.wrap("str"),
-          },
-          {
-            statementKind: "assignment",
-            variableName: identifierIso.wrap("str"),
-            variableValue: {
-              expressionKind: "stringLit",
-              value: "1",
-            },
-          },
-          {
-            statementKind: "varDecl",
-            variableName: identifierIso.wrap("result"),
-          },
-          {
-            statementKind: "assignment",
-            variableName: identifierIso.wrap("result"),
-            variableValue: {
-              expressionKind: "funcCall",
-              callee: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("parseNum"),
-              },
-              args: [
-                {
-                  expressionKind: "variableRef",
-                  variableName: identifierIso.wrap("str"),
-                },
-              ],
-            },
-          },
-          {
-            statementKind: "if",
-            condition: {
-              expressionKind: "get",
-              object: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("result"),
-              },
-              field: identifierIso.wrap("isValid"),
-            },
-            trueBody: [
-              {
-                statementKind: "return",
-                returnedValue: {
-                  expressionKind: "get",
-                  object: {
-                    expressionKind: "variableRef",
-                    variableName: identifierIso.wrap("result"),
-                  },
-                  field: identifierIso.wrap("value"),
-                },
-              },
-            ],
-            falseBody: [
-              {
-                statementKind: "return",
-                returnedValue: {
-                  expressionKind: "numberLit",
-                  value: 0,
-                },
-              },
-            ],
-          },
-        ];
-
-        // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
-
-        // Assert
-        if (!isRight(evalResult)) {
-          throw new Error("Evaluation failed, should have succeeded");
-        }
-
-        if (evalResult.right.valueKind !== "number") {
-          throw new Error("Evaluated to non-numberic value");
-        }
-
-        expect(evalResult.right.value).toBe(1);
-      });
-
-      it('Evaluates{ import parseNum from Native; let str = "2.5"; let result = parseNum(str); } if (result.isValid) { return result.value; } else { return 0; } } to 2.3 (parseNum on decimals)', () => {
-        // Arrange
-        const ast: Block = [
-          {
-            statementKind: "import",
-            imports: [identifierIso.wrap("parseNum")],
-            moduleName: NATIVE_MODULE_NAME,
-          },
-          {
-            statementKind: "varDecl",
-            variableName: identifierIso.wrap("str"),
-          },
-          {
-            statementKind: "assignment",
-            variableName: identifierIso.wrap("str"),
-            variableValue: {
-              expressionKind: "stringLit",
-              value: "2.5",
-            },
-          },
-          {
-            statementKind: "varDecl",
-            variableName: identifierIso.wrap("result"),
-          },
-          {
-            statementKind: "assignment",
-            variableName: identifierIso.wrap("result"),
-            variableValue: {
-              expressionKind: "funcCall",
-              callee: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("parseNum"),
-              },
-              args: [
-                {
-                  expressionKind: "variableRef",
-                  variableName: identifierIso.wrap("str"),
-                },
-              ],
-            },
-          },
-          {
-            statementKind: "if",
-            condition: {
-              expressionKind: "get",
-              object: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("result"),
-              },
-              field: identifierIso.wrap("isValid"),
-            },
-            trueBody: [
-              {
-                statementKind: "return",
-                returnedValue: {
-                  expressionKind: "get",
-                  object: {
-                    expressionKind: "variableRef",
-                    variableName: identifierIso.wrap("result"),
-                  },
-                  field: identifierIso.wrap("value"),
-                },
-              },
-            ],
-            falseBody: [
-              {
-                statementKind: "return",
-                returnedValue: {
-                  expressionKind: "numberLit",
-                  value: 0,
-                },
-              },
-            ],
-          },
-        ];
-
-        // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
-
-        // Assert
-        if (!isRight(evalResult)) {
-          throw new Error("Evaluation failed, should have succeeded");
-        }
-
-        if (evalResult.right.valueKind !== "number") {
-          throw new Error("Evaluated to non-numberic value");
-        }
-
-        expect(evalResult.right.value).toBe(2.5);
-      });
-
-      it('Evaluates{ import parseNum from Native; let str = "test"; let result = parseNum(str); } if (result.isValid) { return result.value; } else { return 0; } } to 0 (parseNum on non-numbers)', () => {
-        // Arrange
-        const ast: Block = [
-          {
-            statementKind: "import",
-            imports: [identifierIso.wrap("parseNum")],
-            moduleName: NATIVE_MODULE_NAME,
-          },
-          {
-            statementKind: "varDecl",
-            variableName: identifierIso.wrap("str"),
-          },
-          {
-            statementKind: "assignment",
-            variableName: identifierIso.wrap("str"),
-            variableValue: {
-              expressionKind: "stringLit",
-              value: "test",
-            },
-          },
-          {
-            statementKind: "varDecl",
-            variableName: identifierIso.wrap("result"),
-          },
-          {
-            statementKind: "assignment",
-            variableName: identifierIso.wrap("result"),
-            variableValue: {
-              expressionKind: "funcCall",
-              callee: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("parseNum"),
-              },
-              args: [
-                {
-                  expressionKind: "variableRef",
-                  variableName: identifierIso.wrap("str"),
-                },
-              ],
-            },
-          },
-          {
-            statementKind: "if",
-            condition: {
-              expressionKind: "get",
-              object: {
-                expressionKind: "variableRef",
-                variableName: identifierIso.wrap("result"),
-              },
-              field: identifierIso.wrap("isValid"),
-            },
-            trueBody: [
-              {
-                statementKind: "return",
-                returnedValue: {
-                  expressionKind: "get",
-                  object: {
-                    expressionKind: "variableRef",
-                    variableName: identifierIso.wrap("result"),
-                  },
-                  field: identifierIso.wrap("value"),
-                },
-              },
-            ],
-            falseBody: [
-              {
-                statementKind: "return",
-                returnedValue: {
-                  expressionKind: "numberLit",
-                  value: 0,
-                },
-              },
-            ],
-          },
-        ];
-
-        // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
-
-        // Assert
-        if (!isRight(evalResult)) {
-          throw new Error("Evaluation failed, should have succeeded");
-        }
-
-        if (evalResult.right.valueKind !== "number") {
-          throw new Error("Evaluated to non-numberic value");
-        }
-
-        expect(evalResult.right.value).toBe(0);
       });
     });
 
@@ -4482,7 +3660,7 @@ describe("Evaluator", () => {
         };
 
         // Act
-        const evalResult = evaluateProgram([sourceModule, mainModule]);
+        const evalResult = evaluateTestProgram([sourceModule, mainModule]);
 
         // Assert
         if (!isRight(evalResult)) {
@@ -4557,7 +3735,7 @@ describe("Evaluator", () => {
         };
 
         // Act
-        const evalResult = evaluateProgram([sourceModule, mainModule]);
+        const evalResult = evaluateTestProgram([sourceModule, mainModule]);
 
         // Assert
         if (!isRight(evalResult)) {
@@ -4652,12 +3830,13 @@ describe("Evaluator", () => {
           exports: [],
         };
 
-        const consoleLogSpy = jest.spyOn(global.console, "log").mockImplementation(() => {
-          /* intentional no-op */
-        });
+        const spyImplementations: NativeFunctionImplementations = {
+          ...nativeFunctionsTestImplementations,
+          print: jest.fn(),
+        };
 
         // Act
-        const evalResult = evaluateProgram([sourceModule, mainModule]);
+        const evalResult = evaluateProgram(spyImplementations)([sourceModule, mainModule]);
 
         // Assert
         if (!isRight(evalResult)) {
@@ -4670,10 +3849,7 @@ describe("Evaluator", () => {
 
         expect(evalResult.right.value).toBe(3);
 
-        expect(consoleLogSpy).toHaveBeenCalledTimes(1);
-
-        // Cleanup
-        consoleLogSpy.mockRestore();
+        expect(spyImplementations.print).toHaveBeenCalledTimes(1);
       });
     });
 
@@ -4741,7 +3917,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -4806,7 +3982,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -4849,7 +4025,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -4906,7 +4082,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -4955,7 +4131,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -5112,7 +4288,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isRight(evalResult)) {
@@ -5144,7 +4320,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -5172,7 +4348,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -5221,7 +4397,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -5270,7 +4446,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -5346,7 +4522,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -5403,7 +4579,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -5448,7 +4624,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -5483,7 +4659,7 @@ describe("Evaluator", () => {
         };
 
         // Act
-        const evalResult = evaluateProgram([sourceModule, mainModule]);
+        const evalResult = evaluateTestProgram([sourceModule, mainModule]);
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -5516,7 +4692,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -5561,7 +4737,7 @@ describe("Evaluator", () => {
           ];
 
           // Act
-          const evalResult = evaluateProgram(wrapBlock(ast));
+          const evalResult = evaluateTestProgram(wrapBlock(ast));
 
           // Assert
           if (!isLeft(evalResult)) {
@@ -5606,7 +4782,7 @@ describe("Evaluator", () => {
           ];
 
           // Act
-          const evalResult = evaluateProgram(wrapBlock(ast));
+          const evalResult = evaluateTestProgram(wrapBlock(ast));
 
           // Assert
           if (!isLeft(evalResult)) {
@@ -5637,7 +4813,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -5665,7 +4841,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -5705,7 +4881,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -5740,7 +4916,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -5775,7 +4951,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -5806,7 +4982,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -5837,7 +5013,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -5872,7 +5048,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -5907,7 +5083,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -5942,7 +5118,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -5977,7 +5153,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -6018,7 +5194,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -6061,7 +5237,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -6104,7 +5280,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -6147,7 +5323,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -6189,7 +5365,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -6231,7 +5407,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -6273,7 +5449,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -6315,7 +5491,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -6364,7 +5540,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -6415,7 +5591,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -6457,7 +5633,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -6491,7 +5667,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -6531,7 +5707,7 @@ describe("Evaluator", () => {
         };
 
         // Act
-        const evalResult = evaluateProgram([sourceModule, mainModule]);
+        const evalResult = evaluateTestProgram([sourceModule, mainModule]);
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -6564,7 +5740,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -6596,7 +5772,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -6623,7 +5799,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -6650,7 +5826,7 @@ describe("Evaluator", () => {
         ];
 
         // Act
-        const evalResult = evaluateProgram(wrapBlock(ast));
+        const evalResult = evaluateTestProgram(wrapBlock(ast));
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -6685,7 +5861,7 @@ describe("Evaluator", () => {
         };
 
         // Act
-        const evalResult = evaluateProgram([sourceModule, mainModule]);
+        const evalResult = evaluateTestProgram([sourceModule, mainModule]);
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -6735,7 +5911,7 @@ describe("Evaluator", () => {
         };
 
         // Act
-        const evalResult = evaluateProgram([sourceModule, mainModule]);
+        const evalResult = evaluateTestProgram([sourceModule, mainModule]);
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -6758,7 +5934,7 @@ describe("Evaluator", () => {
         };
 
         // Act
-        const evalResult = evaluateProgram([sourceModule]);
+        const evalResult = evaluateTestProgram([sourceModule]);
 
         // Assert
         if (!isLeft(evalResult)) {
@@ -6783,7 +5959,7 @@ describe("Evaluator", () => {
         };
 
         // Act
-        const evalResult = evaluateProgram([mainModule1, mainModule2]);
+        const evalResult = evaluateTestProgram([mainModule1, mainModule2]);
 
         // Assert
         if (!isLeft(evalResult)) {
