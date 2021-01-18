@@ -1,13 +1,10 @@
 import { readdirSync, readFileSync } from "fs";
 import { join } from "path";
-import { EOL } from "os";
 import { isLeft } from "fp-ts/lib/Either";
 import yargs from "yargs";
-import { prompt } from "readline-sync";
-import { insertAt } from "fp-ts/lib/Map";
 import { runProgram } from "./full_pipeline";
-import { NativeFunctionImplementations, ObjectValue, StringValue, Value } from "./evaluator";
-import { eqIdentifier, Identifier, identifierIso, ordIdentifier } from "./types";
+import { NativeFunctionImplementations } from "./evaluator";
+import { clock, defineReadString, parseNum, print } from "./main_native_implementations";
 
 const rawArgs = process.argv.slice(2); // ignore "node", JS filename
 
@@ -47,132 +44,6 @@ const createArgsText = (args: Array<string> | undefined): Array<string> => {
   return [modulePrologue + argInitializationText.join("\n") + moduleEpilogue];
 };
 
-// standalone function so it can be called recursively (for nested objects)
-const objectToString = (objVal: ObjectValue): string => {
-  let str = "";
-
-  str += "{";
-  if (objVal.fields.size > 0) {
-    str += " ";
-  }
-
-  const fields = Array.from(objVal.fields);
-  fields.sort(([fieldId1], [fieldId2]) => ordIdentifier.compare(fieldId1, fieldId2));
-
-  const allFields: Array<string> = [];
-  fields.forEach(([fieldName, fieldValue]) => {
-    let fieldStr = "";
-    fieldStr += fieldName;
-    fieldStr += ": ";
-    switch (fieldValue.valueKind) {
-      case "number":
-        fieldStr += fieldValue.value;
-        break;
-      case "boolean":
-        fieldStr += fieldValue.isTrue;
-        break;
-      case "string":
-        fieldStr += '"';
-        fieldStr += fieldValue.value;
-        fieldStr += '"';
-        break;
-      case "null":
-        fieldStr += "null";
-        break;
-      case "object":
-        fieldStr += objectToString(fieldValue);
-        break;
-      case "closure":
-        fieldStr += "<closure>";
-        break;
-      case "nativeFunc":
-        fieldStr += "<native function>";
-        break;
-    }
-    allFields.push(fieldStr);
-  });
-
-  str += allFields.join(", ");
-
-  if (objVal.fields.size > 0) {
-    str += " ";
-  }
-  str += "}";
-
-  return str;
-};
-
-const print = (value: Value): void => {
-  switch (value.valueKind) {
-    case "boolean":
-      console.log(value.isTrue);
-      break;
-    case "number":
-      console.log(value.value);
-      break;
-    case "string":
-      console.log(`"${value.value}"`);
-      break;
-    case "object":
-      console.log(objectToString(value));
-      break;
-    case "null":
-      console.log("null");
-      break;
-    case "closure":
-      console.log("<closure>");
-      break;
-    case "nativeFunc":
-      console.log("<native function>");
-      break;
-  }
-};
-
-const parseNum = (str: StringValue): Map<Identifier, Value> => {
-  const parsed = parseFloat(str.value);
-
-  let result = new Map<Identifier, Value>();
-  const validityIdent = identifierIso.wrap("isValid");
-  const valueIdent = identifierIso.wrap("value");
-
-  if (isNaN(parsed)) {
-    result = insertAt(eqIdentifier)<Value>(validityIdent, {
-      valueKind: "boolean",
-      isTrue: false,
-    })(result);
-  } else {
-    result = insertAt(eqIdentifier)<Value>(validityIdent, {
-      valueKind: "boolean",
-      isTrue: true,
-    })(result);
-    result = insertAt(eqIdentifier)<Value>(valueIdent, {
-      valueKind: "number",
-      value: parsed,
-    })(result);
-  }
-  return result;
-};
-
-// if not a TTY, consume input from stdin line-by-line
-let lineNumber = 0;
-const input = process.stdin.isTTY ? "" : readFileSync(0).toString(); // 0 = file descriptor for stdin
-const lines = input.split(EOL);
-
-const readStringBody = process.stdin.isTTY
-  ? (): string => prompt()
-  : (): string => {
-      const line = lines[lineNumber];
-      lineNumber++;
-      return line;
-    };
-
-const nativeFunctions: NativeFunctionImplementations = {
-  clock: () => Date.now(),
-  print,
-  parseNum,
-  readString: readStringBody,
-};
-
 try {
   const stdlibTexts = readdirSync(join(__dirname, "..", "wheel_stdlib")).map((filename) =>
     readFileSync(join(__dirname, "..", "wheel_stdlib", filename), "utf8"),
@@ -182,7 +53,14 @@ try {
   const argsText = createArgsText(stringifiedArgs.args);
   const programTexts = stdlibTexts.concat(argsText).concat(userProgramTexts);
 
-  const runResult = runProgram(nativeFunctions)(programTexts);
+  const implementations: NativeFunctionImplementations = {
+    clock,
+    print,
+    parseNum,
+    readString: defineReadString(),
+  };
+
+  const runResult = runProgram(implementations)(programTexts);
 
   if (isLeft(runResult)) {
     switch (runResult.left.pipelineErrorKind) {
