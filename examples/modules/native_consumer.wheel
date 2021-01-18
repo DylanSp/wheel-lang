@@ -1,5 +1,0 @@
-module Main
-{
-  import printNum from Native;
-  printNum(2);
-}

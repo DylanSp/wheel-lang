@@ -1,7 +1,6 @@
 module Main
 {
-  let input;
-  input = 10;
+  let input = 10;
 
   function fibonacci(n)
   {
