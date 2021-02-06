@@ -525,7 +525,6 @@ export const evaluateModule = (
     const topLevelEnv = new Environment();
     evaluateBlock(topLevelEnv, module.body);
 
-    // TODO extract this into function, call it when catching Return as well?
     module.exports.forEach((exportName) => {
       const possibleExportValue = topLevelEnv.lookup(exportName);
       if (isNone(possibleExportValue)) {
