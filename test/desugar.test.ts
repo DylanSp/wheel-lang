@@ -1,6 +1,6 @@
 import "jest";
-import { Block, Module } from "../src/parser";
-import { identifierIso } from "../src/types";
+import { Block, Module, THIS_IDENTIFIER } from "../src/parser_types";
+import { identifierIso } from "../src/universal_types";
 import { desugar } from "../src/desugar";
 
 const TEST_MODULE_NAME = identifierIso.wrap("TestModule");
@@ -16,11 +16,11 @@ const wrapBlock = (body: Block): Module => {
 const desiredConstructorPrologue: Block = [
   {
     statementKind: "varDecl",
-    variableName: identifierIso.wrap("this"),
+    variableName: THIS_IDENTIFIER,
   },
   {
     statementKind: "assignment",
-    variableName: identifierIso.wrap("this"),
+    variableName: THIS_IDENTIFIER,
     variableValue: {
       expressionKind: "objectLit",
       fields: [],
@@ -33,7 +33,7 @@ const desiredConstructorEpilogue: Block = [
     statementKind: "return",
     returnedValue: {
       expressionKind: "variableRef",
-      variableName: identifierIso.wrap("this"),
+      variableName: THIS_IDENTIFIER,
     },
   },
 ];
@@ -81,7 +81,7 @@ describe("Desugaring", () => {
           statementKind: "set",
           object: {
             expressionKind: "variableRef",
-            variableName: identifierIso.wrap("this"),
+            variableName: THIS_IDENTIFIER,
           },
           field: identifierIso.wrap("name"),
           value: {
@@ -170,7 +170,7 @@ describe("Desugaring", () => {
         {
           statementKind: "funcDecl",
           functionName: desugaredMethodName,
-          argNames: [identifierIso.wrap("this")],
+          argNames: [THIS_IDENTIFIER],
           body: [
             {
               statementKind: "funcDecl",
@@ -198,7 +198,7 @@ describe("Desugaring", () => {
               statementKind: "set",
               object: {
                 expressionKind: "variableRef",
-                variableName: identifierIso.wrap("this"),
+                variableName: THIS_IDENTIFIER,
               },
               field: identifierIso.wrap(methodName),
               value: {
@@ -210,7 +210,7 @@ describe("Desugaring", () => {
                 args: [
                   {
                     expressionKind: "variableRef",
-                    variableName: identifierIso.wrap("this"),
+                    variableName: THIS_IDENTIFIER,
                   },
                 ],
               },

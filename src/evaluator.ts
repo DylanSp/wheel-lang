@@ -1,309 +1,26 @@
 import { zip } from "fp-ts/lib/Array";
 import { Either, right, left, isLeft } from "fp-ts/lib/Either";
-import { lookup, member, insertAt, toArray } from "fp-ts/lib/Map";
-import { isNone, Option, some, isSome, none } from "fp-ts/lib/Option";
-import { Identifier, eqIdentifier, identifierIso, ordIdentifier } from "./types";
-import { Expression, Block, Module } from "./parser";
-
-/**
- * TYPES
- */
-
-class Environment {
-  private values: Map<Identifier, Option<Value>>;
-
-  private parentEnvironment?: Environment;
-
-  public constructor(parentEnvironment?: Environment) {
-    this.values = new Map<Identifier, Option<Value>>();
-    this.parentEnvironment = parentEnvironment;
-  }
-
-  public lookup = (ident: Identifier): Option<Option<Value>> => {
-    const possibleLocalValue = lookup(eqIdentifier)(ident, this.values);
-
-    if (isSome(possibleLocalValue)) {
-      return possibleLocalValue;
-    }
-
-    if (this.parentEnvironment !== undefined) {
-      return this.parentEnvironment.lookup(ident);
-    }
-
-    return none;
-  };
-
-  public define = (ident: Identifier): void => {
-    this.values = insertAt(eqIdentifier)<Option<Value>>(ident, none)(this.values);
-  };
-
-  // set a variable's value in the innermost environment in which it's found; return true iff variable was found
-  public assign = (ident: Identifier, value: Value): boolean => {
-    if (member(eqIdentifier)(ident, this.values)) {
-      this.values = insertAt(eqIdentifier)(ident, some(value))(this.values);
-      return true;
-    }
-
-    if (this.parentEnvironment !== undefined) {
-      return this.parentEnvironment.assign(ident, value);
-    }
-
-    return false;
-  };
-}
-
-interface NotInScopeError {
-  runtimeErrorKind: "notInScope";
-  outOfScopeIdentifier: Identifier;
-}
-
-interface NotFunctionError {
-  runtimeErrorKind: "notFunction";
-  nonFunctionType: ValueKind;
-}
-
-interface TypeMismatchError {
-  runtimeErrorKind: "typeMismatch";
-  expectedTypes: Array<ValueKind>;
-  actualType: ValueKind;
-}
-
-interface ArityMismatchError {
-  runtimeErrorKind: "arityMismatch";
-  expectedNumArgs: number;
-  actualNumArgs: number;
-}
-
-interface UnassignedVariableError {
-  runtimeErrorKind: "unassignedVariable";
-  unassignedIdentifier: Identifier;
-}
-
-interface NativeFunctionReturnedFunctionError {
-  runtimeErrorKind: "nativeFunctionReturnFunc";
-  nativeFunctionName: Identifier;
-}
-
-interface NotObjectError {
-  runtimeErrorKind: "notObject";
-  nonObjectType: ValueKind;
-}
-
-interface NoMainError {
-  runtimeErrorKind: "noMain";
-}
-
-interface NoSuchModuleError {
-  runtimeErrorKind: "noSuchModule";
-  moduleName: Identifier;
-}
-
-interface NoSuchExportError {
-  runtimeErrorKind: "noSuchExport";
-  exportName: Identifier;
-}
-
-interface MultipleMainsError {
-  runtimeErrorKind: "multipleMains";
-}
-
-class RuntimeError extends Error {
-  constructor(public readonly message: string, public readonly underlyingFailure: RuntimeFailure) {
-    super(message);
-  }
-}
-
-export type RuntimeFailure =
-  | NotInScopeError
-  | NotFunctionError
-  | TypeMismatchError
-  | ArityMismatchError
-  | UnassignedVariableError
-  | NativeFunctionReturnedFunctionError
-  | NotObjectError
-  | NoMainError
-  | NoSuchModuleError
-  | NoSuchExportError
-  | MultipleMainsError;
-
-interface NumberValue {
-  valueKind: "number";
-  value: number;
-}
-
-const makeNumberValue = (value: number): NumberValue => ({
-  valueKind: "number",
-  value,
-});
-
-interface BooleanValue {
-  valueKind: "boolean";
-  isTrue: boolean;
-}
-
-const makeBooleanValue = (value: boolean): BooleanValue => ({
-  valueKind: "boolean",
-  isTrue: value,
-});
-
-interface ClosureValue {
-  valueKind: "closure";
-  closureName: Identifier;
-  argNames: Array<Identifier>;
-  body: Block;
-  env: Environment;
-}
-
-const makeClosureValue = (
-  closureName: Identifier,
-  argNames: Array<Identifier>,
-  body: Block,
-  env: Environment,
-): ClosureValue => ({
-  valueKind: "closure",
-  closureName,
-  argNames,
-  body,
-  env,
-});
-
-interface NativeFunctionValue {
-  valueKind: "nativeFunc";
-  funcName: Identifier;
-  argCount: number;
-  body: Function;
-  returnType: ValueKind;
-}
-
-interface NullValue {
-  valueKind: "null";
-}
-
-const makeNullValue = (): NullValue => ({
-  valueKind: "null",
-});
-
-export interface ObjectValue {
-  valueKind: "object";
-  fields: Map<Identifier, Value>;
-}
-
-const makeObjectValue = (fields: Map<Identifier, Value>): ObjectValue => ({
-  valueKind: "object",
-  fields,
-});
-
-export interface StringValue {
-  valueKind: "string";
-  value: string;
-}
-
-const makeStringValue = (value: string): StringValue => {
-  return {
-    valueKind: "string",
-    value,
-  };
-};
-
-type ValueKind = Value["valueKind"];
-export type Value =
-  | NumberValue
-  | BooleanValue
-  | ClosureValue
-  | NativeFunctionValue
-  | NullValue
-  | ObjectValue
-  | StringValue;
-
-class Return extends Error {
-  constructor(public readonly possibleValue: Value) {
-    super();
-  }
-}
-
-type ImportResult =
-  | { exportResultKind: "noSuchModule" }
-  | { exportResultKind: "noSuchExport" }
-  | { exportResultKind: "validExport"; exportedValue: Value };
-
-export const NATIVE_MODULE_NAME = identifierIso.wrap("Native");
-
-class ExportedValues {
-  // maps module names to their exports
-  // value of None represents an un-evaluated module,
-  // value of Some represents an evaluated module
-  private exportValues: Map<Identifier, Option<Map<Identifier, Value>>>;
-
-  private modules: Array<Module>;
-  private nativeFuncs?: Array<NativeFunctionValue>;
-
-  public constructor(modules: Array<Module>, nativeFuncs?: Array<NativeFunctionValue>) {
-    this.modules = modules;
-    this.nativeFuncs = nativeFuncs;
-
-    this.exportValues = new Map<Identifier, Option<Map<Identifier, Value>>>();
-    modules
-      .map((module) => module.name)
-      .forEach((moduleName) => {
-        this.exportValues = insertAt(eqIdentifier)(moduleName, none as Option<Map<Identifier, Value>>)(
-          this.exportValues,
-        );
-      });
-  }
-
-  public getExportedValue = (moduleName: Identifier, exportName: Identifier): ImportResult => {
-    if (moduleName === NATIVE_MODULE_NAME) {
-      const possibleNativeExport = this.nativeFuncs?.find((nativeFunc) => nativeFunc.funcName === exportName);
-      if (possibleNativeExport === undefined) {
-        return {
-          exportResultKind: "noSuchExport",
-        };
-      }
-
-      return {
-        exportResultKind: "validExport",
-        exportedValue: possibleNativeExport,
-      };
-    }
-
-    const possibleExports = lookup(eqIdentifier)(moduleName)(this.exportValues);
-    const moduleToExport = this.modules.find((module) => module.name === moduleName);
-    if (isNone(possibleExports) || moduleToExport === undefined) {
-      return {
-        exportResultKind: "noSuchModule",
-      };
-    }
-
-    let exportValues: Map<Identifier, Value>;
-
-    if (isNone(possibleExports.value)) {
-      const moduleEvalResult = evaluateModule(this, moduleToExport);
-      if (isLeft(moduleEvalResult)) {
-        throw new RuntimeError(`Error evaluating imported module ${moduleName}`, moduleEvalResult.left);
-      }
-      const moduleExports = moduleEvalResult.right[1];
-
-      this.exportValues = insertAt(eqIdentifier)(moduleName, some(moduleExports))(this.exportValues);
-      exportValues = moduleExports;
-    } else {
-      exportValues = possibleExports.value.value;
-    }
-
-    const possibleExport = lookup(eqIdentifier)(exportName)(exportValues);
-    if (isNone(possibleExport)) {
-      return {
-        exportResultKind: "noSuchExport",
-      };
-    }
-
-    return {
-      exportResultKind: "validExport",
-      exportedValue: possibleExport.value,
-    };
-  };
-}
-
-// TODO define type alias for Map<Identifier, Value>, since it's used in a few places to represent an object's contents?
+import { lookup, insertAt, toArray } from "fp-ts/lib/Map";
+import { isNone, isSome } from "fp-ts/lib/Option";
+import { Identifier, eqIdentifier, identifierIso, ordIdentifier } from "./universal_types";
+import { Expression, Block, Module } from "./parser_types";
+import {
+  MAIN_MODULE_NAME,
+  makeBooleanValue,
+  makeClosureValue,
+  makeNullValue,
+  makeNumberValue,
+  makeObjectValue,
+  makeStringValue,
+  NativeFunctionValue,
+  Return,
+  RuntimeError,
+  RuntimeFailure,
+  StringValue,
+  Value,
+} from "./evaluator_types";
+import { ExportedValues } from "./exported_values";
+import { Environment } from "./environment";
 
 export interface NativeFunctionImplementations {
   clock: () => number;
@@ -334,23 +51,6 @@ const defineNativeFunctions = (implementations: NativeFunctionImplementations): 
       argCount: 1,
       returnType: "object",
       body: implementations.parseNum,
-      /*
-      body: (str: StringValue): Map<Identifier, Value> => {
-        const parsed = parseFloat(str.value);
-
-        let result = new Map<Identifier, Value>();
-        const validityIdent = identifierIso.wrap("isValid");
-        const valueIdent = identifierIso.wrap("value");
-
-        if (isNaN(parsed)) {
-          result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(false))(result);
-        } else {
-          result = insertAt(eqIdentifier)<Value>(validityIdent, makeBooleanValue(true))(result);
-          result = insertAt(eqIdentifier)<Value>(valueIdent, makeNumberValue(parsed))(result);
-        }
-        return result;
-      },
-      */
     },
     {
       funcName: identifierIso.wrap("readString"),
@@ -364,90 +64,89 @@ const defineNativeFunctions = (implementations: NativeFunctionImplementations): 
   return nativeFuncs;
 };
 
+const areEqual = (lhsValue: Value, rhsValue: Value): boolean => {
+  if (lhsValue.valueKind === "closure") {
+    throw new RuntimeError("Trying to compare closure value", {
+      runtimeErrorKind: "typeMismatch",
+      expectedTypes: ["number", "boolean", "null", "object"], // not really scalable (would have to contain every type that supports equality), but allowable since this project doesn't allow custom types
+      actualType: "closure",
+    });
+  }
+
+  if (rhsValue.valueKind === "closure") {
+    throw new RuntimeError("Trying to compare closure value", {
+      runtimeErrorKind: "typeMismatch",
+      expectedTypes: ["number", "boolean", "null", "object"], // not really scalable (would have to contain every type that supports inequality), but allowable since this project doesn't allow custom types
+      actualType: "closure",
+    });
+  }
+
+  if (lhsValue.valueKind === "nativeFunc") {
+    throw new RuntimeError("Trying to compare native function value", {
+      runtimeErrorKind: "typeMismatch",
+      expectedTypes: ["number", "boolean", "null", "object"],
+      actualType: "nativeFunc",
+    });
+  }
+
+  if (rhsValue.valueKind === "nativeFunc") {
+    throw new RuntimeError("Trying to compare native function value", {
+      runtimeErrorKind: "typeMismatch",
+      expectedTypes: ["number", "boolean", "null", "object"],
+      actualType: "nativeFunc",
+    });
+  }
+
+  if (lhsValue.valueKind === "null") {
+    return rhsValue.valueKind === "null";
+  }
+
+  if (rhsValue.valueKind === "null") {
+    // null == null already handled above
+    return false;
+  }
+
+  if (lhsValue.valueKind === "object" && rhsValue.valueKind === "object") {
+    const lhsFields = toArray(ordIdentifier)(lhsValue.fields);
+    const rhsFields = toArray(ordIdentifier)(rhsValue.fields);
+
+    if (lhsFields.length !== rhsFields.length) {
+      return false;
+    }
+
+    for (const [[lhsFieldName, lhsFieldValue], [rhsFieldName, rhsFieldValue]] of zip(lhsFields, rhsFields)) {
+      if (lhsFieldName !== rhsFieldName) {
+        return false;
+      }
+
+      if (!areEqual(lhsFieldValue, rhsFieldValue)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  if (lhsValue.valueKind === "number" && rhsValue.valueKind === "number") {
+    return lhsValue.value === rhsValue.value;
+  } else if (lhsValue.valueKind === "boolean" && rhsValue.valueKind === "boolean") {
+    return lhsValue.isTrue === rhsValue.isTrue;
+  } else if (lhsValue.valueKind === "string" && rhsValue.valueKind === "string") {
+    return lhsValue.value === rhsValue.value;
+  } else {
+    throw new RuntimeError("Trying to compare values of different types", {
+      runtimeErrorKind: "typeMismatch",
+      expectedTypes: [lhsValue.valueKind],
+      actualType: rhsValue.valueKind,
+    });
+  }
+};
+
 // [Value, Map<Identifier, Value>] represents [top-level returned value, exports]
 export const evaluateModule = (
   availableExports: ExportedValues, // values exported by other modules
   module: Module,
 ): Either<RuntimeFailure, [Value, Map<Identifier, Value>]> => {
-  // utility functions
-  const areEqual = (lhsValue: Value, rhsValue: Value): boolean => {
-    if (lhsValue.valueKind === "closure") {
-      throw new RuntimeError("Trying to compare closure value", {
-        runtimeErrorKind: "typeMismatch",
-        expectedTypes: ["number", "boolean", "null", "object"], // not really scalable (would have to contain every type that supports equality), but allowable since this project doesn't allow custom types
-        actualType: "closure",
-      });
-    }
-
-    if (rhsValue.valueKind === "closure") {
-      throw new RuntimeError("Trying to compare closure value", {
-        runtimeErrorKind: "typeMismatch",
-        expectedTypes: ["number", "boolean", "null", "object"], // not really scalable (would have to contain every type that supports inequality), but allowable since this project doesn't allow custom types
-        actualType: "closure",
-      });
-    }
-
-    if (lhsValue.valueKind === "nativeFunc") {
-      throw new RuntimeError("Trying to compare native function value", {
-        runtimeErrorKind: "typeMismatch",
-        expectedTypes: ["number", "boolean", "null", "object"],
-        actualType: "nativeFunc",
-      });
-    }
-
-    if (rhsValue.valueKind === "nativeFunc") {
-      throw new RuntimeError("Trying to compare native function value", {
-        runtimeErrorKind: "typeMismatch",
-        expectedTypes: ["number", "boolean", "null", "object"],
-        actualType: "nativeFunc",
-      });
-    }
-
-    if (lhsValue.valueKind === "null") {
-      return rhsValue.valueKind === "null";
-    }
-
-    if (rhsValue.valueKind === "null") {
-      // null == null already handled above
-      return false;
-    }
-
-    if (lhsValue.valueKind === "object" && rhsValue.valueKind === "object") {
-      const lhsFields = toArray(ordIdentifier)(lhsValue.fields);
-      const rhsFields = toArray(ordIdentifier)(rhsValue.fields);
-
-      if (lhsFields.length !== rhsFields.length) {
-        return false;
-      }
-
-      for (const [[lhsFieldName, lhsFieldValue], [rhsFieldName, rhsFieldValue]] of zip(lhsFields, rhsFields)) {
-        if (lhsFieldName !== rhsFieldName) {
-          return false;
-        }
-
-        if (!areEqual(lhsFieldValue, rhsFieldValue)) {
-          return false;
-        }
-      }
-
-      return true;
-    }
-
-    if (lhsValue.valueKind === "number" && rhsValue.valueKind === "number") {
-      return lhsValue.value === rhsValue.value;
-    } else if (lhsValue.valueKind === "boolean" && rhsValue.valueKind === "boolean") {
-      return lhsValue.isTrue === rhsValue.isTrue;
-    } else if (lhsValue.valueKind === "string" && rhsValue.valueKind === "string") {
-      return lhsValue.value === rhsValue.value;
-    } else {
-      throw new RuntimeError("Trying to compare values of different types", {
-        runtimeErrorKind: "typeMismatch",
-        expectedTypes: [lhsValue.valueKind],
-        actualType: rhsValue.valueKind,
-      });
-    }
-  };
-
   const evaluateExpr = (env: Environment, expr: Expression): Value => {
     switch (expr.expressionKind) {
       case "numberLit": {
@@ -826,7 +525,6 @@ export const evaluateModule = (
     const topLevelEnv = new Environment();
     evaluateBlock(topLevelEnv, module.body);
 
-    // TODO extract this into function, call it when catching Return as well?
     module.exports.forEach((exportName) => {
       const possibleExportValue = topLevelEnv.lookup(exportName);
       if (isNone(possibleExportValue)) {
@@ -861,7 +559,7 @@ export const evaluateModule = (
 export const evaluateProgram = (nativeFunctions: NativeFunctionImplementations) => (
   modules: Array<Module>,
 ): Either<RuntimeFailure, Value> => {
-  const mainModules = modules.filter((module) => module.name === identifierIso.wrap("Main")); // TODO constant-ify Main
+  const mainModules = modules.filter((module) => module.name === MAIN_MODULE_NAME);
   if (mainModules.length < 1) {
     return left({
       runtimeErrorKind: "noMain",

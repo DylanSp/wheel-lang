@@ -1,9 +1,9 @@
 import { isNone } from "fp-ts/lib/Option";
 import { insertAt, lookup } from "fp-ts/lib/Map";
 import { insert } from "fp-ts/lib/Set";
-import { Identifier, eqIdentifier } from "./types";
-import { Module, Block } from "./parser";
-import { NATIVE_MODULE_NAME } from "./evaluator";
+import { Identifier, eqIdentifier } from "./universal_types";
+import { Module, Block } from "./parser_types";
+import { NATIVE_MODULE_NAME } from "./evaluator_types";
 
 class ModuleGraph {
   private dependencies: Map<Identifier, Set<Identifier>>; // map of module names to what module names import the key module

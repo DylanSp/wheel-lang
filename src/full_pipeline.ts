@@ -1,9 +1,12 @@
 import { Either, isLeft, left, Right } from "fp-ts/lib/Either";
-import { ScanError, Token, scan } from "./scanner";
-import { ParseFailure, parseModule, Module } from "./parser";
-import { RuntimeFailure, Value, evaluateProgram, NativeFunctionImplementations } from "./evaluator";
+import { scan } from "./scanner";
+import { parseModule } from "./parser";
+import { evaluateProgram, NativeFunctionImplementations } from "./evaluator";
 import { isCyclicDependencyPresent } from "./cycle_checker";
 import { desugar } from "./desugar";
+import { ScanError, Token } from "./scanner_types";
+import { Module, ParseFailure } from "./parser_types";
+import { RuntimeFailure, Value } from "./evaluator_types";
 
 /**
  * TYPES

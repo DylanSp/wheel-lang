@@ -1,6 +1,6 @@
 import "jest";
-import { Module } from "../src/parser";
-import { identifierIso } from "../src/types";
+import { Module } from "../src/parser_types";
+import { identifierIso } from "../src/universal_types";
 import { isCyclicDependencyPresent } from "../src/cycle_checker";
 
 describe("Cycle checker", () => {

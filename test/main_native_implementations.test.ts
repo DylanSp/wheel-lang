@@ -1,7 +1,7 @@
 import "jest";
-import { Value } from "../src/evaluator";
+import { Value } from "../src/evaluator_types";
 import { clock, parseNum, print } from "../src/main_native_implementations";
-import { Identifier, identifierIso } from "../src/types";
+import { Identifier, identifierIso } from "../src/universal_types";
 
 describe("Native function implementations for main driver", () => {
   describe("clock", () => {

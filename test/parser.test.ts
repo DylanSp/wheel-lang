@@ -1,8 +1,9 @@
 import "jest";
 import { isRight, isLeft } from "fp-ts/lib/Either";
-import { Token } from "../src/scanner";
-import { parseModule, Module, Block } from "../src/parser";
-import { identifierIso } from "../src/types";
+import { Token } from "../src/scanner_types";
+import { parseModule } from "../src/parser";
+import { identifierIso } from "../src/universal_types";
+import { Block, Module } from "../src/parser_types";
 
 const testModuleName = identifierIso.wrap("Test");
 const wrapBlock = (block: Block): Module => {
