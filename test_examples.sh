@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#set -x
-
 isSuccessful="true"
 
 for exampleDir in examples/*/ ; do
