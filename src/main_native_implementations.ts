@@ -2,8 +2,8 @@ import { readFileSync } from "fs";
 import { EOL } from "os";
 import { insertAt } from "fp-ts/lib/Map";
 import { prompt } from "readline-sync";
-import { ObjectValue, StringValue, Value } from "./evaluator";
-import { eqIdentifier, Identifier, identifierIso, ordIdentifier } from "./types";
+import { ObjectValue, StringValue, Value } from "./evaluator_types";
+import { eqIdentifier, Identifier, identifierIso, ordIdentifier } from "./universal_types";
 
 export const clock = (): number => Date.now();
 

@@ -1,8 +1,9 @@
 import "jest";
 import { isRight, isLeft } from "fp-ts/lib/Either";
 import { runProgram } from "../src/full_pipeline";
-import { NativeFunctionImplementations, Value } from "../src/evaluator";
-import { Identifier } from "../src/types";
+import { NativeFunctionImplementations } from "../src/evaluator";
+import { Value } from "../src/evaluator_types";
+import { Identifier } from "../src/universal_types";
 
 const nativeFunctionsTestImplementations: NativeFunctionImplementations = {
   clock: () => 0,

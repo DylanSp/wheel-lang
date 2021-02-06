@@ -1,8 +1,9 @@
 import "jest";
 import { isRight, isLeft } from "fp-ts/lib/Either";
-import { evaluateProgram, NativeFunctionImplementations, NATIVE_MODULE_NAME, Value } from "../src/evaluator";
-import { Identifier, identifierIso } from "../src/types";
-import { Block, Module } from "../src/parser";
+import { evaluateProgram, NativeFunctionImplementations } from "../src/evaluator";
+import { NATIVE_MODULE_NAME, Value } from "../src/evaluator_types";
+import { Identifier, identifierIso } from "../src/universal_types";
+import { Block, Module } from "../src/parser_types";
 
 const testModuleName = identifierIso.wrap("Main");
 const wrapBlock = (block: Block): Array<Module> => {

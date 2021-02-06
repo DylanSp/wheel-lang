@@ -1,6 +1,6 @@
 import "jest";
-import { Block, Module } from "../src/parser";
-import { identifierIso } from "../src/types";
+import { Block, Module } from "../src/parser_types";
+import { identifierIso } from "../src/universal_types";
 import { desugar } from "../src/desugar";
 
 const TEST_MODULE_NAME = identifierIso.wrap("TestModule");
