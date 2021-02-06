@@ -1,4 +1,4 @@
-import { Identifier } from "./universal_types";
+import { Identifier, identifierIso } from "./universal_types";
 
 export interface Module {
   name: Identifier;
@@ -184,3 +184,5 @@ export class ParseError extends Error {
     super(message);
   }
 }
+
+export const THIS_IDENTIFIER = identifierIso.wrap("this");

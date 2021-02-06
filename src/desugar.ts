@@ -1,5 +1,5 @@
 import { pipe } from "fp-ts/lib/function";
-import { Block, Module, Statement } from "./parser_types";
+import { Block, Module, Statement, THIS_IDENTIFIER } from "./parser_types";
 import { Identifier, identifierIso } from "./universal_types";
 
 export const desugar = (module: Module): Module => {
@@ -27,7 +27,7 @@ const desugarClassDeclarations = (module: Module): Module => {
       const desugaredMethod: Statement = {
         statementKind: "funcDecl",
         functionName: desugaredMethodName,
-        argNames: [identifierIso.wrap("this")],
+        argNames: [THIS_IDENTIFIER],
         body: [
           {
             statementKind: "funcDecl",
@@ -53,7 +53,7 @@ const desugarClassDeclarations = (module: Module): Module => {
       statementKind: "set",
       object: {
         expressionKind: "variableRef",
-        variableName: identifierIso.wrap("this"),
+        variableName: THIS_IDENTIFIER,
       },
       field: methodName,
       value: {
@@ -65,7 +65,7 @@ const desugarClassDeclarations = (module: Module): Module => {
         args: [
           {
             expressionKind: "variableRef",
-            variableName: identifierIso.wrap("this"),
+            variableName: THIS_IDENTIFIER,
           },
         ],
       },
@@ -78,11 +78,11 @@ const desugarClassDeclarations = (module: Module): Module => {
       body: [
         {
           statementKind: "varDecl",
-          variableName: identifierIso.wrap("this"),
+          variableName: THIS_IDENTIFIER,
         },
         {
           statementKind: "assignment",
-          variableName: identifierIso.wrap("this"),
+          variableName: THIS_IDENTIFIER,
           variableValue: {
             expressionKind: "objectLit",
             fields: [],
@@ -94,7 +94,7 @@ const desugarClassDeclarations = (module: Module): Module => {
           statementKind: "return",
           returnedValue: {
             expressionKind: "variableRef",
-            variableName: identifierIso.wrap("this"),
+            variableName: THIS_IDENTIFIER,
           },
         },
       ],

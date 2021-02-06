@@ -12,11 +12,10 @@ import {
   ParseError,
   ParseFailure,
   Statement,
+  THIS_IDENTIFIER,
 } from "./parser_types";
 import { IdentifierToken, Token, NumberToken, BooleanToken, StringToken } from "./scanner_types";
-import { Identifier, identifierIso } from "./universal_types";
-
-// TODO constant for "this"
+import { Identifier } from "./universal_types";
 
 export const parseModule = (input: Array<Token>): Either<ParseFailure, Module> => {
   let position = 0;
@@ -762,7 +761,7 @@ export const parseModule = (input: Array<Token>): Either<ParseFailure, Module> =
 
       return {
         expressionKind: "variableRef",
-        variableName: identifierIso.wrap("this"),
+        variableName: THIS_IDENTIFIER,
       };
     } else if (input[position]?.tokenKind !== "identifier") {
       throw new ParseError("Expected identifier");
