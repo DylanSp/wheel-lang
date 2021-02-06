@@ -21,8 +21,6 @@ import {
 import { ExportedValues } from "./exported_values";
 import { Environment } from "./environment";
 
-// TODO define type alias for Map<Identifier, Value>, since it's used in a few places to represent an object's contents?
-
 export interface NativeFunctionImplementations {
   clock: () => number;
   print: (value: Value) => void;
