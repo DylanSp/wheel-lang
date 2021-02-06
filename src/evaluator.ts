@@ -5,6 +5,7 @@ import { isNone, isSome } from "fp-ts/lib/Option";
 import { Identifier, eqIdentifier, identifierIso, ordIdentifier } from "./universal_types";
 import { Expression, Block, Module } from "./parser_types";
 import {
+  MAIN_MODULE_NAME,
   makeBooleanValue,
   makeClosureValue,
   makeNullValue,
@@ -559,7 +560,7 @@ export const evaluateModule = (
 export const evaluateProgram = (nativeFunctions: NativeFunctionImplementations) => (
   modules: Array<Module>,
 ): Either<RuntimeFailure, Value> => {
-  const mainModules = modules.filter((module) => module.name === identifierIso.wrap("Main")); // TODO constant-ify Main
+  const mainModules = modules.filter((module) => module.name === MAIN_MODULE_NAME);
   if (mainModules.length < 1) {
     return left({
       runtimeErrorKind: "noMain",

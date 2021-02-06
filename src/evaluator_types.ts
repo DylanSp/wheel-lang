@@ -177,3 +177,5 @@ export type ImportResult =
   | { exportResultKind: "validExport"; exportedValue: Value };
 
 export const NATIVE_MODULE_NAME = identifierIso.wrap("Native");
+
+export const MAIN_MODULE_NAME = identifierIso.wrap("Main");
