@@ -1,0 +1,20 @@
+module Main
+{
+  import print from Native;
+
+  class Dog
+  {
+    constructor(name)
+    {
+      this.name = name;
+    }
+
+    printName()
+    {
+      print(this.name);
+    }
+  }
+
+  let dog = Dog("Fido");
+  dog.printName();
+}

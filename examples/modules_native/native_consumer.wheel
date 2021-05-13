@@ -1,0 +1,5 @@
+module Main
+{
+  import print from Native;
+  print(2);
+}

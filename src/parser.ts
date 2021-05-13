@@ -1,169 +1,70 @@
 import { Either, right, left } from "fp-ts/lib/Either";
 import { none, Option, some, isSome } from "fp-ts/lib/Option";
-import { IdentifierToken, Token, NumberToken, BooleanToken } from "./scanner";
-import { Identifier } from "./types";
+import {
+  BinaryOperationKind,
+  Block,
+  Constructor,
+  Expression,
+  IfStatement,
+  Method,
+  Module,
+  ObjectLiteral,
+  ParseError,
+  ParseFailure,
+  Statement,
+  THIS_IDENTIFIER,
+} from "./parser_types";
+import { IdentifierToken, Token, NumberToken, BooleanToken, StringToken } from "./scanner_types";
+import { Identifier } from "./universal_types";
 
-/**
- * TYPES
- */
-
-export type Program = Block;
-
-export type Block = Array<Statement>;
-
-type Statement =
-  | FunctionDeclaration
-  | ReturnStatement
-  | VariableDeclaration
-  | VariableAssignment
-  | IfStatement
-  | WhileStatement
-  | SetStatement
-  | ExpressionStatement;
-
-interface FunctionDeclaration {
-  statementKind: "funcDecl";
-  functionName: Identifier;
-  argNames: Array<Identifier>;
-  body: Block;
-}
-
-interface ReturnStatement {
-  statementKind: "return";
-  returnedValue?: Expression;
-}
-
-interface VariableDeclaration {
-  statementKind: "varDecl";
-  variableName: Identifier;
-}
-
-interface VariableAssignment {
-  statementKind: "assignment";
-  variableName: Identifier;
-  variableValue: Expression;
-}
-
-interface IfStatement {
-  statementKind: "if";
-  condition: Expression;
-  trueBody: Block;
-  falseBody: Block;
-}
-
-interface WhileStatement {
-  statementKind: "while";
-  condition: Expression;
-  body: Block;
-}
-
-interface SetStatement {
-  statementKind: "set";
-  object: Expression;
-  field: Identifier;
-  value: Expression;
-}
-
-interface ExpressionStatement {
-  statementKind: "expression";
-  expression: Expression;
-}
-
-export type Expression =
-  | BinaryOperation
-  | UnaryOperation
-  | NumberLiteral
-  | BooleanLiteral
-  | ObjectLiteral
-  | NullLiteral
-  | FunctionCall
-  | VariableRef
-  | Getter;
-
-interface BinaryOperation {
-  expressionKind: "binOp";
-  binOp: BinaryOperationKind;
-  leftOperand: Expression;
-  rightOperand: Expression;
-}
-
-type BinaryOperationKind = ArithmeticBinaryOperation | LogicalBinaryOperation | RelationalOperation;
-
-type ArithmeticBinaryOperation = "add" | "subtract" | "multiply" | "divide";
-
-type LogicalBinaryOperation = "and" | "or";
-
-type RelationalOperation = "lessThan" | "greaterThan" | "lessThanEquals" | "greaterThanEquals" | "equals" | "notEqual";
-
-interface UnaryOperation {
-  expressionKind: "unaryOp";
-  unaryOp: LogicalUnaryOperation | ArithmeticUnaryOperation;
-  operand: Expression;
-}
-
-export type LogicalUnaryOperation = "not";
-
-type ArithmeticUnaryOperation = "negative";
-
-interface NumberLiteral {
-  expressionKind: "numberLit";
-  value: number;
-}
-
-interface BooleanLiteral {
-  expressionKind: "booleanLit";
-  isTrue: boolean;
-}
-
-interface ObjectLiteral {
-  expressionKind: "objectLit";
-  fields: Array<ObjectField>;
-}
-
-interface ObjectField {
-  fieldName: Identifier;
-  fieldValue: Expression;
-}
-
-interface NullLiteral {
-  expressionKind: "nullLit";
-}
-
-interface FunctionCall {
-  expressionKind: "funcCall";
-  callee: Expression; // needs to be an expression to allow for multiple calls, i.e. f()()
-  args: Array<Expression>;
-}
-
-interface VariableRef {
-  expressionKind: "variableRef";
-  variableName: Identifier;
-}
-
-interface Getter {
-  expressionKind: "get";
-  object: Expression;
-  field: Identifier;
-}
-
-export interface ParseFailure {
-  message: string;
-}
-
-class ParseError extends Error {
-  constructor(public readonly message: string) {
-    super(message);
-  }
-}
-
-type Parse = (input: Array<Token>) => Either<ParseFailure, Program>;
-
-export const parse: Parse = (input) => {
+export const parseModule = (input: Array<Token>): Either<ParseFailure, Module> => {
   let position = 0;
 
   /** Grammar entrypoint */
-  const parseProgram = (): Program => {
-    return parseBlock();
+  const parseTopLevel = (): Module => {
+    if (input[position]?.tokenKind !== "module") {
+      throw new ParseError('Expected "module"');
+    }
+    position += 1; // move past "module"
+
+    if (input[position]?.tokenKind !== "identifier") {
+      throw new ParseError("Expected identifier");
+    }
+    const moduleName = (input[position] as IdentifierToken).name; // cast should always succeed
+    position += 1; // move past module name
+
+    const body = parseBlock();
+
+    const exports: Array<Identifier> = [];
+    if (input[position]?.tokenKind === "export") {
+      position += 1; // move past "export"
+
+      while (input[position]?.tokenKind === "identifier") {
+        exports.push((input[position] as IdentifierToken).name); // cast should always succeed
+        position += 1;
+
+        if (input[position]?.tokenKind === "semicolon") {
+          break;
+        }
+
+        if (input[position]?.tokenKind !== "comma") {
+          throw new ParseError("Expected ,");
+        }
+
+        position += 1; // move past comma
+      }
+
+      if (input[position]?.tokenKind !== "semicolon") {
+        throw new ParseError("Expected ;");
+      }
+      position += 1;
+    }
+
+    return {
+      name: moduleName,
+      body,
+      exports,
+    };
   };
 
   const parseBlock = (): Block => {
@@ -175,6 +76,7 @@ export const parse: Parse = (input) => {
 
     const statements: Array<Statement> = [];
 
+    // TODO extract common elements (in grammar as well?) for functions/ctor/methods
     while (input[position]?.tokenKind !== "rightBrace") {
       switch (input[position]?.tokenKind) {
         case "let": {
@@ -292,6 +194,7 @@ export const parse: Parse = (input) => {
 
           break;
         }
+        case "this":
         case "identifier": {
           const expression = parsePotentialCall();
 
@@ -364,8 +267,166 @@ export const parse: Parse = (input) => {
           });
           break;
         }
+        case "import": {
+          position += 1; // move past "import"
+
+          const imports: Array<Identifier> = [];
+          while (input[position]?.tokenKind === "identifier") {
+            imports.push((input[position] as IdentifierToken).name);
+            position += 1;
+
+            if (input[position]?.tokenKind === "from") {
+              break;
+            }
+
+            if (input[position]?.tokenKind !== "comma") {
+              throw new ParseError("Expected ,");
+            }
+
+            position += 1; // move past comma
+          }
+
+          if (input[position]?.tokenKind !== "from") {
+            throw new ParseError('Expected "from"');
+          }
+          position += 1; // move past "from"
+
+          if (input[position]?.tokenKind !== "identifier") {
+            throw new ParseError("Expected identifier");
+          }
+          const moduleName = (input[position] as IdentifierToken).name; // cast should always succeed
+          position += 1; // move past module name
+
+          if (input[position]?.tokenKind !== "semicolon") {
+            throw new ParseError("Expected ;");
+          }
+          position += 1; // move past semicolon
+
+          statements.push({
+            statementKind: "import",
+            moduleName,
+            imports,
+          });
+
+          break;
+        }
+        case "class": {
+          position += 1; // move past "class"
+
+          let constructorDeclared = false;
+
+          if (input[position]?.tokenKind !== "identifier") {
+            throw new ParseError("Expected identifier");
+          }
+          const className = (input[position] as IdentifierToken).name; // cast should always succeed
+          position += 1; // move past class name
+
+          if (input[position]?.tokenKind !== "leftBrace") {
+            throw new ParseError("Expected {");
+          }
+          position += 1; // move past left brace
+
+          const constructor: Constructor = {
+            argNames: [],
+            body: [],
+          };
+          const methods: Array<Method> = [];
+
+          while (input[position]?.tokenKind === "constructor" || input[position]?.tokenKind === "identifier") {
+            if (input[position]?.tokenKind === "constructor") {
+              if (constructorDeclared) {
+                throw new ParseError("Expected at most one constructor");
+              }
+              constructorDeclared = true;
+
+              position += 1; // move past "constructor"
+
+              if (input[position]?.tokenKind !== "leftParen") {
+                throw new ParseError("Expected (");
+              }
+              position += 1; // move past left paren
+
+              const args: Array<Identifier> = [];
+              while (input[position]?.tokenKind === "identifier") {
+                args.push((input[position] as IdentifierToken).name);
+                position += 1;
+
+                if (input[position]?.tokenKind === "rightParen") {
+                  break;
+                }
+
+                if (input[position]?.tokenKind !== "comma") {
+                  throw new ParseError("Expected ,");
+                }
+
+                position += 1; // move past comma
+              }
+
+              if (input[position]?.tokenKind !== "rightParen") {
+                throw new ParseError("Expected )");
+              }
+              position += 1; // move past right paren
+
+              constructor.argNames = args;
+              constructor.body = parseBlock();
+            } else {
+              const methodName = (input[position] as IdentifierToken).name; // cast should always succeed
+              position += 1; // move past identifier
+
+              if (input[position]?.tokenKind !== "leftParen") {
+                throw new ParseError("Expected (");
+              }
+              position += 1; // move past left paren
+
+              const args: Array<Identifier> = [];
+              while (input[position]?.tokenKind === "identifier") {
+                args.push((input[position] as IdentifierToken).name);
+                position += 1;
+
+                if (input[position]?.tokenKind === "rightParen") {
+                  break;
+                }
+
+                if (input[position]?.tokenKind !== "comma") {
+                  throw new ParseError("Expected ,");
+                }
+
+                position += 1; // move past comma
+              }
+
+              if (input[position]?.tokenKind !== "rightParen") {
+                throw new ParseError("Expected )");
+              }
+              position += 1; // move past right paren
+
+              const body = parseBlock();
+
+              const method: Method = {
+                methodName,
+                argNames: args,
+                body,
+              };
+              methods.push(method);
+            }
+          }
+
+          if (input[position]?.tokenKind !== "rightBrace") {
+            throw new ParseError("Expected }");
+          }
+          position += 1; // move past right brace
+
+          statements.push({
+            statementKind: "classDecl",
+            className,
+            constructor,
+            methods,
+          });
+
+          break;
+        }
         case "number":
-        case "boolean": {
+        case "boolean":
+        case "string": {
           const expression = parseLogicalExpr();
 
           if (input[position]?.tokenKind !== "semicolon") {
@@ -576,6 +637,7 @@ export const parse: Parse = (input) => {
   const parsePotentialCall = (): Expression => {
     let callee = parseLiteralOrIdentifier();
 
+    // TODO potential refactor opportunity - similar code in parsing assignments to fields of "this"
     while (input[position]?.tokenKind === "leftParen" || input[position]?.tokenKind === "period") {
       if (input[position].tokenKind === "leftParen") {
         position += 1; // move past left paren
@@ -646,6 +708,13 @@ export const parse: Parse = (input) => {
       return {
         expressionKind: "nullLit",
       };
+    } else if (input[position]?.tokenKind === "string") {
+      const strToken = input[position] as StringToken; // cast should always succeed
+      position += 1;
+      return {
+        expressionKind: "stringLit",
+        value: strToken.value,
+      };
     } else if (input[position]?.tokenKind === "leftBrace") {
       position += 1; // move past opening brace
       const objectLit: ObjectLiteral = {
@@ -687,6 +756,13 @@ export const parse: Parse = (input) => {
       position += 1; // move past right brace
 
       return objectLit;
+    } else if (input[position]?.tokenKind === "this") {
+      position += 1;
+
+      return {
+        expressionKind: "variableRef",
+        variableName: THIS_IDENTIFIER,
+      };
     } else if (input[position]?.tokenKind !== "identifier") {
       throw new ParseError("Expected identifier");
     } else {
@@ -702,7 +778,7 @@ export const parse: Parse = (input) => {
 
   /** Converting thrown parse errors to Left case of Either<ParseFailure, Program> */
   try {
-    const parseResult = parseProgram();
+    const parseResult = parseTopLevel();
     if (position !== input.length) {
       throw new ParseError("Expected end of input");
     }

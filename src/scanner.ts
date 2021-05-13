@@ -1,186 +1,8 @@
 import { Either, left, right } from "fp-ts/lib/Either";
-import { Identifier, identifierIso } from "./types";
+import { ScanError, Token } from "./scanner_types";
+import { identifierIso } from "./universal_types";
 
-/**
- * TYPES
- */
-
-export type Token =
-  | LeftBrace
-  | RightBrace
-  | LeftParen
-  | RightParen
-  | SingleEquals
-  | LetKeyword
-  | FunctionKeyword
-  | ReturnKeyword
-  | IfKeyword
-  | ElseKeyword
-  | WhileKeyword
-  | NullKeyword
-  | Semicolon
-  | Colon
-  | Comma
-  | Period
-  | PlusToken
-  | MinusToken
-  | Asterisk
-  | ForwardSlash
-  | ExclamationPoint
-  | DoubleEquals
-  | NotEqualsToken
-  | Ampersand
-  | VerticalBar
-  | LessThanToken
-  | LessThanEqualsToken
-  | GreaterThanToken
-  | GreaterThanEqualsToken
-  | NumberToken
-  | BooleanToken
-  | IdentifierToken;
-
-interface LeftBrace {
-  tokenKind: "leftBrace";
-}
-
-interface RightBrace {
-  tokenKind: "rightBrace";
-}
-
-interface LeftParen {
-  tokenKind: "leftParen";
-}
-
-interface RightParen {
-  tokenKind: "rightParen";
-}
-
-interface SingleEquals {
-  tokenKind: "singleEquals";
-}
-
-interface LetKeyword {
-  tokenKind: "let";
-}
-
-interface FunctionKeyword {
-  tokenKind: "function";
-}
-
-interface ReturnKeyword {
-  tokenKind: "return";
-}
-
-interface IfKeyword {
-  tokenKind: "if";
-}
-
-interface ElseKeyword {
-  tokenKind: "else";
-}
-
-interface WhileKeyword {
-  tokenKind: "while";
-}
-
-interface NullKeyword {
-  tokenKind: "null";
-}
-
-interface Semicolon {
-  tokenKind: "semicolon";
-}
-
-interface Colon {
-  tokenKind: "colon";
-}
-
-interface Comma {
-  tokenKind: "comma";
-}
-
-interface Period {
-  tokenKind: "period";
-}
-
-interface PlusToken {
-  tokenKind: "plus";
-}
-
-interface MinusToken {
-  tokenKind: "minus";
-}
-
-interface Asterisk {
-  tokenKind: "asterisk";
-}
-
-interface ForwardSlash {
-  tokenKind: "forwardSlash";
-}
-
-interface ExclamationPoint {
-  tokenKind: "exclamationPoint";
-}
-
-interface DoubleEquals {
-  tokenKind: "doubleEquals";
-}
-
-interface NotEqualsToken {
-  tokenKind: "notEqual";
-}
-
-interface Ampersand {
-  tokenKind: "ampersand";
-}
-
-interface VerticalBar {
-  tokenKind: "verticalBar";
-}
-
-interface LessThanToken {
-  tokenKind: "lessThan";
-}
-
-interface LessThanEqualsToken {
-  tokenKind: "lessThanEquals";
-}
-
-interface GreaterThanToken {
-  tokenKind: "greaterThan";
-}
-
-interface GreaterThanEqualsToken {
-  tokenKind: "greaterThanEquals";
-}
-
-export interface NumberToken {
-  tokenKind: "number";
-  value: number;
-}
-
-export interface BooleanToken {
-  tokenKind: "boolean";
-  isTrue: boolean;
-}
-
-export interface IdentifierToken {
-  tokenKind: "identifier";
-  name: Identifier;
-}
-
-export interface ScanError {
-  invalidLexeme: string;
-}
-
-type Scan = (input: string) => Either<Array<ScanError>, Array<Token>>;
-
-/**
- * SCANNING
- */
-
-export const scan: Scan = (input: string) => {
+export const scan = (input: string): Either<Array<ScanError>, Array<Token>> => {
   const errors: Array<ScanError> = [];
   const tokens: Array<Token> = [];
 
@@ -326,6 +148,25 @@ export const scan: Scan = (input: string) => {
         });
         position += 1;
         break;
+      case '"':
+        position += 1; // advance past starting quote
+        const endingQuoteRelativePosition = input.substring(position).indexOf('"');
+
+        if (endingQuoteRelativePosition === -1) {
+          errors.push({
+            invalidLexeme: 'unmatched "',
+          });
+          position = input.length; // advance to end to stop scanning
+        } else {
+          const value = input.substr(position, endingQuoteRelativePosition);
+          tokens.push({
+            tokenKind: "string",
+            value,
+          });
+          position = position + endingQuoteRelativePosition + 1;
+        }
+
+        break;
       default:
         // check for whitespace; if present, skip past it
         if (/\s/.test(char)) {
@@ -402,6 +243,48 @@ export const scan: Scan = (input: string) => {
             "null",
             {
               tokenKind: "null",
+            },
+          ],
+          [
+            "module",
+            {
+              tokenKind: "module",
+            },
+          ],
+          [
+            "import",
+            {
+              tokenKind: "import",
+            },
+          ],
+          [
+            "export",
+            {
+              tokenKind: "export",
+            },
+          ],
+          [
+            "from",
+            {
+              tokenKind: "from",
+            },
+          ],
+          [
+            "class",
+            {
+              tokenKind: "class",
+            },
+          ],
+          [
+            "constructor",
+            {
+              tokenKind: "constructor",
+            },
+          ],
+          [
+            "this",
+            {
+              tokenKind: "this",
             },
           ],
         ];

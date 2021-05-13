@@ -1,8 +1,18 @@
 import "jest";
 import { isRight, isLeft } from "fp-ts/lib/Either";
-import { Token } from "../src/scanner";
-import { parse, Program } from "../src/parser";
-import { identifierIso } from "../src/types";
+import { Token } from "../src/scanner_types";
+import { parseModule } from "../src/parser";
+import { identifierIso } from "../src/universal_types";
+import { Block, Module } from "../src/parser_types";
+
+const testModuleName = identifierIso.wrap("Test");
+const wrapBlock = (block: Block): Module => {
+  return {
+    name: testModuleName,
+    body: block,
+    exports: [],
+  };
+};
 
 describe("Parser", () => {
   describe("Successful parses", () => {
@@ -10,6 +20,13 @@ describe("Parser", () => {
       it("Parses { let x; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -29,7 +46,7 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
@@ -37,14 +54,14 @@ describe("Parser", () => {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "varDecl",
             variableName: identifierIso.wrap("x"),
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
     });
 
@@ -52,6 +69,13 @@ describe("Parser", () => {
       it("Parses { x = 1 + 2; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -82,7 +106,7 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
@@ -90,7 +114,7 @@ describe("Parser", () => {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -109,12 +133,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = 1 + 2 + 3; } with proper associativity", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -152,7 +183,7 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
@@ -160,7 +191,7 @@ describe("Parser", () => {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -187,12 +218,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = 1 * 2; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -223,7 +261,7 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
@@ -231,7 +269,7 @@ describe("Parser", () => {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -250,12 +288,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = 1 * 2 - 3; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -293,7 +338,7 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
@@ -301,7 +346,7 @@ describe("Parser", () => {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -328,12 +373,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = 4 + 5 / 6; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -371,7 +423,7 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
@@ -379,7 +431,7 @@ describe("Parser", () => {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -406,12 +458,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = (7 + 8) / 9; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -455,7 +514,7 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
@@ -463,7 +522,7 @@ describe("Parser", () => {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -490,12 +549,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = -1; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -522,7 +588,7 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
@@ -530,7 +596,7 @@ describe("Parser", () => {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -545,12 +611,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = 2 - -3; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -584,7 +657,7 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
@@ -592,7 +665,7 @@ describe("Parser", () => {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -615,12 +688,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = f(); } (function call with no arguments)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -650,14 +730,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -672,12 +752,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { y = g(1); } (function call with one argument)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -711,14 +798,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("y"),
@@ -738,12 +825,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { z = h(2, 3); } (function call with >1 argument)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -784,14 +878,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("z"),
@@ -815,12 +909,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { i = f() + 1; } (function call with operation after it)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -857,14 +958,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("i"),
@@ -887,12 +988,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { j = 2 * f(); } (function call with operation before it)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -929,14 +1037,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("j"),
@@ -959,12 +1067,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { higherOrderResult = higher()(); } (higher-order function call)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1000,7 +1115,7 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
@@ -1008,7 +1123,7 @@ describe("Parser", () => {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("higherOrderResult"),
@@ -1027,12 +1142,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = true; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1056,14 +1178,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1074,12 +1196,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = true & false; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1110,14 +1239,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1136,12 +1265,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = false | true; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1172,14 +1308,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1198,12 +1334,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = 1 < 2; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1234,14 +1377,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1260,12 +1403,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = 3 > 4; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1296,14 +1446,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1322,12 +1472,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = 5 <= 6; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1358,14 +1515,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1384,12 +1541,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = 7 >= 8; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1420,14 +1584,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1446,12 +1610,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = true == 9; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1482,14 +1653,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1508,12 +1679,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = false /= 10; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1544,14 +1722,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1570,12 +1748,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = !true; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1602,14 +1787,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1624,12 +1809,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = null; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1652,14 +1844,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1669,12 +1861,73 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it('Parses { x = "str"; }', () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("x"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "string",
+            value: "str",
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "assignment",
+            variableName: identifierIso.wrap("x"),
+            variableValue: {
+              expressionKind: "stringLit",
+              value: "str",
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = !f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1707,14 +1960,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1733,12 +1986,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = 2 * f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1775,14 +2035,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1805,12 +2065,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = 1 + f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1847,14 +2114,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1877,12 +2144,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = 3 < f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1919,14 +2193,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -1949,12 +2223,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = true & f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -1991,14 +2272,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -2021,12 +2302,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = false | f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2063,14 +2351,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -2093,12 +2381,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = 4 / !true; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2132,14 +2427,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -2162,12 +2457,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = 5 - !6; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2201,14 +2503,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -2231,12 +2533,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = 7 < !8; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2270,14 +2579,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -2300,12 +2609,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = false & !true; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2339,14 +2655,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -2369,12 +2685,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = true | !false; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2408,14 +2731,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -2438,12 +2761,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = 9 > 10 * 11; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2481,14 +2811,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -2515,12 +2845,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = true & 12 * 13; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2558,14 +2895,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -2592,12 +2929,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = 14 | 15 / 16; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2635,14 +2979,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -2669,12 +3013,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = 17 >= 18 + 19; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2712,14 +3063,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -2746,12 +3097,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = false & 20 - 21; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2789,14 +3147,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -2823,12 +3181,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = true | 22 + 23; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2866,14 +3231,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -2900,12 +3265,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = true & 24 >= 25; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -2943,14 +3315,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -2977,12 +3349,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = false | 26 <= 27; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3020,14 +3399,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -3054,12 +3433,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = true & true | false; } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3097,14 +3483,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -3131,12 +3517,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x = 1 < 2 & 3 > 4 | 5 + 6 * 7 /= 8 & !f(); } with proper precedence", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3225,14 +3618,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -3315,7 +3708,7 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
     });
 
@@ -3323,6 +3716,13 @@ describe("Parser", () => {
       it("Parses { let x = 1; }", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3349,7 +3749,7 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
@@ -3357,7 +3757,7 @@ describe("Parser", () => {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "varDecl",
             variableName: identifierIso.wrap("x"),
@@ -3372,7 +3772,7 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
     });
 
@@ -3380,6 +3780,13 @@ describe("Parser", () => {
       it("Parses { return 1 + 2; } (return of operation)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3406,14 +3813,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "return",
             returnedValue: {
@@ -3431,12 +3838,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { return; } (return with no expression)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3452,20 +3866,20 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "return",
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
     });
 
@@ -3473,6 +3887,13 @@ describe("Parser", () => {
       it("Parses { function f() {} } (function with no parameters or body)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3501,14 +3922,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "funcDecl",
             functionName: identifierIso.wrap("f"),
@@ -3517,12 +3938,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { function g(x) {} } (function with one parameter, no body)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3555,14 +3983,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "funcDecl",
             functionName: identifierIso.wrap("g"),
@@ -3571,12 +3999,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { function h(x, y) {} } (function with multiple parameters, no body)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3616,14 +4051,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "funcDecl",
             functionName: identifierIso.wrap("h"),
@@ -3632,12 +4067,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { function foo() { return 1; } } (function with no parameters, one statement in body)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3676,14 +4118,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "funcDecl",
             functionName: identifierIso.wrap("foo"),
@@ -3700,12 +4142,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { function bar() { x = 1; return x; } } (function with no parameters, multiple statements in body)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3758,14 +4207,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "funcDecl",
             functionName: identifierIso.wrap("bar"),
@@ -3790,7 +4239,7 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
     });
 
@@ -3798,6 +4247,13 @@ describe("Parser", () => {
       it("Parses { let x = { field: 1 }; } (simple object with one field)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3837,14 +4293,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "varDecl",
             variableName: identifierIso.wrap("x"),
@@ -3867,12 +4323,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { let x = { fieldA: 1, fieldB: true }; } (simple object with multiple fields)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -3926,14 +4389,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "varDecl",
             variableName: identifierIso.wrap("x"),
@@ -3963,12 +4426,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { let nested = { outerField: { innerField: 1 } }; } (object with nested fields)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -4021,14 +4491,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "varDecl",
             variableName: identifierIso.wrap("nested"),
@@ -4059,12 +4529,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { let y = x.a; } (basic getter usage)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -4098,14 +4575,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "varDecl",
             variableName: identifierIso.wrap("y"),
@@ -4124,12 +4601,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x.a = 1; } (basic setter usage)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -4160,14 +4644,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "set",
             object: {
@@ -4182,12 +4666,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { let y = x.a.b; } (chained getters)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -4228,14 +4719,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "varDecl",
             variableName: identifierIso.wrap("y"),
@@ -4258,12 +4749,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x.a.b = 1; } (nested setter)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -4301,14 +4799,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "set",
             object: {
@@ -4327,12 +4825,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { let y = x.f().a; } (chaining function call, then getter)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -4379,14 +4884,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "varDecl",
             variableName: identifierIso.wrap("y"),
@@ -4413,12 +4918,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { let y = x.a.f(); } (calling function after getter)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -4465,14 +4977,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "varDecl",
             variableName: identifierIso.wrap("y"),
@@ -4499,7 +5011,7 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
     });
 
@@ -4507,6 +5019,13 @@ describe("Parser", () => {
       it("Parses { f(); } (calling function as expression statement)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -4529,14 +5048,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "expression",
             expression: {
@@ -4550,12 +5069,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { x; } (variable reference as expression statement)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -4572,14 +5098,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "expression",
             expression: {
@@ -4589,12 +5115,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { 1; } (number literal as expression statement)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -4611,14 +5144,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "expression",
             expression: {
@@ -4628,12 +5161,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { true; } (boolean literal as expression statement)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -4650,14 +5190,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "expression",
             expression: {
@@ -4667,7 +5207,7 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
     });
 
@@ -4675,6 +5215,13 @@ describe("Parser", () => {
       it("Parses { x = 1; return x; } (program with multiple simple statements)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -4708,14 +5255,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "assignment",
             variableName: identifierIso.wrap("x"),
@@ -4732,12 +5279,19 @@ describe("Parser", () => {
             },
           },
         ];
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { if (true) { return 1; } else {} } (program with if statement, empty else block)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -4785,14 +5339,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "if",
             condition: {
@@ -4812,12 +5366,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { if (false) {} else { return 2; } } (program with if statement, empty then block", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -4865,14 +5426,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "if",
             condition: {
@@ -4892,12 +5453,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { if (1 < 2) { return 3; } else { return 4; } } (program with if statement, statements in both blocks", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -4962,14 +5530,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "if",
             condition: {
@@ -5005,12 +5573,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { if (false) { return 1; } else if (true) { return 2; } else { return 3; } } (program with if statement, else-if, else) ", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -5100,14 +5675,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "if",
             condition: {
@@ -5153,12 +5728,19 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
 
       it("Parses { while (true) { x = 1; } } (program with while statement)", () => {
         // Arrange
         const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
           {
             tokenKind: "leftBrace",
           },
@@ -5201,14 +5783,14 @@ describe("Parser", () => {
         ];
 
         // Act
-        const parseResult = parse(tokens);
+        const parseResult = parseModule(tokens);
 
         // Assert
         if (!isRight(parseResult)) {
           throw new Error("Parse failed, should have succeeded");
         }
 
-        const desiredResult: Program = [
+        const desiredBlock: Block = [
           {
             statementKind: "while",
             condition: {
@@ -5228,15 +5810,1545 @@ describe("Parser", () => {
           },
         ];
 
-        expect(parseResult.right).toEqual(desiredResult);
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+    });
+
+    describe("Import statements", () => {
+      it("Parses { import someObj from SomeModule; } (program with single import)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "import",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("someObj"),
+          },
+          {
+            tokenKind: "from",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SomeModule"),
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "import",
+            moduleName: identifierIso.wrap("SomeModule"),
+            imports: [identifierIso.wrap("someObj")],
+          },
+        ];
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it("Parses { import someObj, someFunc from SomeModule; } (program with multiple imports)", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "import",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("someObj"),
+          },
+          {
+            tokenKind: "comma",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("someFunc"),
+          },
+          {
+            tokenKind: "from",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SomeModule"),
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "import",
+            moduleName: identifierIso.wrap("SomeModule"),
+            imports: [identifierIso.wrap("someObj"), identifierIso.wrap("someFunc")],
+          },
+        ];
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+    });
+
+    describe("Modules with exports", () => {
+      it("Parses a module with a single export", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "export",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("testExport"),
+          },
+          {
+            tokenKind: "semicolon",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredModule: Module = {
+          name: testModuleName,
+          body: [],
+          exports: [identifierIso.wrap("testExport")],
+        };
+        expect(parseResult.right).toEqual(desiredModule);
+      });
+
+      it("Parses a module with multiple exports", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "export",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("testExport1"),
+          },
+          {
+            tokenKind: "comma",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("testExport2"),
+          },
+          {
+            tokenKind: "semicolon",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredModule: Module = {
+          name: testModuleName,
+          body: [],
+          exports: [identifierIso.wrap("testExport1"), identifierIso.wrap("testExport2")],
+        };
+        expect(parseResult.right).toEqual(desiredModule);
+      });
+    });
+
+    describe("Class declarations", () => {
+      it("Parses a class declaration with no explicit constructor and no methods", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SampleClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SampleClass"),
+            constructor: {
+              argNames: [],
+              body: [],
+            },
+            methods: [],
+          },
+        ];
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it("Parses a class declaration with no-argument constructor and no methods", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SampleClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "constructor",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "this",
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("field"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 1,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          console.error(parseResult.left.message);
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SampleClass"),
+            constructor: {
+              argNames: [],
+              body: [
+                {
+                  statementKind: "set",
+                  object: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("this"),
+                  },
+                  field: identifierIso.wrap("field"),
+                  value: {
+                    expressionKind: "numberLit",
+                    value: 1,
+                  },
+                },
+              ],
+            },
+            methods: [],
+          },
+        ];
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it("Parses a class declaration with single-argument constructor and no methods", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SampleClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "constructor",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("name"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "this",
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("name"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("name"),
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SampleClass"),
+            constructor: {
+              argNames: [identifierIso.wrap("name")],
+              body: [
+                {
+                  statementKind: "set",
+                  object: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("this"),
+                  },
+                  field: identifierIso.wrap("name"),
+                  value: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("name"),
+                  },
+                },
+              ],
+            },
+            methods: [],
+          },
+        ];
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it("Parses a class declaration with multiple-argument constructor and no methods", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SampleClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "constructor",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("name"),
+          },
+          {
+            tokenKind: "comma",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("age"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "this",
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("name"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("name"),
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "this",
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("age"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("age"),
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SampleClass"),
+            constructor: {
+              argNames: [identifierIso.wrap("name"), identifierIso.wrap("age")],
+              body: [
+                {
+                  statementKind: "set",
+                  object: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("this"),
+                  },
+                  field: identifierIso.wrap("name"),
+                  value: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("name"),
+                  },
+                },
+                {
+                  statementKind: "set",
+                  object: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("this"),
+                  },
+                  field: identifierIso.wrap("age"),
+                  value: {
+                    expressionKind: "variableRef",
+                    variableName: identifierIso.wrap("age"),
+                  },
+                },
+              ],
+            },
+            methods: [],
+          },
+        ];
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it("Parses a class declaration with empty constructor and one method with no arguments", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SampleClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("sampleMethod"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("someFunc"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          console.error(parseResult.left.message);
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SampleClass"),
+            constructor: {
+              argNames: [],
+              body: [],
+            },
+            methods: [
+              {
+                methodName: identifierIso.wrap("sampleMethod"),
+                argNames: [],
+                body: [
+                  {
+                    statementKind: "expression",
+                    expression: {
+                      expressionKind: "funcCall",
+                      callee: {
+                        expressionKind: "variableRef",
+                        variableName: identifierIso.wrap("someFunc"),
+                      },
+                      args: [],
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ];
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it("Parses a class declaration with empty constructor and one method with one argument", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SampleClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("sampleMethod"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("sampleArg"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SampleClass"),
+            constructor: {
+              argNames: [],
+              body: [],
+            },
+            methods: [
+              {
+                methodName: identifierIso.wrap("sampleMethod"),
+                argNames: [identifierIso.wrap("sampleArg")],
+                body: [],
+              },
+            ],
+          },
+        ];
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it("Parses a class declaration with empty constructor and one method with multiple arguments", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SampleClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("sampleMethod"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg1"),
+          },
+          {
+            tokenKind: "comma",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("arg2"),
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SampleClass"),
+            constructor: {
+              argNames: [],
+              body: [],
+            },
+            methods: [
+              {
+                methodName: identifierIso.wrap("sampleMethod"),
+                argNames: [identifierIso.wrap("arg1"), identifierIso.wrap("arg2")],
+                body: [],
+              },
+            ],
+          },
+        ];
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it("Parses a class declaration with empty constructor and multiple methods", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SampleClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("method1"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("method2"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SampleClass"),
+            constructor: {
+              argNames: [],
+              body: [],
+            },
+            methods: [
+              {
+                methodName: identifierIso.wrap("method1"),
+                argNames: [],
+                body: [],
+              },
+              {
+                methodName: identifierIso.wrap("method2"),
+                argNames: [],
+                body: [],
+              },
+            ],
+          },
+        ];
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it("Parses a class declaration with constructor before method", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SomeClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "constructor",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("someMethod"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SomeClass"),
+            constructor: {
+              argNames: [],
+              body: [],
+            },
+            methods: [
+              {
+                methodName: identifierIso.wrap("someMethod"),
+                argNames: [],
+                body: [],
+              },
+            ],
+          },
+        ];
+
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it("Parses a class declaration with method before constructor", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SomeClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("someMethod"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "constructor",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SomeClass"),
+            constructor: {
+              argNames: [],
+              body: [],
+            },
+            methods: [
+              {
+                methodName: identifierIso.wrap("someMethod"),
+                argNames: [],
+                body: [],
+              },
+            ],
+          },
+        ];
+
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it("Parses a class declaration with constructor between methods", () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "class",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("SomeClass"),
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("method1"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "constructor",
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("method2"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "classDecl",
+            className: identifierIso.wrap("SomeClass"),
+            constructor: {
+              argNames: [],
+              body: [],
+            },
+            methods: [
+              {
+                methodName: identifierIso.wrap("method1"),
+                argNames: [],
+                body: [],
+              },
+              {
+                methodName: identifierIso.wrap("method2"),
+                argNames: [],
+                body: [],
+              },
+            ],
+          },
+        ];
+
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+    });
+
+    describe("Usages of this in setters/getters", () => {
+      it('Parses a simple setter on "this"', () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "this",
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("field"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 1,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "set",
+            object: {
+              expressionKind: "variableRef",
+              variableName: identifierIso.wrap("this"),
+            },
+            field: identifierIso.wrap("field"),
+            value: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it('Parses a nested setter on "this"', () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "this",
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("field"),
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("inner"),
+          },
+          {
+            tokenKind: "singleEquals",
+          },
+          {
+            tokenKind: "number",
+            value: 1,
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "set",
+            object: {
+              expressionKind: "get",
+              object: {
+                expressionKind: "variableRef",
+                variableName: identifierIso.wrap("this"),
+              },
+              field: identifierIso.wrap("field"),
+            },
+            field: identifierIso.wrap("inner"),
+            value: {
+              expressionKind: "numberLit",
+              value: 1,
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
+      });
+
+      it('Parses "this" as regular variable in getter', () => {
+        // Arrange
+        const tokens: Array<Token> = [
+          {
+            tokenKind: "module",
+          },
+          {
+            tokenKind: "identifier",
+            name: testModuleName,
+          },
+          {
+            tokenKind: "leftBrace",
+          },
+          {
+            tokenKind: "this",
+          },
+          {
+            tokenKind: "period",
+          },
+          {
+            tokenKind: "identifier",
+            name: identifierIso.wrap("method"),
+          },
+          {
+            tokenKind: "leftParen",
+          },
+          {
+            tokenKind: "rightParen",
+          },
+          {
+            tokenKind: "semicolon",
+          },
+          {
+            tokenKind: "rightBrace",
+          },
+        ];
+
+        // Act
+        const parseResult = parseModule(tokens);
+
+        // Assert
+        if (!isRight(parseResult)) {
+          console.error(parseResult.left.message);
+          throw new Error("Parse failed, should have succeeded");
+        }
+
+        const desiredBlock: Block = [
+          {
+            statementKind: "expression",
+            expression: {
+              expressionKind: "funcCall",
+              callee: {
+                expressionKind: "get",
+                object: {
+                  expressionKind: "variableRef",
+                  variableName: identifierIso.wrap("this"),
+                },
+                field: identifierIso.wrap("method"),
+              },
+              args: [],
+            },
+          },
+        ];
+
+        expect(parseResult.right).toEqual(wrapBlock(desiredBlock));
       });
     });
   });
 
   describe("Parse errors", () => {
+    it('Expects a module to begin with "module"', () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "leftBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected "module"/);
+    });
+
+    it('Expects an identifier after "module"', () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected identifier/);
+    });
+
     it("Expects a semicolon after return statements", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -5253,7 +7365,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5267,6 +7379,13 @@ describe("Parser", () => {
       // Arrange
       const tokens: Array<Token> = [
         {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
           tokenKind: "leftBrace",
         },
         {
@@ -5279,7 +7398,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5293,6 +7412,13 @@ describe("Parser", () => {
       // Arrange
       const tokens: Array<Token> = [
         {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
           tokenKind: "leftBrace",
         },
         {
@@ -5308,7 +7434,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5322,6 +7448,13 @@ describe("Parser", () => {
       // Arrange
       const tokens: Array<Token> = [
         {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
           tokenKind: "leftBrace",
         },
         {
@@ -5341,7 +7474,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5354,6 +7487,13 @@ describe("Parser", () => {
     it("Expects a semicolon after combined declaration/assignment statements", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -5377,7 +7517,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5389,10 +7529,18 @@ describe("Parser", () => {
 
     it("Expects a left brace at the beginning of a block", () => {
       // Arrange
-      const tokens: Array<Token> = [];
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+      ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5405,6 +7553,13 @@ describe("Parser", () => {
     it("Expects a right brace at the end of a block", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -5421,7 +7576,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5434,6 +7589,13 @@ describe("Parser", () => {
     it("Expects a right parenthesis matching a left paren", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -5456,7 +7618,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5469,6 +7631,13 @@ describe("Parser", () => {
     it("Expects parsing to consume all input", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -5504,7 +7673,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5517,6 +7686,13 @@ describe("Parser", () => {
     it("Expects a left parenthesis after the function name in a function declaration", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -5546,7 +7722,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5559,6 +7735,13 @@ describe("Parser", () => {
     it("Expects a right parenthesis after the list of arguments in a function declaration", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -5591,7 +7774,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5604,6 +7787,13 @@ describe("Parser", () => {
     it("Expects a comma between parameter names in a function definition", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -5640,7 +7830,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5653,6 +7843,13 @@ describe("Parser", () => {
     it("Expects a comma between arguments in a function call", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -5683,7 +7880,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5696,6 +7893,13 @@ describe("Parser", () => {
     it("Expects an identifier in non-number, non-parenthesized primary expressions", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -5714,7 +7918,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5728,6 +7932,13 @@ describe("Parser", () => {
       // Arrange
       const tokens: Array<Token> = [
         {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
           tokenKind: "leftBrace",
         },
         {
@@ -5739,7 +7950,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5752,6 +7963,13 @@ describe("Parser", () => {
     it("Expects a right parenthesis following the expression in an if statement's condition", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -5768,7 +7986,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5781,6 +7999,13 @@ describe("Parser", () => {
     it("Expects a block to start with a left brace after the condition in an if statement", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -5804,7 +8029,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5817,6 +8042,13 @@ describe("Parser", () => {
     it('Expects an "else" after the first block in an if statement', () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -5845,7 +8077,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5858,6 +8090,13 @@ describe("Parser", () => {
     it('Expects a block to start with a left brace after the "else" (with no if) in an if statement', () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -5890,7 +8129,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5904,6 +8143,13 @@ describe("Parser", () => {
       // Arrange
       const tokens: Array<Token> = [
         {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
           tokenKind: "leftBrace",
         },
         {
@@ -5915,7 +8161,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5928,6 +8174,13 @@ describe("Parser", () => {
     it("Expects a right parenthesis following the expression in a while statement's condition", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -5944,7 +8197,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5957,6 +8210,13 @@ describe("Parser", () => {
     it("Expects a block to start with a left brace after the condition in a while statement", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -5980,7 +8240,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -5994,6 +8254,13 @@ describe("Parser", () => {
       // Arrange
       const tokens: Array<Token> = [
         {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
           tokenKind: "leftBrace",
         },
         {
@@ -6005,7 +8272,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -6018,6 +8285,13 @@ describe("Parser", () => {
     it("Expects commas between field definitions in an object", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -6068,7 +8342,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -6082,6 +8356,13 @@ describe("Parser", () => {
       // Arrange
       const tokens: Array<Token> = [
         {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
           tokenKind: "leftBrace",
         },
         {
@@ -6094,7 +8375,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -6110,6 +8391,13 @@ describe("Parser", () => {
       // Arrange
       const tokens: Array<Token> = [
         {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
           tokenKind: "leftBrace",
         },
         {
@@ -6122,7 +8410,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -6136,6 +8424,13 @@ describe("Parser", () => {
       // Arrange
       const tokens: Array<Token> = [
         {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
           tokenKind: "leftBrace",
         },
         {
@@ -6148,7 +8443,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -6161,6 +8456,13 @@ describe("Parser", () => {
     it("Expects an identifier following a period in a get expression/set statement", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -6181,7 +8483,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -6194,6 +8496,13 @@ describe("Parser", () => {
     it("Expects a colon after a field name in an object literal", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -6224,7 +8533,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -6237,6 +8546,13 @@ describe("Parser", () => {
     it("Expects a right brace at the end of an object literal", () => {
       // Arrange
       const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
         {
           tokenKind: "leftBrace",
         },
@@ -6259,7 +8575,7 @@ describe("Parser", () => {
       ];
 
       // Act
-      const parseResult = parse(tokens);
+      const parseResult = parseModule(tokens);
 
       // Assert
       if (!isLeft(parseResult)) {
@@ -6267,6 +8583,925 @@ describe("Parser", () => {
       }
 
       expect(parseResult.left.message).toMatch(/Expected }/);
+    });
+
+    it("Expects a comma between exported identifiers", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+        {
+          tokenKind: "export",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("testExport1"),
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("testExport2"),
+        },
+        {
+          tokenKind: "semicolon",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected ,/);
+    });
+
+    it("Expects a semicolon after the list of exports", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+        {
+          tokenKind: "export",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("testExport"),
+        },
+        {
+          tokenKind: "comma",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected ;/);
+    });
+
+    it("Expects a comma between imported identifiers", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "import",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("import1"),
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("import2"),
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected ,/);
+    });
+
+    it('Expects "from" after a list of imports', () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "import",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("import"),
+        },
+        {
+          tokenKind: "comma",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected "from"/);
+    });
+
+    it('Expects identifier after "from" in import statement ', () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "import",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("import"),
+        },
+        {
+          tokenKind: "from",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected identifier/);
+    });
+
+    it("Expects semicolon at end of import statement", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "import",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("import"),
+        },
+        {
+          tokenKind: "from",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("SomeModule"),
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected ;/);
+    });
+
+    it('Expects period after "this" at start of statement', () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "this",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("field"),
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected ./);
+    });
+
+    it('Expects identifier after "this." at start of statement', () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "this",
+        },
+        {
+          tokenKind: "period",
+        },
+        {
+          tokenKind: "number",
+          value: 1,
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected identifier/);
+    });
+
+    it('Expects single equals after "this.field" at start of statement', () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "this",
+        },
+        {
+          tokenKind: "period",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("field"),
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected =/);
+    });
+
+    it('Expects semicolon at end of "this.field = 1" setter statement', () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "this",
+        },
+        {
+          tokenKind: "period",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("field"),
+        },
+        {
+          tokenKind: "singleEquals",
+        },
+        {
+          tokenKind: "number",
+          value: 1,
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected ;/);
+    });
+
+    it("Expects identifier as part of nested setter on this", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "this",
+        },
+        {
+          tokenKind: "period",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("field"),
+        },
+        {
+          tokenKind: "period",
+        },
+        {
+          tokenKind: "number",
+          value: 1,
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected identifier/);
+    });
+
+    it('Expects identifier after "class" keyword', () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "class",
+        },
+        {
+          tokenKind: "number",
+          value: 1,
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected identifier/);
+    });
+
+    it("Expects left brace after class name", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "class",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("TestClass"),
+        },
+        {
+          tokenKind: "number",
+          value: 1,
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected {/);
+    });
+
+    it('Expects left paren after "constructor" in class declaration', () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "class",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("TestClass"),
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "constructor",
+        },
+        {
+          tokenKind: "this",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected \(/);
+    });
+
+    it("Expects comma between argument names in constructor declaration", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "class",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("TestClass"),
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "constructor",
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg1"),
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg2"),
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected ,/);
+    });
+
+    it("Expects right paren after list of arguments in constructor declaration", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "class",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("TestClass"),
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "constructor",
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg"),
+        },
+        {
+          tokenKind: "comma",
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected \)/);
+    });
+
+    it("Expects left paren after method name in class declaration", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "class",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("TestClass"),
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("method"),
+        },
+        {
+          tokenKind: "this",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected \(/);
+    });
+
+    it("Expects comma between argument names in method declaration", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "class",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("TestClass"),
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("method"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg1"),
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg2"),
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected ,/);
+    });
+
+    it("Expects right paren after list of arguments in method declaration", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "class",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("TestClass"),
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("method"),
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("arg"),
+        },
+        {
+          tokenKind: "comma",
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected \)/);
+    });
+
+    it("Expects right brace at end of class declaration", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "class",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("TestClass"),
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "number",
+          value: 1,
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected }/);
+    });
+
+    it("Expects at most one constructor in class declaration", () => {
+      // Arrange
+      const tokens: Array<Token> = [
+        {
+          tokenKind: "module",
+        },
+        {
+          tokenKind: "identifier",
+          name: testModuleName,
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "class",
+        },
+        {
+          tokenKind: "identifier",
+          name: identifierIso.wrap("TestClass"),
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "constructor",
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+        {
+          tokenKind: "constructor",
+        },
+        {
+          tokenKind: "leftParen",
+        },
+        {
+          tokenKind: "rightParen",
+        },
+        {
+          tokenKind: "leftBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+        {
+          tokenKind: "rightBrace",
+        },
+      ];
+
+      // Act
+      const parseResult = parseModule(tokens);
+
+      // Assert
+      if (!isLeft(parseResult)) {
+        throw new Error("Parse succeeded, should have failed");
+      }
+
+      expect(parseResult.left.message).toMatch(/Expected at most one constructor/);
     });
   });
 });

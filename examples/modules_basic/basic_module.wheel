@@ -1,0 +1,5 @@
+module Source
+{
+  let someNum = 1;
+}
+export someNum;

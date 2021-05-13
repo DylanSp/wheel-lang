@@ -1,0 +1,16 @@
+module StdReader
+{
+  import parseNum, readString from Native;
+  import parseBool from StdParser;
+
+  function readNum() 
+  {
+    return parseNum(readString());
+  }
+
+  function readBool()
+  {
+    return parseBool(readString());
+  }
+}
+export readNum, readBool;

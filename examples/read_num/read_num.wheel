@@ -1,0 +1,16 @@
+module Main
+{
+  import readNum from StdReader;
+  import print from Native;
+
+  let x = readNum();
+  if (x.isValid)
+  {
+    print("Valid");
+    print(x.value);
+  }
+  else
+  {
+    print("Invalid");
+  }
+}

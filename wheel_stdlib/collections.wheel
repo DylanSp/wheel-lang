@@ -1,0 +1,133 @@
+module StdCollections
+{
+  import print from Native;
+
+  class LinkedListNode
+  {
+    constructor(prevNode, nextNode, value) 
+    {
+      this.prev = prevNode;
+      this.next = nextNode;
+      this.value = value;
+    }
+  }
+
+  class LinkedList
+  {
+    constructor()
+    {
+      this.length = 0;
+      this.start = null;
+      this.end = null;
+    }
+
+    pushStart(value)
+    {
+      let node = LinkedListNode(null, this.start, value);
+
+      if (this.start /= null)
+      {
+        this.start.prev = node;
+      }
+      else
+      {
+      }
+
+      if (this.end == null)
+      {
+        this.end = node;
+      }
+      else
+      {
+      }
+
+      this.start = node;
+      this.length = this.length + 1;
+    }
+
+    pushEnd(value)
+    {
+      let node = LinkedListNode(this.end, null, value);
+      if (this.start == null)
+      {
+        this.start = node;
+      }
+      else
+      {
+      }
+
+      if (this.end /= null)
+      {
+        this.end.next = node;
+      }
+      else
+      {
+      }
+
+      this.end = node;
+      this.length = this.length + 1;
+    }
+
+    popStart()
+    {
+      let poppedValue = this.start.value;
+
+      this.start = this.start.next;
+      this.start.prev = null;
+
+      this.length = this.length - 1;
+
+      return poppedValue;
+    }
+
+    popEnd()
+    {
+      let poppedValue = this.end.value;
+
+      this.end = this.end.prev;
+      this.end.next = null;
+
+      this.length = this.length - 1;
+
+      return poppedValue;
+    }
+
+    valueAt(index)
+    {
+      let scannedNode = this.start;
+      let scannedIndex = 0;
+      while (scannedNode /= null)
+      {
+        if (scannedIndex == index)
+        {
+          return scannedNode.value;
+        }
+        else
+        {
+          scannedNode = scannedNode.next;
+          scannedIndex = scannedIndex + 1;
+        }
+      }
+
+      return null;
+    }
+
+    forEach(func)
+    {
+      let node = this.start;
+      while (node /= null)
+      {
+        func(node.value);
+        node = node.next;
+      }
+    }
+
+    print()
+    {
+      print("[");
+      this.forEach(print);
+      print("]");
+    }
+  }
+}
+export LinkedList;

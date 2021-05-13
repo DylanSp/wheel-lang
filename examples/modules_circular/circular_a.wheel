@@ -1,0 +1,8 @@
+module A
+{
+  import numB from B;
+
+  print(numB);
+  numA = 1;
+}
+export numA;

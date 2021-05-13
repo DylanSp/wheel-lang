@@ -1,7 +1,7 @@
 {
-  "name": "extended-four-function-console",
-  "version": "1.0.0",
-  "description": "",
+  "name": "wheel-lang",
+  "version": "0.3.0",
+  "description": "A small toy imperative language for demonstrating and practicing language design/implementation.",
   "main": "dist/main.js",
   "scripts": {
     "test": "jest --watch",
@@ -13,13 +13,14 @@
   },
   "keywords": [],
   "author": "Dylan Sprague",
-  "repository": "github:DylanSp/extended-four-function-console",
+  "repository": "github:DylanSp/wheel-lang",
   "license": "MIT",
   "devDependencies": {
     "@babel/plugin-proposal-optional-chaining": "^7.8.3",
     "@types/jest": "^26.0.0",
     "@types/node": "^13.7.6",
     "@types/readline-sync": "^1.4.3",
+    "@types/yargs": "^15.0.12",
     "@typescript-eslint/eslint-plugin": "^2.21.0",
     "@typescript-eslint/parser": "^2.21.0",
     "eslint": "^6.8.0",
@@ -48,6 +49,7 @@
     "fp-ts": "^2.5.1",
     "monocle-ts": "^2.1.0",
     "newtype-ts": "^0.3.4",
-    "readline-sync": "^1.4.10"
+    "readline-sync": "^1.4.10",
+    "yargs": "^16.2.0"
   }
 }

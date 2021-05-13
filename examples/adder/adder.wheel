@@ -1,0 +1,9 @@
+module Main
+{
+  function f(x, y)
+  {
+    return x + y;
+  }
+
+  return f(1, 2);
+}

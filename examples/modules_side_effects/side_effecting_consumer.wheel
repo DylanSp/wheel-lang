@@ -1,0 +1,9 @@
+module Main
+{
+  import print from Native;
+  import num1 from Source;
+  import num2 from Source;
+
+  print(num1);
+  print(num2);
+}

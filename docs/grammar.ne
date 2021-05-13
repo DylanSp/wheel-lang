@@ -1,4 +1,4 @@
-Program -> Block
+Module -> "module" Identifier Block ExportStatement:?
 
 Block -> "{" Statement:* "}"
 
@@ -8,7 +8,10 @@ Statement -> FunctionDeclaration
 		   		 | VariableAssignment
 		   		 | IfStatement
 		   		 | WhileStatement
-					 | ExprStatement;
+					 | ExprStatement
+					 | SetStatement
+					 | ImportStatement
+					 | ClassDeclaration
 		 
 FunctionDeclaration -> "function" Identifier "(" ParameterDeclarationList ")" Block
 
@@ -26,6 +29,18 @@ IfStatement -> "if" "(" LogicalExpression ")" Block "else" Block
 WhileStatement -> "while" "(" LogicalExpression ")" Block
 
 ExprStatement -> LogicalExpression ";"
+
+SetStatement -> LogicalExpression "." Identifier "=" LogicalExpression ";"
+
+ImportStatement -> "import" Identifier ("," Identifier):* "from" Identifier ";"
+
+ExportStatement -> "export" Identifier ("," Identifier):* ";"
+
+ClassDeclaration -> "class" Identifier "{" MethodDeclaration:* ConstructorDeclaration:? MethodDeclaration:* "}"
+
+ConstructorDeclaration -> "constructor" "(" ParameterDeclarationList ")" Block
+
+MethodDeclaration -> Identifier "(" ParameterDeclarationList ")" Block
 
 
 LogicalExpression -> LogicalTerm (OrOp LogicalTerm):*
