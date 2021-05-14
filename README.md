@@ -20,7 +20,27 @@ The only external dependencies for building and using this language are `node` a
 
 ### Syntax
 
-Programs in Wheel are composed of a block of statements, following a JavaScript-esque syntax. The top-level block must have braces surrounding it. There are eight types of statements:
+Wheel files each contain a single module, with the following structure:
+```
+module [module name]
+{
+  [top-level statements here]
+}
+export [comma-delimited list of exported identifiers];
+```
+
+For example, a module that defines two values and exports them would look like:
+
+```
+module ExampleValue
+{
+  let x = 1;
+  let y = 2;
+}
+export x, y;
+```
+
+The body of each module is a block of statements, following a roughly JavaScript-esque syntax. There are ten types of statements:
 
 1. Standalone expressions (followed by a semicolon), i.e. `printNum(1);`. Most commonly used for calling functions.
 2. Function declarations, following Javascript function declaration syntax. Example:
@@ -32,19 +52,20 @@ function f(x)
 }
 ```
 
-3. Return statements (optionally returning a value):
+3. Return statements (optionally returning a value). Example:
 
 ```
 return 1;
 ```
 
-4. Variable declarations, using the keyword `let`. This declares a variable for use in this scope; it doesn't initialize it, and the variable must be assigned a value before use in an expression. Example:
+4. Variable declarations, using the keyword `let`. This declares a variable for use in this scope, and may optionally initialize the variable with an expression's value. Example:
 
 ```
 let x;
+let y = 3;
 ```
 
-5. Variable assignments. The variable must be declared either beforehand or in the same statement. Variables are mutable, and can have different values assigned to them. Example:
+5. Variable assignments. The variable must be declared either beforehand or in the same statement. Variables are mutable. Example:
 
 ```
 let x = 0;
@@ -83,6 +104,25 @@ while (x < 2)
 {
   y = y + 5;
   x = x + 1;
+}
+```
+
+9. Import statements, using the syntax `import exportedIentifier from Module`. These statements can be used in any scope; they're not limited to the top level of a module.
+
+10. Class declarations. These begin with `class ClassName`, followed by a block defining methods and (optionally) a constructor. The constructor is a function declaration without the `function` keyword and the name "`constructor`"; methods are function declarations without the `function` keyword and any name. Example:
+
+```
+class Dog
+{
+  constructor(name)
+  {
+    this.name = name;
+  }
+
+  printName()
+  {
+    print(this.name);
+  }
 }
 ```
 
