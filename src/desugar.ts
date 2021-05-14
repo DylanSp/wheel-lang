@@ -2,6 +2,7 @@ import { pipe } from "fp-ts/lib/function";
 import { Block, Module, Statement, THIS_IDENTIFIER } from "./parser_types";
 import { Identifier, identifierIso } from "./universal_types";
 
+// written as separate function so that future desugarings can be simply inserted into the pipe() call
 export const desugar = (module: Module): Module => {
   return pipe(module, desugarClassDeclarations);
 };
