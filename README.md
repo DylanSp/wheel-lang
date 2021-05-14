@@ -16,6 +16,10 @@ The only external dependencies for building and using this language are `node` a
     1. Running a multi-file program: `node dist/main.js -f examples/modules_basic/basic_module.wheel examples/modules_basic/basic_consumer.wheel`.
     1. Running a program with command-line arguments: `node dist/main.js -f examples/cli_arguments/command_line_arguments.wheel -a 0 1 2`.
 
+## Example Programs
+
+Each subdirectory of the [`examples`](examples) directory contains a Wheel program, with some number of modules in files with the extension `.wheel`. Each directory also contains a plain text file called `expected`; this is used as the expected output in CI tests to ensure that the example programs perform appropriately. The easiest way to execute an example program is `node dist/main.js -f examples/[example subdirectory name]/*.wheel`.
+
 ## Programming in Wheel
 
 ### Syntax
@@ -227,3 +231,7 @@ The evaluator iterates through the list of statements in the `Program` produced 
 Function calls are evaluated using the `apply()` function. When a function is declared, it's evaluated to a `ClosureValue`, capturing the current environment at the time of its declaration. The environment is represented as an `Environment` object, which wraps a `Map<Identifier, Option<Value>>` containing the values of all declared variables/functions present at a given time; a value of `None` represents a variable that's been declared but not assigned a value, while a value of `Some(val)` represents that `val` has been assigned to that variable. Function calls are represented by `apply()`'ing a `ClosureValue` to an `Array<Value>`, where the array represents the arguments to the function call. This allows functions to be treated as first-class values which can be passed to and returned from other functions, as well as properly representing closures.
 
 `print`, `readString()`, `parseNum()`, and `clock()` are provided as native functions by the interpreter, implemented in TS. The `NativeFunctionValue` type, when `apply()`'d, evaluates arbitrary TS code, then wraps the result (if any) in an appropriate `Value` type to pass it back into the Wheel environment.
+
+### Testing
+
+The Wheel interpreter contains extensive unit tests, located in the [`test`](test) directory. Additionally, each example program can be tested against expected output; this is run by CI using the [`test_examples.sh`](test_examples.sh) script.
