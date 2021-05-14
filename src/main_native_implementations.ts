@@ -113,6 +113,8 @@ export const parseNum = (str: StringValue): Map<Identifier, Value> => {
   return result;
 };
 
+// Instead of just being the "readString()" function, this defines such a function and returns it;
+// this is in order to store the lineNumber as state captured by the closure, so multiple invocations consume successive lines when input is non-interactive
 export const defineReadString = (): (() => string) => {
   // if not a TTY, consume input from stdin line-by-line
   let lineNumber = 0;
