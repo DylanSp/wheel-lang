@@ -126,11 +126,12 @@ class Dog
 }
 ```
 
-Expressions can have number, boolean, object, and `null` values, as well as variable references. Supported operators:
+Expressions can have number, boolean, string, object, and `null` values, as well as variable references. Supported operators:
 
 - Arithmetic: `+`, `-`, `*`, `/`
 - Logical: `&`, `|`, `!` (Note that logical and/or use a single character, not `&&`/`||`)
 - Relational: `<`, `>`, `<=`, `>=`, `==`, `/=` (last operator is the not-equal operator)
+- Object field access: `.`
 
 Operator precedence is documented in [`docs/precedence.md`](docs/precedence.md).
 
@@ -145,8 +146,13 @@ Reserved keywords:
 - `true`
 - `false`
 - `null`
+- `module`
+- `import`
+- `export`
+- `class`
+- `constructor`
 
-For a somewhat more formal specification of the grammar, see `docs/grammar.ne`, which goes over the grammar's structure, using the format of [nearley.js](https://nearley.js.org/); it can be explored by pasting it into the [Nearley Parser Playground](https://omrelli.ug/nearley-playground/). This version of the grammar doesn't include any whitespace, though, so the generated examples will be hard to read.
+For a somewhat more formal specification of the grammar, see `docs/grammar.ne`, which goes over the grammar's structure, using the format of [nearley.js](https://nearley.js.org/). It can be explored by pasting it into the [Nearley Parser Playground](https://omrelli.ug/nearley-playground/), though this version of the grammar doesn't include any whitespace, so the generated examples will be hard to read.
 
 ### Semantics
 
