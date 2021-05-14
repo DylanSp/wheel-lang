@@ -156,26 +156,39 @@ For a somewhat more formal specification of the grammar, see `docs/grammar.ne`, 
 
 ### Semantics
 
-Wheel is dynamically typed, supporting several types of values: numbers, booleans, functions, objects, and `null`. There are no strings and no built-in collection types. A few notes:
+Wheel is dynamically typed, supporting several types of values: numbers (double-precision IEEE 754 floats), booleans, strings, functions, objects, and `null`. A few notes:
 
 - All variables are mutable; there's no `const`.
-- Higher-order functions are supported.
+- Higher-order functions are supported; you can pass functions as arguments to other functions, and functions can return other functions.
 - The `==` and `/=` operators only operate on two operands of the same type.
 - The `!` operator only operates on booleans.
-- `null` can only be compared to objects (currently; follow [issue #58](https://github.com/DylanSp/wheel-lang/issues/58) for possible revision of this)
-- Wheel objects are comparable to C structs; they're bags of data, nothing more.
-  - Accessing an undeclared field on an object returns null, i.e. `{ return {}.field; }` returns `null`.
-  - Fields do not have to be declared on an object's initial declaration/initialization to be set. `{ let obj = {}; obj.a = 1; }` is a legal program.
-  - Objects can have functions assigned to fields, but these functions are not true object methods, they don't have a built-in `this` reference to the object. However, "methods" can be constructed with some setup; see [`examples/oop.wheel`](examples/oop.wheel), and v0.3 will explore JS-style prototypical objects and inheritance, see [issue #43](https://github.com/DylanSp/wheel-lang/issues/43).
+- There are two flavors of Wheel objects. 
+    - Objects declared with the object literal syntax `{}` are comparable to (dynamically-typed) C structs; they're bags of data, nothing more. These objects can have functions assigned to fields, but these functions are not true object methods; they don't have a built-in `this` reference to the object.
+    - Objects created by invoking a class's constructor (new in v0.3) are true objects in the OOP sense. They have access to the defined methods, which can reference the invoking object with `this`. 
+- Accessing an undeclared field on an object returns null, i.e. `{ return {}.field; }` returns `null`.
+- Fields do not have to be declared on an object's initial declaration/initialization to be set. `{ let obj = {}; obj.a = 1; }` is a legal program.
 
-For input, Wheel has two functions (provided by the interpreter), `readNum()` and `readBool()`. Both of these functions display a prompt character, read a string from user input, then attempt to parse it as a number or boolean. If the input parses correctly, the functions return an object with an `isValid` field set to `true` and a `value` field with the parsed value; if the input does not parse, they return an object with an `isValid` field set to `false`.
+Wheel has several "native" functions, provided by the interpreter, for I/O, parsing, and time measurement. These functions are defined in the `Native` module.
+- `readString()`: takes no arguments, displays a prompt character, reads a string from stdin, and returns the string.
+- `print()`: takes a single argument of any type and prints its value to stdout.
+- `parseNum()`: takes a single string argument and returns an object. If the input parses correctly, the function returns an object with an `isValid` field set to `true` and a `value` field with the parsed value; if the input does not parse, it returns an object with an `isValid` field set to `false`. Parsing follows the rules of Node.js's `parseFloat()`.
+- `clock()`: takes no arguments, returns the number of milliseconds since the start of the Unix epoch. (Yes, it's just a wrapper for JS's `Date.now()`).
 
-- For parsing numbers, the interpreter uses JavaScript's `parseFloat()` function; see its documentation for valid input formats.
-- For parsing booleans, the interpreter recognizes `"true"` and `"false"` (with that exact lack of capitalization) as valid inputs; all other strings fail to parse.
-
-For output, Wheel has two functions (provided by the interpreter), `printNum()` and `printBool()`. `printNum()` takes a number value and prints it to the console; `printBool()` takes a boolean value and prints it to the console. The driver in `src/main.ts` also prints the result returned from a program's top-level, if it exists.
-
-Additionally, Wheel has a function `clock()` that returns the number of milliseconds since the start of the Unix epoch. (Yes, it's just a wrapper for JS's `Date.now()`)
+Wheel also has a small standard library, defined in the `wheel_stdlib` directory.
+- `StdParser` module:
+    - `parseBool()`: takes a single string argument and returns an object, similar to `parseNum()`. `parseBool()` recognizes `"true"` and `"false"` (with that exact lack of capitalization), and rejects all other input.
+- `StdReader` module:
+    - `readNum()`: reads input with `readString()` and immediately attempts to parse it with `parseNum()`.
+    - `readBool()`: reads input with `readString()` and immediately attempts to parse it with `parseBool()`. 
+- `StdCollections` module:
+    - `LinkedList` class. This is a doubly-linked list that can contain values of any type. The class has the following methods:
+        - `pushStart()`: prepends a single value to the start of the list.
+        - `pushEnd()`: appends a single value to the end of the list.
+        - `popStart()`: removes the value at the start of the list and returns it. Throws an error when called on an empty list.
+        - `popEnd()`: removes the value at the end of the list and returns it. Throws an error when called on an empty list.
+        - `valueAt()`: takes a number representing a 0-based index, returns the value at that position in the list. Returns `null` if the index is out of bounds.
+        - `forEach()`: takes a function and runs it on every element of the list.
+        - `print()`: prints a representation of the list to stdout.
 
 ## Implementation/Architecture Notes
 
