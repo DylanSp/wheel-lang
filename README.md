@@ -156,7 +156,11 @@ For a somewhat more formal specification of the grammar, see `docs/grammar.ne`, 
 
 ### Semantics
 
-Wheel is dynamically typed, supporting several types of values: numbers (double-precision IEEE 754 floats), booleans, strings, functions, objects, and `null`. A few notes:
+Wheel is dynamically typed, supporting several types of values: numbers (double-precision IEEE 754 floats), booleans, strings, functions, objects, and `null`. The language uses typical imperative-style control flow; `if` and `while` work the same as in other imperative languages.
+
+A program is composed of a module named `Main`, as well as any other modules passed in to the interpreter. The entrypoint for Wheel programs is at the beginning of the `Main` module. Other modules are evaluated when first imported, then their exported values are cached for any subsequent import statements. This means that any top-level statements in an imported module will be executed at most once, not on each import.
+
+ A few general notes:
 
 - All variables are mutable; there's no `const`.
 - Higher-order functions are supported; you can pass functions as arguments to other functions, and functions can return other functions.
@@ -189,6 +193,8 @@ Wheel also has a small standard library, defined in the `wheel_stdlib` directory
         - `valueAt()`: takes a number representing a 0-based index, returns the value at that position in the list. Returns `null` if the index is out of bounds.
         - `forEach()`: takes a function and runs it on every element of the list.
         - `print()`: prints a representation of the list to stdout.
+
+The command-line arguments provided to a Wheel program (via the interpreter's `-a` option) are passed in as a `LinkedList` of strings, assigned to the variable `args` in the module `Args`.
 
 ## Implementation/Architecture Notes
 
