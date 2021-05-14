@@ -1,8 +1,8 @@
-# WheelLang v0.2
+# WheelLang v0.3
 
 The wheel. I reinvented it.
 
-More seriously, this is a small toy programming language, built to demonstrate and practice techniques for implementing basic imperative languages. Not to be used in production, not to be confused with Python wheels.
+More seriously, this is a small toy programming language, built to demonstrate and practice techniques for implementing basic imperative and object-oriented languages. Not to be used in production, not to be confused with Python wheels.
 
 ## How to Run Wheel Programs
 
@@ -11,7 +11,10 @@ The only external dependencies for building and using this language are `node` a
 1. Clone the repo.
 1. Install dependencies with `yarn install`/`npm install`.
 1. Build the interpreter with `yarn build`/`npm run build`.
-1. Run a program with `node dist/main.js [path/to/program]`; for example, to run the example of an addition function, use `node dist/main.js examples/adder.wheel`.
+1. Run a program with `node dist/main.js -f sourceFile1 sourceFile2 ... [-a commandLineArg1 commandLineArg2 ...]`. Source files can be listed in any order, regardless of dependencies. Examples:
+    1.  Running a single-file program: `node dist/main.js -f examples/adder/adder.wheel`.
+    1. Running a multi-file program: `node dist/main.js -f examples/modules_basic/basic_module.wheel examples/modules_basic/basic_consumer.wheel`.
+    1. Running a program with command-line arguments: `node dist/main.js -f examples/cli_arguments/command_line_arguments.wheel -a 0 1 2`.
 
 ## Programming in Wheel
 
