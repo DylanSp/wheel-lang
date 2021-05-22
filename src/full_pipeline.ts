@@ -33,50 +33,50 @@ interface PipelineEvalError {
 
 type PipelineError = PipelineScanError | PipelineParseError | PipelineCircularDependencyError | PipelineEvalError;
 
-export const runProgram = (nativeFunctions: NativeFunctionImplementations) => (
-  moduleTexts: Array<string>,
-): Either<PipelineError, Value> => {
-  const scanResults = moduleTexts.map(scan);
+export const runProgram =
+  (nativeFunctions: NativeFunctionImplementations) =>
+  (moduleTexts: Array<string>): Either<PipelineError, Value> => {
+    const scanResults = moduleTexts.map(scan);
 
-  if (scanResults.some(isLeft)) {
-    const scanErrors = scanResults.filter(isLeft).reduce((prev, current) => {
-      return prev.concat(current.left);
-    }, [] as Array<ScanError>);
-    return left({
-      pipelineErrorKind: "scan",
-      scanErrors,
-    });
-  }
+    if (scanResults.some(isLeft)) {
+      const scanErrors = scanResults.filter(isLeft).reduce((prev, current) => {
+        return prev.concat(current.left);
+      }, [] as Array<ScanError>);
+      return left({
+        pipelineErrorKind: "scan",
+        scanErrors,
+      });
+    }
 
-  const scannedModules = scanResults.map((result) => (result as Right<Array<Token>>).right);
+    const scannedModules = scanResults.map((result) => (result as Right<Array<Token>>).right);
 
-  const parseResults = scannedModules.map(parseModule);
-  if (parseResults.some(isLeft)) {
-    const parseErrors = parseResults.filter(isLeft).reduce((prev, current) => {
-      return prev.concat([current.left]);
-    }, [] as Array<ParseFailure>);
-    return left({
-      pipelineErrorKind: "parse",
-      parseErrors,
-    });
-  }
+    const parseResults = scannedModules.map(parseModule);
+    if (parseResults.some(isLeft)) {
+      const parseErrors = parseResults.filter(isLeft).reduce((prev, current) => {
+        return prev.concat([current.left]);
+      }, [] as Array<ParseFailure>);
+      return left({
+        pipelineErrorKind: "parse",
+        parseErrors,
+      });
+    }
 
-  const parsedModules = parseResults.map((result) => (result as Right<Module>).right);
-  const desugaredModules = parsedModules.map(desugar);
+    const parsedModules = parseResults.map((result) => (result as Right<Module>).right);
+    const desugaredModules = parsedModules.map(desugar);
 
-  const hasDependencyCycle = isCyclicDependencyPresent(desugaredModules);
-  if (hasDependencyCycle) {
-    return left({
-      pipelineErrorKind: "circularDep",
-    });
-  }
+    const hasDependencyCycle = isCyclicDependencyPresent(desugaredModules);
+    if (hasDependencyCycle) {
+      return left({
+        pipelineErrorKind: "circularDep",
+      });
+    }
 
-  const evalResult = evaluateProgram(nativeFunctions)(desugaredModules);
-  if (isLeft(evalResult)) {
-    return left({
-      pipelineErrorKind: "evaluation",
-      evalError: evalResult.left,
-    });
-  }
-  return evalResult;
-};
+    const evalResult = evaluateProgram(nativeFunctions)(desugaredModules);
+    if (isLeft(evalResult)) {
+      return left({
+        pipelineErrorKind: "evaluation",
+        evalError: evalResult.left,
+      });
+    }
+    return evalResult;
+  };

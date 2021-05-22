@@ -556,29 +556,29 @@ export const evaluateModule = (
   }
 };
 
-export const evaluateProgram = (nativeFunctions: NativeFunctionImplementations) => (
-  modules: Array<Module>,
-): Either<RuntimeFailure, Value> => {
-  const mainModules = modules.filter((module) => module.name === MAIN_MODULE_NAME);
-  if (mainModules.length < 1) {
-    return left({
-      runtimeErrorKind: "noMain",
-    });
-  }
+export const evaluateProgram =
+  (nativeFunctions: NativeFunctionImplementations) =>
+  (modules: Array<Module>): Either<RuntimeFailure, Value> => {
+    const mainModules = modules.filter((module) => module.name === MAIN_MODULE_NAME);
+    if (mainModules.length < 1) {
+      return left({
+        runtimeErrorKind: "noMain",
+      });
+    }
 
-  if (mainModules.length > 1) {
-    return left({
-      runtimeErrorKind: "multipleMains",
-    });
-  }
+    if (mainModules.length > 1) {
+      return left({
+        runtimeErrorKind: "multipleMains",
+      });
+    }
 
-  const mainEvalResult = evaluateModule(
-    new ExportedValues(modules, defineNativeFunctions(nativeFunctions)),
-    mainModules[0],
-  );
-  if (isLeft(mainEvalResult)) {
-    return mainEvalResult;
-  }
+    const mainEvalResult = evaluateModule(
+      new ExportedValues(modules, defineNativeFunctions(nativeFunctions)),
+      mainModules[0],
+    );
+    if (isLeft(mainEvalResult)) {
+      return mainEvalResult;
+    }
 
-  return right(mainEvalResult.right[0]);
-};
+    return right(mainEvalResult.right[0]);
+  };
