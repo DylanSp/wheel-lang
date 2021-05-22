@@ -16,7 +16,6 @@
   "repository": "github:DylanSp/wheel-lang",
   "license": "MIT",
   "devDependencies": {
-    "@babel/plugin-proposal-optional-chaining": "^7.14.2",
     "@types/jest": "^26.0.23",
     "@types/node": "^15.6.0",
     "@types/readline-sync": "^1.4.3",
@@ -33,15 +32,6 @@
     "typescript": "^4.2.4"
   },
   "jest": {
-    "globals": {
-      "ts-jest": {
-        "babelConfig": {
-          "plugins": [
-            "@babel/plugin-proposal-optional-chaining"
-          ]
-        }
-      }
-    },
     "preset": "ts-jest",
     "testEnvironment": "node"
   },
