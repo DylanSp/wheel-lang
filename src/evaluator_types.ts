@@ -121,6 +121,7 @@ export interface NativeFunctionValue {
   valueKind: "nativeFunc";
   funcName: Identifier;
   argCount: number;
+  // eslint-disable-next-line @typescript-eslint/ban-types
   body: Function;
   returnType: ValueKind;
 }
