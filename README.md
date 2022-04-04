@@ -9,12 +9,12 @@ More seriously, this is a small toy programming language, built to demonstrate a
 The only external dependencies for building and using this language are `node` and either `npm` or `yarn`. All other dependencies will be installed locally from `package.json`, including TypeScript.
 
 1. Clone the repo.
-1. Install dependencies with `yarn install`/`npm install`.
-1. Build the interpreter with `yarn build`/`npm run build`.
+1. Install dependencies with `npm ci`/`yarn install`.
+1. Build the interpreter with `npm run build`/`yarn build`.
 1. Run a program with `node dist/main.js -f sourceFile1 sourceFile2 ... [-a commandLineArg1 commandLineArg2 ...]`. Source files can be listed in any order, regardless of dependencies. Examples:
-    1.  Running a single-file program: `node dist/main.js -f examples/adder/adder.wheel`.
-    1. Running a multi-file program: `node dist/main.js -f examples/modules_basic/basic_module.wheel examples/modules_basic/basic_consumer.wheel`.
-    1. Running a program with command-line arguments: `node dist/main.js -f examples/cli_arguments/command_line_arguments.wheel -a 0 1 2`.
+   1. Running a single-file program: `node dist/main.js -f examples/adder/adder.wheel`.
+   1. Running a multi-file program: `node dist/main.js -f examples/modules_basic/basic_module.wheel examples/modules_basic/basic_consumer.wheel`.
+   1. Running a program with command-line arguments: `node dist/main.js -f examples/cli_arguments/command_line_arguments.wheel -a 0 1 2`.
 
 ## Example Programs
 
@@ -25,6 +25,7 @@ Each subdirectory of the [`examples`](examples) directory contains a Wheel progr
 ### Syntax
 
 Wheel files each contain a single module, with the following structure:
+
 ```
 module [module name]
 {
@@ -164,39 +165,41 @@ Wheel is dynamically typed, supporting several types of values: numbers (double-
 
 A program is composed of a module named `Main`, as well as any other modules passed in to the interpreter. The entrypoint for Wheel programs is at the beginning of the `Main` module. Other modules are evaluated when first imported, then their exported values are cached for any subsequent import statements. This means that any top-level statements in an imported module will be executed at most once, not on each import.
 
- A few general notes:
+A few general notes:
 
 - All variables are mutable; there's no `const`.
 - Higher-order functions are supported; you can pass functions as arguments to other functions, and functions can return other functions.
 - The `==` and `/=` operators only operate on two operands of the same type.
 - The `!` operator only operates on booleans.
-- There are two flavors of Wheel objects. 
-    - Objects declared with the object literal syntax `{}` are comparable to (dynamically-typed) C structs; they're bags of data, nothing more. These objects can have functions assigned to fields, but these functions are not true object methods; they don't have a built-in `this` reference to the object.
-    - Objects created by invoking a class's constructor (new in v0.3) are true objects in the OOP sense. They have access to the defined methods, which can reference the invoking object with `this`. 
+- There are two flavors of Wheel objects.
+  - Objects declared with the object literal syntax `{}` are comparable to (dynamically-typed) C structs; they're bags of data, nothing more. These objects can have functions assigned to fields, but these functions are not true object methods; they don't have a built-in `this` reference to the object.
+  - Objects created by invoking a class's constructor (new in v0.3) are true objects in the OOP sense. They have access to the defined methods, which can reference the invoking object with `this`.
 - Accessing an undeclared field on an object returns null, i.e. `{ return {}.field; }` returns `null`.
 - Fields do not have to be declared on an object's initial declaration/initialization to be set. `{ let obj = {}; obj.a = 1; }` is a legal program.
 
 Wheel has several "native" functions, provided by the interpreter, for I/O, parsing, and time measurement. These functions are defined in the `Native` module.
+
 - `readString()`: takes no arguments, displays a prompt character, reads a string from stdin, and returns the string.
 - `print()`: takes a single argument of any type and prints its value to stdout.
 - `parseNum()`: takes a single string argument and returns an object. If the input parses correctly, the function returns an object with an `isValid` field set to `true` and a `value` field with the parsed value; if the input does not parse, it returns an object with an `isValid` field set to `false`. Parsing follows the rules of Node.js's `parseFloat()`.
 - `clock()`: takes no arguments, returns the number of milliseconds since the start of the Unix epoch. (Yes, it's just a wrapper for JS's `Date.now()`).
 
 Wheel also has a small standard library, defined in the `wheel_stdlib` directory.
+
 - `StdParser` module:
-    - `parseBool()`: takes a single string argument and returns an object, similar to `parseNum()`. `parseBool()` recognizes `"true"` and `"false"` (with that exact lack of capitalization), and rejects all other input.
+  - `parseBool()`: takes a single string argument and returns an object, similar to `parseNum()`. `parseBool()` recognizes `"true"` and `"false"` (with that exact lack of capitalization), and rejects all other input.
 - `StdReader` module:
-    - `readNum()`: reads input with `readString()` and immediately attempts to parse it with `parseNum()`.
-    - `readBool()`: reads input with `readString()` and immediately attempts to parse it with `parseBool()`. 
+  - `readNum()`: reads input with `readString()` and immediately attempts to parse it with `parseNum()`.
+  - `readBool()`: reads input with `readString()` and immediately attempts to parse it with `parseBool()`.
 - `StdCollections` module:
-    - `LinkedList` class. This is a doubly-linked list that can contain values of any type. The class has the following methods:
-        - `pushStart()`: prepends a single value to the start of the list.
-        - `pushEnd()`: appends a single value to the end of the list.
-        - `popStart()`: removes the value at the start of the list and returns it. Throws an error when called on an empty list.
-        - `popEnd()`: removes the value at the end of the list and returns it. Throws an error when called on an empty list.
-        - `valueAt()`: takes a number representing a 0-based index, returns the value at that position in the list. Returns `null` if the index is out of bounds.
-        - `forEach()`: takes a function and runs it on every element of the list.
-        - `print()`: prints a representation of the list to stdout.
+  - `LinkedList` class. This is a doubly-linked list that can contain values of any type. The class has the following methods:
+    - `pushStart()`: prepends a single value to the start of the list.
+    - `pushEnd()`: appends a single value to the end of the list.
+    - `popStart()`: removes the value at the start of the list and returns it. Throws an error when called on an empty list.
+    - `popEnd()`: removes the value at the end of the list and returns it. Throws an error when called on an empty list.
+    - `valueAt()`: takes a number representing a 0-based index, returns the value at that position in the list. Returns `null` if the index is out of bounds.
+    - `forEach()`: takes a function and runs it on every element of the list.
+    - `print()`: prints a representation of the list to stdout.
 
 The command-line arguments provided to a Wheel program (via the interpreter's `-a` option) are passed in as a `LinkedList` of strings, assigned to the variable `args` in the module `Args`.
 
